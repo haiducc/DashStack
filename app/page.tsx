@@ -1,101 +1,233 @@
-import Image from "next/image";
+"use client";
+import React, { useState } from "react";
+import Header from "./component/Header";
+import { Select, Space, DatePicker, Table, Row, Col, Card } from "antd";
+import type { TableProps } from "antd/es/table";
+import "./globals.css";
 
-export default function Home() {
+interface CardData {
+  title: string;
+  value: number;
+  change: string;
+  backgroundColor: string;
+}
+
+interface DataType {
+  key: string;
+  bank: string;
+  bank_account: number;
+  date: Date;
+  account_holder: string;
+  amount: number;
+  content: string;
+  type: string;
+  balance: number;
+  status: string;
+}
+
+const { RangePicker } = DatePicker;
+
+const cardData: CardData[] = [
+  {
+    title: "Lợi Nhuận",
+    value: 40689,
+    change: "8.5% Ngày hôm qua",
+    backgroundColor: "#67B173",
+  },
+  {
+    title: "Tổng số tiền vào",
+    value: 40689,
+    change: "8.5% Ngày hôm qua",
+    backgroundColor: "#29BADB",
+  },
+  {
+    title: "Tổng số tiền ra",
+    value: 40689,
+    change: "8.5% Ngày hôm qua",
+    backgroundColor: "#F17171",
+  },
+  {
+    title: "Tổng số giao dịch vào",
+    value: 40689,
+    change: "8.5% Ngày hôm qua",
+    backgroundColor: "#3D78E3",
+  },
+  {
+    title: "Tổng số giao dịch ra",
+    value: 40689,
+    change: "8.5% Ngày hôm qua",
+    backgroundColor: "#B16798",
+  },
+  {
+    title: "Số dư hiện tại",
+    value: 40689,
+    change: "8.5% Ngày hôm qua",
+    backgroundColor: "#8667B1",
+  },
+];
+
+const columns: TableProps<DataType>["columns"] = [
+  {
+    title: "Ngân hàng",
+    dataIndex: "bank",
+    key: "bank",
+  },
+  {
+    title: "TK ngân hàng",
+    dataIndex: "bank_account",
+    key: "bank_account",
+  },
+  {
+    title: "Ngày giao dịch",
+    dataIndex: "date",
+    key: "date",
+    render: (date: Date) =>
+      new Intl.DateTimeFormat("vi-VN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(date),
+  },
+  {
+    title: "Chủ tài khoản",
+    dataIndex: "account_holder",
+    key: "account_holder",
+  },
+  {
+    title: "Số tiền",
+    dataIndex: "amount",
+    key: "amount",
+    render: (amount: number) => new Intl.NumberFormat("vi-VN").format(amount),
+  },
+  {
+    title: "Nội dung CK",
+    dataIndex: "content",
+    key: "content",
+  },
+  {
+    title: "Loại giao dịch",
+    dataIndex: "type",
+    key: "type",
+    render: (type: string) => (
+      <div
+        className={`font-bold ${
+          type === "Tiền ra" ? "text-red-500" : "text-green-500"
+        }`}
+      >
+        {type}
+      </div>
+    ),
+  },
+  {
+    title: "Số dư",
+    dataIndex: "balance",
+    key: "balance",
+    render: (balance: number) => new Intl.NumberFormat("vi-VN").format(balance),
+  },
+  {
+    title: "Trạng thái",
+    dataIndex: "status",
+    key: "status",
+    render: (status: string) => (
+      <div
+        className={`text-white flex items-center justify-center rounded-md font-bold w-[93px] h-[27px] ${
+          status === "Thành công" ? "bg-green-500" : "bg-red-500"
+        }`}
+      >
+        {status}
+      </div>
+    ),
+  },
+];
+
+const data: DataType[] = [
+  {
+    key: "1",
+    bank: "MB",
+    bank_account: 123123123123,
+    account_holder: "NHD",
+    date: new Date("2024-10-22"),
+    amount: 10000000000,
+    content: "ALO ALO",
+    type: "Tiền ra",
+    balance: 10000,
+    status: "Thành công",
+  },
+];
+
+const options = [
+  { value: "company", label: "Tài khoản công ty" },
+  { value: "bank", label: "Tài khoản ngân hàng" },
+  { value: "telegram", label: "Nhóm chat Telegram" },
+  { value: "transaction", label: "Loại giao dịch" },
+  { value: "accountGroup", label: "Nhóm tài khoản" },
+];
+
+const Page = () => {
+  const [, setSelectedOptions] = useState({
+    accountType: "",
+    transactionType: "",
+    accountGroup: "",
+  });
+
+  const handleChange = (key: string, value: string) => {
+    setSelectedOptions((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <div>
+      <Header />
+      <div className="dashboard mt-7">
+        <Row gutter={[16, 16]} justify="center">
+          {cardData.map((card, index) => (
+            <Col key={index} xs={24} sm={12} md={8} lg={4}>
+              <Card
+                style={{ backgroundColor: card.backgroundColor }}
+                bodyStyle={{ padding: 20, textAlign: "center" }}
+                bordered={false}
+              >
+                <div>
+                  <h3 className="text-white">{card.title}</h3>
+                  <h2 className="text-white">{card.value.toLocaleString("vi-VN")}</h2>
+                  <div className="text-white">{card.change}</div>
+                </div>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      </div>
+      <div className="flex justify-center mt-7">
+        <Space direction="horizontal" size="middle">
+          {["Tài khoản công ty", "Tài khoản ngân hàng", "Nhóm chat Telegram", "Loại giao dịch", "Nhóm tài khoản"].map(
+            (placeholder, index) => (
+              <Select
+                key={index}
+                options={options}
+                placeholder={placeholder}
+                onChange={(value) => handleChange(placeholder, value)}
+                style={{ width: 245 }}
+              />
+            )
+          )}
+          <RangePicker />
+        </Space>
+      </div>
+      <div className="mt-5 mx-[35px]">
+        <Table<DataType>
+          columns={columns}
+          dataSource={data}
+          pagination={false}
         />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
-}
+};
+
+export default Page;

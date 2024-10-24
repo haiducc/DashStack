@@ -1,73 +1,124 @@
 "use client";
 
 import Header from "@/app/component/Header";
-import { Button, Form, Input, Radio, Select, Space, Table, Modal } from "antd";
+import { Button, Form, Input, Select, Space, Table, Modal, Radio } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BaseModal from "@/app/component/config/BaseModal";
+import {
+  addBankAccounts,
+  fetchBankAccounts,
+  getBank,
+} from "@/app/services/base_api";
+import { BankAccounts, DataAccount } from "@/app/component/modal/modalBankAccount";
 
-interface DataAccount {
-  key: string;
-  bank: string;
-  account_number: string;
-  account_holder: string;
-  phone: number;
-  group_account: string;
-  type_account: string;
-  note: string;
-}
 
-const options = [
+const accountTypeOptions = [
   { value: "company", label: "Tài khoản công ty" },
-  { value: "bank", label: "Tài khoản ngân hàng" },
-  { value: "telegram", label: "Nhóm chat Telegram" },
-  { value: "transaction", label: "Loại giao dịch" },
-  { value: "accountGroup", label: "Nhóm tài khoản" },
+  { value: "personal", label: "Tài khoản cá nhân" },
 ];
 
-const initialData: DataAccount[] = [
-  {
-    key: "1",
-    bank: "MB",
-    account_number: "123123",
-    account_holder: "NHD",
-    phone: 123123123,
-    group_account: "Tổng chi tiêu",
-    type_account: "Tài khoản công ty",
-    note: "avava",
-  },
+const phoneOptions = [
+  { value: 901234567, label: 901234567 },
+  { value: 912345678, label: 912345678 },
+];
+
+const accountGroupOptions = [
+  { value: 1, label: "Nhóm Tài Khoản 1" },
+  { value: 2, label: "Nhóm Tài Khoản 2" },
+  { value: 3, label: "Nhóm Tài Khoản 3" },
 ];
 
 const Account: React.FC = () => {
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [value, setValue] = useState(1);
   const [currentAccount, setCurrentAccount] = useState<DataAccount | null>(
     null
   );
-  const [dataAccounts, setDataAccounts] = useState<DataAccount[]>(initialData);
+  const [dataAccount, setDataAccount] = useState<DataAccount[]>([]);
+  const [banks, setBanks] = useState([]);
+  const [pageIndex] = useState(1);
+  const [pageSize] = useState(20);
+  const [value, setValue] = useState("1");
 
-  const onSearch = (value: string) => console.log("Search value:", value);
-
-  const handleAddConfirm = () => {
-    const formData = form.getFieldsValue();
-    if (currentAccount) {
-      setDataAccounts((prev) =>
-        prev.map((account) =>
-          account.key === currentAccount.key
-            ? { ...currentAccount, ...formData }
-            : account
-        )
-      );
-    } else {
-      setDataAccounts((prev) => [
-        ...prev,
-        { key: Date.now().toString(), ...formData },
-      ]);
+  const fetchAccounts = async () => {
+    try {
+      const response = await fetchBankAccounts(1, 20);
+      const formattedData =
+        response?.data?.source?.map((account: BankAccounts) => ({
+          key: account.id,
+          bank: account.bank?.code || "",
+          account_number: account.accountNumber,
+          account_holder: account.fullName,
+          phone: account.phoneId || "",
+          SelectedAccountGroups: account.SelectedAccountGroups || [],
+          type_account: account.typeAccountDescription,
+          note: account.notes,
+        })) || [];
+      setDataAccount(formattedData);
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
     }
-    setAddModalOpen(false);
-    form.resetFields(); // Reset fields after adding or editing
-    setCurrentAccount(null);
+  };
+
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  const fetchBankData = async () => {
+    try {
+      const bankData = await getBank(pageIndex, pageSize);
+      const formattedBanks =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        bankData?.data?.source?.map((bank: any) => ({
+          value: bank.id,
+          label: bank.fullName || bank.code || "Không xác định",
+        })) || [];
+      setBanks(formattedBanks);
+    } catch (error) {
+      console.error("Error fetching banks:", error);
+    }
+  };
+
+  const handleAddConfirm = async () => {
+    const formData = form.getFieldsValue();
+    console.log("Form Data:", formData);
+
+    try {
+      // Gọi API thêm tài khoản ngân hàng
+      const result = await addBankAccounts({
+        bankId: formData.bank,
+        accountNumber: formData.account_number,
+        fullName: formData.account_holder,
+        notes: formData.note,
+        phoneId: formData.phone,
+        SelectedAccountGroups: [formData.accountGroup],
+        typeAccount: formData.type_account || "Tài khoản cá nhân",
+        TransactionSource:formData.TransactionSource
+      });
+
+      // Thêm tài khoản mới vào danh sách
+      const newAccount = {
+        key: result.id || Date.now().toString(),
+        bank: formData.bank,
+        account_number: formData.account_number,
+        account_holder: formData.account_holder,
+        phone: formData.phone,
+        SelectedAccountGroups: [1,2],
+        type_account: formData.type_account,
+        note: formData.note,
+        TransactionSource: formData.TransactionSource,
+      };
+
+      setDataAccount((prev) => [...prev, newAccount]);
+      console.log("Thêm mới tài khoản thành công:", result);
+    } catch (error) {
+      console.error("Lỗi khi thêm tài khoản ngân hàng:", error);
+    } finally {
+      setAddModalOpen(false);
+      form.resetFields();
+      setCurrentAccount(null);
+    }
   };
 
   const handleEditAccount = (account: DataAccount) => {
@@ -79,11 +130,17 @@ const Account: React.FC = () => {
   const handleDeleteAccount = (account: DataAccount) => {
     Modal.confirm({
       title: "Xóa tài khoản ngân hàng",
-      content: `Bạn có chắc chắn chấp nhận xóa tài khoản ngân hàng ${account.account_holder} này không?`,
+      content: `Bạn có chắc chắn chấp nhận xóa tài khoản ngân hàng ${account.bank} này không?`,
       onOk: () => {
-        setDataAccounts((prev) => prev.filter((a) => a.key !== account.key));
+        setDataAccount((prev) => prev.filter((a) => a.key !== account.key));
       },
     });
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleValueChange = (newValue: any) => {
+    setValue(newValue);
+    console.log("Giá trị được chọn:", newValue);
   };
 
   const columns = [
@@ -101,27 +158,26 @@ const Account: React.FC = () => {
     { title: "Số điện thoại", dataIndex: "phone", key: "phone" },
     {
       title: "Nhóm tài khoản",
-      dataIndex: "group_account",
-      key: "group_account",
+      dataIndex: "SelectedAccountGroups",
+      key: "SelectedAccountGroups",
     },
     { title: "Loại tài khoản", dataIndex: "type_account", key: "type_account" },
     { title: "Ghi chú", dataIndex: "note", key: "note" },
     {
       title: "Chức năng",
       key: "action",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (text: any, record: DataAccount) => (
+      render: (record: BankAccounts) => (
         <Space size="middle">
           <Button
             icon={<EditOutlined />}
-            onClick={() => handleEditAccount(record)}
+            onClick={() => handleEditAccount(record as unknown as DataAccount)}
           >
             Chỉnh sửa
           </Button>
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDeleteAccount(record)}
+            onClick={() => handleDeleteAccount(record as unknown as DataAccount)}
           >
             Xóa
           </Button>
@@ -139,7 +195,9 @@ const Account: React.FC = () => {
           <div className="flex items-center">
             <Input
               placeholder="Số tài khoản, tên tài khoản ..."
-              onPressEnter={(e) => onSearch(e.currentTarget.value)}
+              onPressEnter={(e) =>
+                console.log("Search value:", e.currentTarget.value)
+              }
               style={{
                 width: 253,
                 borderRadius: 10,
@@ -152,7 +210,7 @@ const Account: React.FC = () => {
                 (placeholder, index) => (
                   <Select
                     key={index}
-                    options={options}
+                    options={accountGroupOptions}
                     placeholder={placeholder}
                     style={{ width: 245 }}
                   />
@@ -171,13 +229,13 @@ const Account: React.FC = () => {
             Thêm mới
           </Button>
         </div>
-        <Table columns={columns} dataSource={dataAccounts} />
+        <Table columns={columns} dataSource={dataAccount} />
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
           setAddModalOpen(false);
-          form.resetFields(); // Reset fields when closing modal
+          form.resetFields();
         }}
         title={currentAccount ? "Chỉnh sửa tài khoản" : "Thêm mới tài khoản"}
         offPadding
@@ -194,7 +252,11 @@ const Account: React.FC = () => {
               name="bank"
               rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
             >
-              <Select options={options} placeholder="Chọn ngân hàng" />
+              <Select
+                placeholder="Chọn ngân hàng"
+                onFocus={fetchBankData}
+                options={banks}
+              />
             </Form.Item>
             <Form.Item
               className="w-[45%]"
@@ -220,68 +282,69 @@ const Account: React.FC = () => {
             </Form.Item>
             <Form.Item
               className="w-[45%]"
+              label="Nhập số điện thoại"
+              name="phone"
+              rules={[
+                { required: true, message: "Vui lòng nhập số điện thoại!" },
+              ]}
+            >
+              <Select options={phoneOptions} placeholder="Chọn số điện thoại" />
+            </Form.Item>
+          </div>
+          <div className="flex justify-between">
+            <Form.Item label="Lấy giao dịch từ" name="TransactionSource">
+              <Radio.Group
+                onChange={(e) => handleValueChange(e.target.value)}
+                value={value}
+              >
+                <Space direction="vertical" defaultValue={1}>
+                  <Radio value={"1"}>Giao dịch từ SMS</Radio>
+                  <Radio value={"2"}>Giao dịch từ Email</Radio>
+                </Space>
+              </Radio.Group>
+            </Form.Item>
+            <Form.Item
+              className="w-[45%]"
               label="Chọn loại tài khoản"
               name="type_account"
               rules={[
                 { required: true, message: "Vui lòng chọn loại tài khoản!" },
               ]}
             >
-              <Select options={options} placeholder="Chọn loại tài khoản" />
+              <Select
+                options={accountTypeOptions}
+                placeholder="Chọn loại tài khoản"
+              />
             </Form.Item>
           </div>
-          <div className="flex justify-between">
-            <Form.Item label="Lấy giao dịch từ">
-              <Radio.Group
-                onChange={(e) => setValue(e.target.value)}
-                value={value}
-              >
-                <Space direction="vertical">
-                  <Radio value={1}>Giao dịch từ SMS</Radio>
-                  <Radio value={2}>Giao dịch từ Email</Radio>
-                </Space>
-              </Radio.Group>
-            </Form.Item>
-            <Form.Item
-              className="w-[45%]"
-              label="Chọn Số điện thoại nhận SMS"
-              name="phone"
-              rules={[
-                { required: true, message: "Vui lòng nhập số điện thoại!" },
-              ]}
-            >
-              <Select options={options} placeholder="Chọn số điện thoại" />
-            </Form.Item>
-          </div>
-          <Form.Item label="Chọn nhóm tài khoản">
+          <Form.Item
+            label="Chọn nhóm tài khoản"
+            name="SelectedAccountGroups"
+            rules={[
+              { required: true, message: "Vui lòng chọn nhóm tài khoản!" },
+            ]}
+          >
             <Select
+              options={accountGroupOptions}
+              placeholder="Chọn nhóm tài khoản"
               mode="multiple"
-              allowClear
-              style={{ width: "100%" }}
-              options={options}
             />
           </Form.Item>
-          <Form.Item label="Ghi chú">
-            <Input.TextArea rows={4} />
+          <Form.Item label="Ghi chú" name="note">
+            <Input.TextArea
+              placeholder="Nhập ghi chú"
+              autoSize={{ minRows: 3, maxRows: 5 }}
+            />
           </Form.Item>
-          <div className="flex justify-end">
-            <Button
-              onClick={() => {
-                setAddModalOpen(false);
-                form.resetFields();
-              }}
-              className="w-[189px] h-[42px]"
-            >
-              Đóng
-            </Button>
-            <div className="w-5" />
+          <Form.Item>
             <Button
               type="primary"
               onClick={handleAddConfirm}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              className="w-full h-[40px] bg-[#4B5CB8] hover:bg-[#3A4A9D]"
             >
               {currentAccount ? "Cập nhật" : "Thêm mới"}
             </Button>
-          </div>
+          </Form.Item>
         </Form>
       </BaseModal>
     </>

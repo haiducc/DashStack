@@ -53,7 +53,7 @@ const SideMenu = () => {
   };
 
   return (
-    <div style={{ width: 256, backgroundColor: "#4B5CB8", height: "100vh" }}>
+    <div style={{ width: 256, backgroundColor: "#4B5CB8"}}>
       <Image
         alt="Logo"
         src={Logo}

@@ -7,20 +7,23 @@ import React, { useEffect, useState } from "react";
 import BaseModal from "@/app/component/config/BaseModal";
 import {
   addBankAccounts,
+  deleteBankAccount,
   fetchBankAccounts,
   getBank,
-} from "@/app/services/base_api";
-import { BankAccounts, DataAccount } from "@/app/component/modal/modalBankAccount";
-
+} from "@/app/services/bankAccount";
+import {
+  BankAccounts,
+  DataAccount,
+} from "@/app/component/modal/modalBankAccount";
+import { getListPhone } from "@/app/services/phone";
+import { getAccountGroup } from "@/app/services/accountGroup";
+import { getGroupSystem } from "@/app/services/groupSystem";
+import { getBranchSystem } from "@/app/services/branchSystem";
+import { getGroupTeam } from "@/app/services/groupTeam";
 
 const accountTypeOptions = [
   { value: "company", label: "Tài khoản công ty" },
-  { value: "personal", label: "Tài khoản cá nhân" },
-];
-
-const phoneOptions = [
-  { value: 901234567, label: 901234567 },
-  { value: 912345678, label: 912345678 },
+  { value: "marketing", label: "Tài khoản marketing" },
 ];
 
 const accountGroupOptions = [
@@ -37,8 +40,15 @@ const Account: React.FC = () => {
   );
   const [dataAccount, setDataAccount] = useState<DataAccount[]>([]);
   const [banks, setBanks] = useState([]);
+  const [phoneNumber, setPhoneNumber] = useState([]);
+  const [accountGroup, setAccountGroup] = useState([]);
+  const [groupSystem, setGroupSystem] = useState([]);
+  const [branchSystem, setBranchSystem] = useState([]);
+  const [groupTeam, setGroupTeam] = useState([]);
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
+  const [grandparentId, setGrandparentId] = useState<number>(0);
+  const [parentId, setParentId] = useState<number>(0);
   const [value, setValue] = useState("1");
 
   const fetchAccounts = async () => {
@@ -51,7 +61,7 @@ const Account: React.FC = () => {
           account_number: account.accountNumber,
           account_holder: account.fullName,
           phone: account.phoneId || "",
-          SelectedAccountGroups: account.SelectedAccountGroups || [],
+          SelectedAccountGroups: account.SelectedAccountGroups,
           type_account: account.typeAccountDescription,
           note: account.notes,
         })) || [];
@@ -80,6 +90,85 @@ const Account: React.FC = () => {
     }
   };
 
+  const getListPhoneNumber = async () => {
+    try {
+      const phone = await getListPhone(pageIndex, pageSize);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = phone?.data?.source?.map((x: any) => ({
+        value: x.id,
+        label: x.number || "Không xác định",
+      }));
+      setPhoneNumber(res);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getListAccountGroup = async () => {
+    try {
+      const accountGroup = await getAccountGroup(pageIndex, pageSize);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = accountGroup?.data?.source?.map((x: any) => ({
+        value: x.id,
+        label: x.fullName || "Không xác định",
+      }));
+      setAccountGroup(res);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getGroupSystems = async () => {
+    try {
+      const getSystem = await getGroupSystem(pageIndex, pageSize);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = getSystem?.data?.source?.map((x: any) => ({
+        value: x.id,
+        label: x.name || "Không xác định",
+      }));
+      setGroupSystem(res);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getBranchSystems = async () => {
+    try {
+      const getBranch = await getBranchSystem(
+        grandparentId,
+        pageIndex,
+        pageSize
+      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = getBranch?.data?.source?.map((x: any) => ({
+        value: x.id,
+        label: x.name || "Không xác định",
+      }));
+      setBranchSystem(res);
+    } catch (error) {
+      console.error("Lỗi khi gọi hàm getBranchSystem:", error);
+    }
+  };
+
+  const getGroupTeams = async () => {
+    try {
+      const groupTeams = await getGroupTeam(
+        grandparentId,
+        parentId,
+        pageIndex,
+        pageSize
+      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = groupTeams?.data?.source?.map((x: any) => ({
+        value: x.id,
+        label: x.name || "Không xác định",
+      }));
+      setGroupTeam(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
     console.log("Form Data:", formData);
@@ -92,9 +181,10 @@ const Account: React.FC = () => {
         fullName: formData.account_holder,
         notes: formData.note,
         phoneId: formData.phone,
-        SelectedAccountGroups: [formData.accountGroup],
+        SelectedAccountGroups: formData.SelectedAccountGroups,
         typeAccount: formData.type_account || "Tài khoản cá nhân",
-        TransactionSource:formData.TransactionSource
+        TransactionSource: formData.TransactionSource,
+        bank: formData.bank,
       });
 
       // Thêm tài khoản mới vào danh sách
@@ -104,14 +194,17 @@ const Account: React.FC = () => {
         account_number: formData.account_number,
         account_holder: formData.account_holder,
         phone: formData.phone,
-        SelectedAccountGroups: [1,2],
+        SelectedAccountGroups: formData.SelectedAccountGroups,
         type_account: formData.type_account,
         note: formData.note,
         TransactionSource: formData.TransactionSource,
+        groupSystem: formData.groupSystem,
+        branchSystem: formData.branchSystem,
+        groupTeam: formData.groupTeam,
       };
 
       setDataAccount((prev) => [...prev, newAccount]);
-      console.log("Thêm mới tài khoản thành công:", result);
+      await fetchAccounts();
     } catch (error) {
       console.error("Lỗi khi thêm tài khoản ngân hàng:", error);
     } finally {
@@ -131,8 +224,13 @@ const Account: React.FC = () => {
     Modal.confirm({
       title: "Xóa tài khoản ngân hàng",
       content: `Bạn có chắc chắn chấp nhận xóa tài khoản ngân hàng ${account.bank} này không?`,
-      onOk: () => {
-        setDataAccount((prev) => prev.filter((a) => a.key !== account.key));
+      onOk: async () => {
+        try {
+          await deleteBankAccount(account.key);
+          await fetchAccounts();
+        } catch (error) {
+          console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+        }
       },
     });
   };
@@ -140,7 +238,6 @@ const Account: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleValueChange = (newValue: any) => {
     setValue(newValue);
-    console.log("Giá trị được chọn:", newValue);
   };
 
   const columns = [
@@ -243,9 +340,69 @@ const Account: React.FC = () => {
         <Form
           form={form}
           layout="vertical"
-          className="flex flex-col gap-4 w-full"
+          className="flex flex-col gap-1 w-full"
         >
+          <Form.Item
+            label="Chọn loại tài khoản"
+            name="type_account"
+            rules={[
+              { required: true, message: "Vui lòng chọn loại tài khoản!" },
+            ]}
+          >
+            <Select
+              options={accountTypeOptions}
+              placeholder="Chọn loại tài khoản"
+            />
+          </Form.Item>
           <div className="flex justify-between">
+            <Form.Item
+              className="w-[45%]"
+              label="Chọn hệ thống"
+              name="groupSystem"
+              rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
+            >
+              <Select
+                placeholder="Chọn hệ thống"
+                onFocus={getGroupSystems}
+                options={groupSystem}
+                onChange={(value) => {
+                  setGrandparentId(value);
+                  getBranchSystems();
+                }}
+                value={grandparentId}
+              />
+            </Form.Item>
+            <Form.Item
+              className="w-[45%]"
+              label="Chọn chi nhánh"
+              name="branchSystem"
+              rules={[{ required: true, message: "Vui lòng chọn chi nhánh!" }]}
+            >
+              <Select
+                placeholder="Chọn chi nhánh"
+                onFocus={getBranchSystems}
+                options={branchSystem}
+                onChange={(value) => {
+                  setParentId(value);
+                  getGroupTeams();
+                }}
+                value={grandparentId}
+              />
+            </Form.Item>
+          </div>
+          <div className="flex justify-between">
+            <Form.Item
+              className="w-[45%]"
+              label="Chọn đội nhóm"
+              name="groupTeam"
+              rules={[{ required: true, message: "Vui lòng chọn đội nhóm!" }]}
+            >
+              <Select
+                placeholder="Chọn ngân hàng"
+                onFocus={getGroupTeams}
+                options={groupTeam}
+              />
+            </Form.Item>
             <Form.Item
               className="w-[45%]"
               label="Chọn ngân hàng"
@@ -258,6 +415,8 @@ const Account: React.FC = () => {
                 options={banks}
               />
             </Form.Item>
+          </div>
+          <div className="flex justify-between">
             <Form.Item
               className="w-[45%]"
               label="Số tài khoản"
@@ -268,8 +427,6 @@ const Account: React.FC = () => {
             >
               <Input placeholder="Nhập số tài khoản" />
             </Form.Item>
-          </div>
-          <div className="flex justify-between">
             <Form.Item
               className="w-[45%]"
               label="Nhập tên chủ tài khoản"
@@ -279,16 +436,6 @@ const Account: React.FC = () => {
               ]}
             >
               <Input placeholder="Nhập tên chủ tài khoản" />
-            </Form.Item>
-            <Form.Item
-              className="w-[45%]"
-              label="Nhập số điện thoại"
-              name="phone"
-              rules={[
-                { required: true, message: "Vui lòng nhập số điện thoại!" },
-              ]}
-            >
-              <Select options={phoneOptions} placeholder="Chọn số điện thoại" />
             </Form.Item>
           </div>
           <div className="flex justify-between">
@@ -303,19 +450,22 @@ const Account: React.FC = () => {
                 </Space>
               </Radio.Group>
             </Form.Item>
-            <Form.Item
-              className="w-[45%]"
-              label="Chọn loại tài khoản"
-              name="type_account"
-              rules={[
-                { required: true, message: "Vui lòng chọn loại tài khoản!" },
-              ]}
-            >
-              <Select
-                options={accountTypeOptions}
-                placeholder="Chọn loại tài khoản"
-              />
-            </Form.Item>
+            {value === "1" && (
+              <Form.Item
+                className="w-[45%]"
+                label="Nhập số điện thoại"
+                name="phone"
+                rules={[
+                  { required: true, message: "Vui lòng nhập số điện thoại!" },
+                ]}
+              >
+                <Select
+                  options={phoneNumber}
+                  onFocus={getListPhoneNumber}
+                  placeholder="Chọn số điện thoại"
+                />
+              </Form.Item>
+            )}
           </div>
           <Form.Item
             label="Chọn nhóm tài khoản"
@@ -325,9 +475,10 @@ const Account: React.FC = () => {
             ]}
           >
             <Select
-              options={accountGroupOptions}
+              options={accountGroup}
               placeholder="Chọn nhóm tài khoản"
               mode="multiple"
+              onFocus={getListAccountGroup}
             />
           </Form.Item>
           <Form.Item label="Ghi chú" name="note">

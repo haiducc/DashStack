@@ -14,12 +14,12 @@ export interface BankAccounts {
   };
   typeGroupAccountString?: string[];
   typeAccountDescription?: string;
-  id?: number;
+  id: number;
   SelectedAccountGroups?: number[];
 }
 
 export interface DataAccount {
-  key: string;
+  key: number;
   bank: string;
   account_number: string;
   account_holder: string;
@@ -28,4 +28,7 @@ export interface DataAccount {
   type_account: string;
   note: string;
   TransactionSource: string;
+  groupSystem: number;
+  branchSystem: number;
+  groupTeam: number;
 }

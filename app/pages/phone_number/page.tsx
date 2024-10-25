@@ -3,32 +3,37 @@
 import Header from "@/app/component/Header";
 import { Button, Form, Input, Space, Table, Modal } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BaseModal from "@/app/component/config/BaseModal";
-
-interface DataPhoneNumber {
-  key: string;
-  phone_number: number;
-  network_operator: string;
-  note: string;
-}
-
-const initialData: DataPhoneNumber[] = [
-  {
-    key: "1",
-    phone_number: 123,
-    network_operator: "Viettel",
-    note: "",
-  },
-];
+import { getListPhone } from "@/app/services/phone";
+import { DataPhoneNumber, PhoneNumberModal } from "@/app/component/modal/modalPhoneNumber";
 
 const PhoneNumber: React.FC = () => {
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [currentPhoneNumber, setCurrentPhoneNumber] =
     useState<DataPhoneNumber | null>(null);
-  const [dataPhoneNumber, setDataPhoneNumber] =
-    useState<DataPhoneNumber[]>(initialData);
+  const [dataPhoneNumber, setDataPhoneNumber] = useState<DataPhoneNumber[]>([]);
+
+  const fetchListPhone = async () => {
+    try {
+      const response = await getListPhone(1, 20);
+      const formattedData =
+        response?.data?.source?.map((x: PhoneNumberModal) => ({
+          key: x.id?.toString() || Date.now().toString(),
+          phone_number: x.number,
+          network_operator: x.com,
+          note: x.notes,
+        })) || [];
+      setDataPhoneNumber(formattedData);
+    } catch (error) {
+      console.error("Error fetching phone numbers:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchListPhone();
+  }, []);
 
   const handleAddConfirm = () => {
     const formData = form.getFieldsValue();
@@ -102,9 +107,7 @@ const PhoneNumber: React.FC = () => {
     <>
       <Header />
       <div className="px-[30px]">
-        <div className="text-[32px] font-bold py-5">
-          Danh sách số điện thoại
-        </div>
+        <div className="text-[32px] font-bold py-5">Danh sách số điện thoại</div>
         <div className="flex justify-between items-center mb-7">
           <Input
             placeholder="Tìm kiếm số điện thoại ..."
@@ -138,22 +141,14 @@ const PhoneNumber: React.FC = () => {
           form.resetFields();
         }}
         title={
-          currentPhoneNumber
-            ? "Chỉnh sửa số điện thoại"
-            : "Thêm mới số điện thoại"
+          currentPhoneNumber ? "Chỉnh sửa số điện thoại" : "Thêm mới số điện thoại"
         }
       >
-        <Form
-          form={form}
-          layout="vertical"
-          className="flex flex-col gap-4 w-full"
-        >
+        <Form form={form} layout="vertical" className="flex flex-col gap-4 w-full">
           <Form.Item
             label="Số điện thoại"
             name="phone_number"
-            rules={[
-              { required: true, message: "Vui lòng nhập số điện thoại!" },
-            ]}
+            rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
           >
             <Input placeholder="Nhập số điện thoại" />
           </Form.Item>

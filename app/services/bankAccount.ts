@@ -5,13 +5,15 @@ import { DataAccount } from "../component/modal/modalBankAccount";
 // Hàm để lấy danh sách tài khoản ngân hàng
 export const fetchBankAccounts = async (
   pageIndex: number,
-  pageSize: number
+  pageSize: number,
+  globalTerm?: string
 ) => {
   try {
     const response = await apiClient.get(`/bank-account-api/find`, {
       params: {
         pageIndex: pageIndex,
         pageSize: pageSize,
+        globalTerm: globalTerm || undefined
       },
     });
     return response.data;
@@ -27,6 +29,7 @@ export const fetchBankAccounts = async (
     throw error;
   }
 };
+
 
 // API thêm mới, cập nhật tài khoản ngân hàng
 export const addBankAccounts = async (accountData: DataAccount) => {

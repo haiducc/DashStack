@@ -1,7 +1,17 @@
 "use client";
 
 import Header from "@/app/component/Header";
-import { Button, Form, Input, Select, Space, Table, Modal, Radio } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Select,
+  Space,
+  Table,
+  Modal,
+  Radio,
+  Spin,
+} from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
 import BaseModal from "@/app/component/config/BaseModal";
@@ -26,12 +36,6 @@ const accountTypeOptions = [
   { value: "marketing", label: "Tài khoản marketing" },
 ];
 
-const accountGroupOptions = [
-  { value: 1, label: "Nhóm Tài Khoản 1" },
-  { value: 2, label: "Nhóm Tài Khoản 2" },
-  { value: 3, label: "Nhóm Tài Khoản 3" },
-];
-
 const Account: React.FC = () => {
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
@@ -50,10 +54,15 @@ const Account: React.FC = () => {
   const [grandparentId, setGrandparentId] = useState<number>(0);
   const [parentId, setParentId] = useState<number>(0);
   const [value, setValue] = useState("1");
+  const [globalTerm, setGlobalTerm] = useState("");
+  const [searchTerms] = useState("");
+  const [loading, setLoading] = useState(false);
+  // const [selectedGroup, setSelectedGroup] = useState(null);
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = async (globalTerm = "") => {
+    setLoading(true);
     try {
-      const response = await fetchBankAccounts(1, 20);
+      const response = await fetchBankAccounts(pageIndex, pageSize, globalTerm);
       const formattedData =
         response?.data?.source?.map((account: BankAccounts) => ({
           key: account.id,
@@ -61,19 +70,21 @@ const Account: React.FC = () => {
           account_number: account.accountNumber,
           account_holder: account.fullName,
           phone: account.phoneId || "",
-          SelectedAccountGroups: account.SelectedAccountGroups,
+          SelectedAccountGroups: account.typeGroupAccountString,
           type_account: account.typeAccountDescription,
           note: account.notes,
         })) || [];
       setDataAccount(formattedData);
     } catch (error) {
-      console.error("Error fetching bank accounts:", error);
+      console.error("Lỗi khi lấy danh sách tài khoản ngân hàng:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAccounts();
-  }, []);
+    fetchAccounts(globalTerm);
+  }, [globalTerm]);
 
   const fetchBankData = async () => {
     try {
@@ -106,7 +117,11 @@ const Account: React.FC = () => {
 
   const getListAccountGroup = async () => {
     try {
-      const accountGroup = await getAccountGroup(pageIndex, pageSize);
+      const accountGroup = await getAccountGroup(
+        pageIndex,
+        pageSize,
+        searchTerms
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = accountGroup?.data?.source?.map((x: any) => ({
         value: x.id,
@@ -117,6 +132,10 @@ const Account: React.FC = () => {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    getListAccountGroup();
+  }, [searchTerms]);
 
   const getGroupSystems = async () => {
     try {
@@ -172,7 +191,7 @@ const Account: React.FC = () => {
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
     console.log("Form Data:", formData);
-
+    setLoading(true);
     try {
       // Gọi API thêm tài khoản ngân hàng
       const result = await addBankAccounts({
@@ -211,6 +230,7 @@ const Account: React.FC = () => {
       setAddModalOpen(false);
       form.resetFields();
       setCurrentAccount(null);
+      setLoading(false);
     }
   };
 
@@ -225,15 +245,66 @@ const Account: React.FC = () => {
       title: "Xóa tài khoản ngân hàng",
       content: `Bạn có chắc chắn chấp nhận xóa tài khoản ngân hàng ${account.bank} này không?`,
       onOk: async () => {
+        setLoading(true);
         try {
           await deleteBankAccount(account.key);
           await fetchAccounts();
         } catch (error) {
           console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+        } finally {
+          setLoading(false);
         }
       },
     });
   };
+
+  const handleSearch = async (value: string) => {
+    setGlobalTerm(value);
+    try {
+      if (value.trim() === "") {
+        const data = await fetchBankAccounts(pageIndex, pageSize);
+        const formattedData =
+          data?.data?.source?.map((account: BankAccounts) => ({
+            key: account.id,
+            bank: account.bank?.code || "",
+            account_number: account.accountNumber,
+            account_holder: account.fullName,
+            phone: account.phoneId || "",
+            SelectedAccountGroups: account.SelectedAccountGroups,
+            type_account: account.typeAccountDescription,
+            note: account.notes,
+          })) || [];
+
+        setDataAccount(formattedData);
+      } else {
+        // Nếu có giá trị tìm kiếm, gọi API với giá trị đó
+        const data = await fetchBankAccounts(pageIndex, pageSize, value);
+        const formattedData =
+          data?.data?.source?.map((account: BankAccounts) => ({
+            key: account.id,
+            bank: account.bank?.code || "",
+            account_number: account.accountNumber,
+            account_holder: account.fullName,
+            phone: account.phoneId || "",
+            SelectedAccountGroups: account.SelectedAccountGroups,
+            type_account: account.typeAccountDescription,
+            note: account.notes,
+          })) || [];
+
+        setDataAccount(formattedData);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm tài khoản ngân hàng:", error);
+    }
+  };
+  // fetch để gọi ra danh sách theo value search
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  // const handleFilterChange = (value: string) => {
+  //   setSearchTerms(value);
+  // };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleValueChange = (newValue: any) => {
@@ -274,7 +345,9 @@ const Account: React.FC = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDeleteAccount(record as unknown as DataAccount)}
+            onClick={() =>
+              handleDeleteAccount(record as unknown as DataAccount)
+            }
           >
             Xóa
           </Button>
@@ -292,9 +365,13 @@ const Account: React.FC = () => {
           <div className="flex items-center">
             <Input
               placeholder="Số tài khoản, tên tài khoản ..."
-              onPressEnter={(e) =>
-                console.log("Search value:", e.currentTarget.value)
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                handleSearch(value);
+              }}
+              onPressEnter={async (e) => {
+                handleSearch(e.currentTarget.value);
+              }}
               style={{
                 width: 253,
                 borderRadius: 10,
@@ -302,7 +379,7 @@ const Account: React.FC = () => {
                 marginRight: 15,
               }}
             />
-            <Space direction="horizontal" size="middle">
+            {/* <Space direction="horizontal" size="middle">
               {["Nhóm tài khoản", "Loại tài khoản", "Tên ngân hàng"].map(
                 (placeholder, index) => (
                   <Select
@@ -310,6 +387,20 @@ const Account: React.FC = () => {
                     options={accountGroupOptions}
                     placeholder={placeholder}
                     style={{ width: 245 }}
+                  />
+                )
+              )}
+            </Space> */}
+            <Space direction="horizontal" size="middle">
+              {["Nhóm tài khoản", "Loại tài khoản", "Tên ngân hàng"].map(
+                (placeholder, index) => (
+                  <Select
+                    allowClear
+                    key={index}
+                    options={accountGroup}
+                    style={{ width: 245 }}
+                    placeholder={placeholder}
+                    // onChange={handleFilterChange}
                   />
                 )
               )}
@@ -326,7 +417,12 @@ const Account: React.FC = () => {
             Thêm mới
           </Button>
         </div>
-        <Table columns={columns} dataSource={dataAccount} />
+        {loading ? (
+          <Spin spinning={loading} fullscreen />
+        ) : (
+          <Table columns={columns} dataSource={dataAccount} />
+        )}
+        {/* <Table columns={columns} dataSource={dataAccount} /> */}
       </div>
       <BaseModal
         open={isAddModalOpen}

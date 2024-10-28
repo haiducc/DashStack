@@ -7,7 +7,6 @@ export interface PhoneNumberModal {
 }
 
 export interface DataPhoneNumber {
-  id?: number;
   key: string;
   phone_number: string;
   network_operator: string;

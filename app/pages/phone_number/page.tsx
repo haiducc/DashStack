@@ -5,26 +5,27 @@ import { Button, Form, Input, Space, Table, Modal, Spin } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
 import BaseModal from "@/app/component/config/BaseModal";
-import { addPhoneNumber, getListPhone } from "@/app/services/phone";
-// import {
-//   DataPhoneNumber,
-//   PhoneNumberModal,
-// } from "@/app/component/modal/modalPhoneNumber";
+import { addPhoneNumber, deletePhone, getListPhone } from "@/app/services/phone";
+import { title } from "process";
+import {
+  DataPhoneNumber,
+  PhoneNumberModal,
+} from "@/app/component/modal/modalPhoneNumber";
 
-export interface PhoneNumberModal {
-  key: string;
-  number?: string;
-  com?: string;
-  notes?: string;
-  id?: number;
-}
+// export interface PhoneNumberModal {
+//   key: string;
+//   number?: string;
+//   com?: string;
+//   notes?: string;
+//   id?: number;
+// }
 
-export interface DataPhoneNumber {
-  key: string;
-  phone_number: string;
-  network_operator: string;
-  note?: string;
-}
+// export interface DataPhoneNumber {
+//   key: string;
+//   phone_number: string;
+//   network_operator: string;
+//   note?: string;
+// }
 
 const PhoneNumber: React.FC = () => {
   const [form] = Form.useForm();
@@ -59,46 +60,22 @@ const PhoneNumber: React.FC = () => {
     setLoading(true);
     try {
       const response = await addPhoneNumber({
-        number: formData.phone_number,
-        com: formData.network_operator,
-        notes: formData.note,
-        id: currentPhoneNumber ? currentPhoneNumber.id : 81,
-      });
-  
-      const data = await response.json();
-      console.log("Phản hồi API:", data);
-  
-      const newAccount: DataPhoneNumber = {
-        key: response.id || Date.now().toString(),
         phone_number: formData.phone_number,
         network_operator: formData.network_operator,
         note: formData.note,
-        // id: data.id || currentPhoneNumber?.id,
-      };
-  
-      setDataPhoneNumber((prev) => {
-        if (currentPhoneNumber) {
-          return prev.map((item) =>
-            item.key === currentPhoneNumber.key ? newAccount : item
-          );
-        }
-        return [...prev, newAccount];
+        key: formData.key,
       });
-    } catch (error) {
-      console.error("Lỗi:", error);
-    } finally {
       setAddModalOpen(false);
       form.resetFields();
       setCurrentPhoneNumber(null);
       setLoading(false);
       await fetchListPhone();
+    } catch (error) {
+      console.error("Lỗi:", error);
     }
   };
-  
 
   const handleEditPhoneNumber = (phone: DataPhoneNumber) => {
-    console.log(phone);
-    setCurrentPhoneNumber(phone);
     form.setFieldsValue({
       phone_number: phone.phone_number,
       network_operator: phone.network_operator,
@@ -110,15 +87,24 @@ const PhoneNumber: React.FC = () => {
 
   const handleDeletePhoneNumber = (phone: DataPhoneNumber) => {
     Modal.confirm({
-      title: "Xóa số điện thoại",
-      content: `Bạn có chắc chắn muốn xóa số điện thoại ${phone.phone_number}?`,
-      onOk: () => {
-        setDataPhoneNumber((prev) => prev.filter((a) => a.key !== phone.key));
+      title: "Xóa tài khoản ngân hàng",
+      content: `Bạn có chắc chắn chấp nhận xóa số điện thoại ${phone.phone_number} này không?`,
+      onOk: async () => {
+        setLoading(true);
+        try {
+          await deletePhone(phone.key);
+          await fetchListPhone();
+        } catch (error) {
+          console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+        } finally {
+          setLoading(false);
+        }
       },
     });
   };
 
   const columns = [
+    { title: "id", dataIndex: "key", key: "key"},
     { title: "Số điện thoại", dataIndex: "phone_number", key: "phone_number" },
     {
       title: "Nhà mạng",
@@ -203,6 +189,13 @@ const PhoneNumber: React.FC = () => {
           layout="vertical"
           className="flex flex-col gap-4 w-full"
         >
+          <Form.Item
+          hidden
+            label="key"
+            name="key"
+          >
+            <Input hidden />
+          </Form.Item>
           <Form.Item
             label="Số điện thoại"
             name="phone_number"

@@ -39,7 +39,7 @@ const Telegram = () => {
         })) || [];
       setDataTelegram(formattedData);
     } catch (error) {
-      console.error("Error fetching phone numbers:", error);
+      console.error("Error fetching:", error);
     }
   };
 

@@ -5,8 +5,11 @@ import { Button, Form, Input, Space, Table, Modal, Spin } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
 import BaseModal from "@/app/component/config/BaseModal";
-import { addPhoneNumber, deletePhone, getListPhone } from "@/app/services/phone";
-import { title } from "process";
+import {
+  addPhoneNumber,
+  deletePhone,
+  getListPhone,
+} from "@/app/services/phone";
 import {
   DataPhoneNumber,
   PhoneNumberModal,
@@ -34,10 +37,11 @@ const PhoneNumber: React.FC = () => {
     useState<PhoneNumberModal | null>(null);
   const [dataPhoneNumber, setDataPhoneNumber] = useState<DataPhoneNumber[]>([]);
   const [loading, setLoading] = useState(false);
+  const [globalTerm, setGlobalTerm] = useState("");
 
-  const fetchListPhone = async () => {
+  const fetchListPhone = async (globalTerm = "") => {
     try {
-      const response = await getListPhone(1, 20);
+      const response = await getListPhone(1, 20, globalTerm);
       const formattedData =
         response?.data?.source?.map((x: PhoneNumberModal) => ({
           key: x.id?.toString() || Date.now().toString(),
@@ -52,13 +56,14 @@ const PhoneNumber: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchListPhone();
-  }, []);
+    fetchListPhone(globalTerm);
+  }, [globalTerm]);
 
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
     setLoading(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const response = await addPhoneNumber({
         phone_number: formData.phone_number,
         network_operator: formData.network_operator,
@@ -103,8 +108,45 @@ const PhoneNumber: React.FC = () => {
     });
   };
 
+  const handleSearch = async (value: string) => {
+    setGlobalTerm(value);
+    try {
+      if (value.trim() === "") {
+        const data = await getListPhone(1, 20);
+        const formattedData =
+          data?.data?.source?.map((x: DataPhoneNumber) => ({
+            key: x.key,
+            phone_number: x.phone_number || "",
+            network_operator: x.network_operator,
+            note: x.note,
+          })) || [];
+
+        setDataPhoneNumber(formattedData);
+      } else {
+        // Nếu có giá trị tìm kiếm, gọi API với giá trị đó
+        const data = await getListPhone(1, 20, value);
+        const formattedData =
+          data?.data?.source?.map((x: DataPhoneNumber) => ({
+            key: x.key,
+            phone_number: x.phone_number,
+            network_operator: x.network_operator,
+            note: x.note,
+          })) || [];
+
+        setDataPhoneNumber(formattedData);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm tài khoản ngân hàng:", error);
+    }
+  };
+
+  // fetch để gọi ra danh sách theo value search
+  useEffect(() => {
+    fetchListPhone();
+  }, []);
+
   const columns = [
-    { title: "id", dataIndex: "key", key: "key"},
+    { title: "id", dataIndex: "key", key: "key" },
     { title: "Số điện thoại", dataIndex: "phone_number", key: "phone_number" },
     {
       title: "Nhà mạng",
@@ -151,9 +193,13 @@ const PhoneNumber: React.FC = () => {
               height: 38,
               marginRight: 15,
             }}
-            onPressEnter={(e) =>
-              console.log("Search value:", e.currentTarget.value)
-            }
+            onChange={(e) => {
+              const value = e.target.value;
+              handleSearch(value);
+            }}
+            onPressEnter={async (e) => {
+              handleSearch(e.currentTarget.value);
+            }}
           />
           <Button
             className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
@@ -189,11 +235,7 @@ const PhoneNumber: React.FC = () => {
           layout="vertical"
           className="flex flex-col gap-4 w-full"
         >
-          <Form.Item
-          hidden
-            label="key"
-            name="key"
-          >
+          <Form.Item hidden label="key" name="key">
             <Input hidden />
           </Form.Item>
           <Form.Item

@@ -1,86 +1,95 @@
 "use client";
 
-import Header from "@/app/component/Header";
-import { Button, Form, Input, Space, Table, Modal, Spin } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
-import BaseModal from "@/app/component/config/BaseModal";
-import { DataAccountGroup } from "@/app/component/modal/modalAccountGroup";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import Header from "@/app/component/Header";
+import { Button, Form, Input, Modal, Space, Spin, Table } from "antd";
 import {
-  addAccountGroup,
-  deleteAccountGroup,
-  getAccountGroup,
-} from "@/app/services/accountGroup";
+  addTelegram,
+  deleteTelegram,
+  getListTelegram,
+} from "@/app/services/telegram";
+import BaseModal from "@/app/component/config/BaseModal";
 
-const PhoneNumber: React.FC = () => {
+export interface dataTelegramModal {
+  id: number;
+  name: string;
+  chatId: string;
+  notes: string;
+}
+
+const Telegram = () => {
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [currentAccount, setCurrentAccount] = useState<DataAccountGroup | null>(
-    null
-  );
-  const [dataAccountGroup, setDataAccountGroup] = useState<DataAccountGroup[]>(
-    []
-  );
   const [loading, setLoading] = useState(false);
+  const [currentTelegram, setCurrentTelegram] =
+    useState<dataTelegramModal | null>(null);
+  const [dataTelegram, setDataTelegram] = useState<dataTelegramModal[]>([]);
   const [globalTerm, setGlobalTerm] = useState("");
 
-  const fetchAccountGroup = async (globalTerm = "") => {
+  const fetchTelegram = async (globalTerm = "") => {
     try {
-      const response = await getAccountGroup(1, 20, globalTerm);
+      const response = await getListTelegram(1, 20, globalTerm);
       const formattedData =
-        response?.data?.source?.map((x: DataAccountGroup) => ({
+        response?.data?.source?.map((x: dataTelegramModal) => ({
           id: x.id?.toString() || Date.now().toString(),
-          fullName: x.fullName,
+          name: x.name,
+          chatId: x.chatId,
           notes: x.notes,
         })) || [];
-      setDataAccountGroup(formattedData);
+      setDataTelegram(formattedData);
     } catch (error) {
       console.error("Error fetching phone numbers:", error);
     }
   };
 
   useEffect(() => {
-    fetchAccountGroup(globalTerm);
+    fetchTelegram(globalTerm);
   }, [globalTerm]);
 
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
     setLoading(true);
+
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const response = await addAccountGroup({
+      const response = await addTelegram({
         id: formData.id,
-        fullName: formData.fullName,
+        name: formData.name,
+        chatId: formData.chatId,
         notes: formData.notes,
       });
+
       setAddModalOpen(false);
       form.resetFields();
-      setCurrentAccount(null);
+      setCurrentTelegram(null);
       setLoading(false);
-      await fetchAccountGroup();
+      await fetchTelegram();
     } catch (error) {
       console.error("Lỗi:", error);
+      setLoading(false);
     }
   };
 
-  const handleEditAccountGroup = (accountGroup: DataAccountGroup) => {
+  const handleEditTele = (x: dataTelegramModal) => {
     form.setFieldsValue({
-      id: accountGroup.id,
-      fullName: accountGroup.fullName,
-      notes: accountGroup.notes,
+      id: x.id,
+      name: x.name,
+      chatId: x.chatId,
+      notes: x.notes,
     });
     setAddModalOpen(true);
   };
 
-  const handleDeleteAccountGroup = (x: DataAccountGroup) => {
+  const handleDeleteTele = (x: dataTelegramModal) => {
     Modal.confirm({
-      title: "Xóa tài khoản ngân hàng",
-      content: `Bạn có chắc chắn chấp nhận xóa nhóm tài khoản ${x.fullName} này không?`,
+      title: "Xóa nhóm telegram",
+      content: `Bạn có chắc chắn chấp nhận xóa nhóm telegram ${x.name} này không?`,
       onOk: async () => {
         setLoading(true);
         try {
-          await deleteAccountGroup(x.id);
-          await fetchAccountGroup();
+          await deleteTelegram(x.id);
+          await fetchTelegram();
         } catch (error) {
           console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
         } finally {
@@ -94,56 +103,54 @@ const PhoneNumber: React.FC = () => {
     setGlobalTerm(value);
     try {
       if (value.trim() === "") {
-        const data = await getAccountGroup(1, 20);
+        const data = await getListTelegram(1, 20);
         const formattedData =
-          data?.data?.source?.map((x: DataAccountGroup) => ({
+          data?.data?.source?.map((x: dataTelegramModal) => ({
             id: x.id,
-            fullName: x.fullName || "",
+            name: x.name,
+            chatId: x.chatId,
             notes: x.notes,
           })) || [];
 
-        setDataAccountGroup(formattedData);
+        setDataTelegram(formattedData);
       } else {
         // Nếu có giá trị tìm kiếm, gọi API với giá trị đó
-        const data = await getAccountGroup(1, 20, value);
+        const data = await getListTelegram(1, 20, value);
         const formattedData =
-          data?.data?.source?.map((x: DataAccountGroup) => ({
+          data?.data?.source?.map((x: dataTelegramModal) => ({
             id: x.id,
-            fullName: x.fullName || "",
+            name: x.name,
+            chatId: x.chatId,
             notes: x.notes,
           })) || [];
 
-          setDataAccountGroup(formattedData);
+        setDataTelegram(formattedData);
       }
     } catch (error) {
       console.error("Lỗi khi tìm kiếm tài khoản ngân hàng:", error);
     }
   };
 
-  // fetch để gọi ra danh sách theo value search
-  useEffect(() => {
-    fetchAccountGroup();
-  }, []);
-
   const columns = [
     { title: "id", dataIndex: "id", key: "id" },
-    { title: "Tên nhóm tài khoản", dataIndex: "fullName", key: "fullName" },
+    { title: "Tên nhóm telegram", dataIndex: "name", key: "name" },
+    { title: "Id nhóm telegram", dataIndex: "chatId", key: "chatId" },
     { title: "Ghi chú", dataIndex: "notes", key: "notes" },
     {
       title: "Chức năng",
       key: "action",
-      render: (record: DataAccountGroup) => (
+      render: (record: dataTelegramModal) => (
         <Space size="middle">
           <Button
             icon={<EditOutlined />}
-            onClick={() => handleEditAccountGroup(record)}
+            onClick={() => handleEditTele(record)}
           >
             Chỉnh sửa
           </Button>
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDeleteAccountGroup(record)}
+            onClick={() => handleDeleteTele(record)}
           >
             Xóa
           </Button>
@@ -157,7 +164,7 @@ const PhoneNumber: React.FC = () => {
       <Header />
       <div className="px-[30px]">
         <div className="text-[32px] font-bold py-5">
-          Danh sách nhóm tài khoản
+          Danh sách nhóm telegram
         </div>
         <div className="flex justify-between items-center mb-7">
           <Input
@@ -179,7 +186,7 @@ const PhoneNumber: React.FC = () => {
           <Button
             className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
             onClick={() => {
-              setCurrentAccount(null);
+              setCurrentTelegram(null);
               form.resetFields();
               setAddModalOpen(true);
             }}
@@ -190,7 +197,7 @@ const PhoneNumber: React.FC = () => {
         {loading ? (
           <Spin spinning={loading} fullscreen />
         ) : (
-          <Table columns={columns} dataSource={dataAccountGroup} />
+          <Table columns={columns} dataSource={dataTelegram} />
         )}
       </div>
       <BaseModal
@@ -200,7 +207,7 @@ const PhoneNumber: React.FC = () => {
           form.resetFields();
         }}
         title={
-          currentAccount
+          currentTelegram
             ? "Chỉnh sửa nhóm tài khoản"
             : "Thêm mới nhóm tài khoản"
         }
@@ -214,13 +221,25 @@ const PhoneNumber: React.FC = () => {
             <Input hidden />
           </Form.Item>
           <Form.Item
-            label="Tên nhóm tài khoản"
-            name="fullName"
+            label="Tên nhóm telegram"
+            name="name"
             rules={[
-              { required: true, message: "Vui lòng nhập tên nhóm tài khoản!" },
+              { required: true, message: "Vui lòng nhập tên nhóm telegram!" },
             ]}
           >
-            <Input placeholder="Nhập nhóm tài khoản" />
+            <Input placeholder="Tên nhóm telegram" />
+          </Form.Item>
+          <Form.Item
+            label="ID nhóm telegram"
+            name="chatId"
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng nhập tên ID nhóm telegram!",
+              },
+            ]}
+          >
+            <Input placeholder="Nhập ID nhóm telegram" />
           </Form.Item>
           <Form.Item label="Ghi chú" name="notes">
             <Input.TextArea rows={4} placeholder="Nhập ghi chú" />
@@ -238,7 +257,7 @@ const PhoneNumber: React.FC = () => {
               onClick={handleAddConfirm}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
             >
-              {currentAccount ? "Cập nhật" : "Thêm mới"}
+              {currentTelegram ? "Cập nhật" : "Thêm mới"}
             </Button>
           </div>
         </Form>
@@ -247,4 +266,4 @@ const PhoneNumber: React.FC = () => {
   );
 };
 
-export default PhoneNumber;
+export default Telegram;

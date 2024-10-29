@@ -1,12 +1,13 @@
 import { DataPhoneNumber } from "../component/modal/modalPhoneNumber";
 import { apiClient } from "./base_api";
 
-export const getListPhone = async (pageIndex: number, pageSize: number) => {
+export const getListPhone = async (pageIndex: number, pageSize: number, globalTerm?: string) => {
   try {
     const res = await apiClient.get(`/phone-api/find`, {
       params: {
         pageIndex: pageIndex,
         pageSize: pageSize,
+        globalTerm:globalTerm
       },
     });
     return res.data;

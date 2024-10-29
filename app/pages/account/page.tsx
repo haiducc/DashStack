@@ -192,6 +192,7 @@ const Account: React.FC = () => {
     const formData = form.getFieldsValue();
     setLoading(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const res = await addBankAccounts({
         key: formData.key,
         bank: formData.bank,
@@ -206,36 +207,6 @@ const Account: React.FC = () => {
         branchSystem: formData.branchSystem,
         groupTeam: formData.groupTeam,
       });
-      // Gọi API thêm tài khoản ngân hàng
-      // const result = await addBankAccounts({
-      //   bankId: formData.bank,
-      //   accountNumber: formData.account_number,
-      //   fullName: formData.account_holder,
-      //   notes: formData.note,
-      //   phoneId: formData.phone,
-      //   SelectedAccountGroups: formData.SelectedAccountGroups,
-      //   typeAccount: formData.type_account || "Tài khoản cá nhân",
-      //   TransactionSource: formData.TransactionSource,
-      //   bank: formData.bank,
-      // });
-
-      // Thêm tài khoản mới vào danh sách
-      // const newAccount = {
-      //   key: result.id || Date.now().toString(),
-      //   bank: formData.bank,
-      //   account_number: formData.account_number,
-      //   account_holder: formData.account_holder,
-      //   phone: formData.phone,
-      //   SelectedAccountGroups: formData.SelectedAccountGroups,
-      //   type_account: formData.type_account,
-      //   note: formData.note,
-      //   TransactionSource: formData.TransactionSource,
-      //   groupSystem: formData.groupSystem,
-      //   branchSystem: formData.branchSystem,
-      //   groupTeam: formData.groupTeam,
-      // };
-
-      // setDataAccount((prev) => [...prev, newAccount]);
       setAddModalOpen(false);
       form.resetFields();
       setCurrentAccount(null);

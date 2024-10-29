@@ -28,3 +28,17 @@ export const addPhoneNumber = async (phoneData: DataPhoneNumber) => {
     throw error;
   }
 };
+
+export const deletePhone = async (id: number) => {
+  try {
+    const res = await apiClient.get(`/phone-api/delete`, {
+      params: {
+        id: id,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi gọi API:", error);
+    throw error;
+  }
+};

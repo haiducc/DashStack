@@ -190,25 +190,10 @@ const Account: React.FC = () => {
 
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
-    console.log("Form Data:", formData);
     setLoading(true);
     try {
-      // Gọi API thêm tài khoản ngân hàng
-      const result = await addBankAccounts({
-        bankId: formData.bank,
-        accountNumber: formData.account_number,
-        fullName: formData.account_holder,
-        notes: formData.note,
-        phoneId: formData.phone,
-        SelectedAccountGroups: formData.SelectedAccountGroups,
-        typeAccount: formData.type_account || "Tài khoản cá nhân",
-        TransactionSource: formData.TransactionSource,
-        bank: formData.bank,
-      });
-
-      // Thêm tài khoản mới vào danh sách
-      const newAccount = {
-        key: result.id || Date.now().toString(),
+      const res = await addBankAccounts({
+        key: formData.key,
         bank: formData.bank,
         account_number: formData.account_number,
         account_holder: formData.account_holder,
@@ -220,23 +205,63 @@ const Account: React.FC = () => {
         groupSystem: formData.groupSystem,
         branchSystem: formData.branchSystem,
         groupTeam: formData.groupTeam,
-      };
+      });
+      // Gọi API thêm tài khoản ngân hàng
+      // const result = await addBankAccounts({
+      //   bankId: formData.bank,
+      //   accountNumber: formData.account_number,
+      //   fullName: formData.account_holder,
+      //   notes: formData.note,
+      //   phoneId: formData.phone,
+      //   SelectedAccountGroups: formData.SelectedAccountGroups,
+      //   typeAccount: formData.type_account || "Tài khoản cá nhân",
+      //   TransactionSource: formData.TransactionSource,
+      //   bank: formData.bank,
+      // });
 
-      setDataAccount((prev) => [...prev, newAccount]);
-      await fetchAccounts();
-    } catch (error) {
-      console.error("Lỗi khi thêm tài khoản ngân hàng:", error);
-    } finally {
+      // Thêm tài khoản mới vào danh sách
+      // const newAccount = {
+      //   key: result.id || Date.now().toString(),
+      //   bank: formData.bank,
+      //   account_number: formData.account_number,
+      //   account_holder: formData.account_holder,
+      //   phone: formData.phone,
+      //   SelectedAccountGroups: formData.SelectedAccountGroups,
+      //   type_account: formData.type_account,
+      //   note: formData.note,
+      //   TransactionSource: formData.TransactionSource,
+      //   groupSystem: formData.groupSystem,
+      //   branchSystem: formData.branchSystem,
+      //   groupTeam: formData.groupTeam,
+      // };
+
+      // setDataAccount((prev) => [...prev, newAccount]);
       setAddModalOpen(false);
       form.resetFields();
       setCurrentAccount(null);
       setLoading(false);
+      await fetchAccounts();
+    } catch (error) {
+      console.error("Lỗi khi thêm tài khoản ngân hàng:", error);
     }
   };
 
   const handleEditAccount = (account: DataAccount) => {
-    setCurrentAccount(account);
-    form.setFieldsValue(account);
+    // setCurrentAccount(account);
+    form.setFieldsValue({
+      key: account.key,
+      bank: account.bank,
+      account_number: account.account_number,
+      account_holder: account.account_holder,
+      phone: account.phone,
+      SelectedAccountGroups: account.SelectedAccountGroups,
+      type_account: account.type_account,
+      note: account.note,
+      TransactionSource: account.TransactionSource,
+      groupSystem: account.groupSystem,
+      branchSystem: account.branchSystem,
+      groupTeam: account.groupTeam,
+    });
     setAddModalOpen(true);
   };
 
@@ -312,6 +337,7 @@ const Account: React.FC = () => {
   };
 
   const columns = [
+    { title: "id", dataIndex: "key", key: "key" },
     { title: "Ngân hàng", dataIndex: "bank", key: "bank" },
     {
       title: "Số tài khoản",
@@ -438,6 +464,9 @@ const Account: React.FC = () => {
           layout="vertical"
           className="flex flex-col gap-1 w-full"
         >
+          <Form.Item label="key" name="key">
+            <Input />
+          </Form.Item>
           <Form.Item
             label="Chọn loại tài khoản"
             name="type_account"

@@ -1,4 +1,4 @@
-import { DataPhoneNumber } from "../component/modal/modalPhoneNumber";
+import { PhoneNumberModal } from "../pages/phone_number/page";
 import { apiClient } from "./base_api";
 
 export const getListPhone = async (pageIndex: number, pageSize: number, globalTerm?: string) => {
@@ -17,7 +17,7 @@ export const getListPhone = async (pageIndex: number, pageSize: number, globalTe
   }
 };
 
-export const addPhoneNumber = async (phoneData: DataPhoneNumber) => {
+export const addPhoneNumber = async (phoneData: PhoneNumberModal) => {
   try {
     const res = await apiClient.post(
       `/phone-api/add-or-update`,

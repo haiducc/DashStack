@@ -1,69 +1,60 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Header from "@/app/component/Header";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import Header from "@/app/component/Header";
 import { Button, Form, Input, Modal, Select, Space, Spin, Table } from "antd";
 import {
-  addTelegramIntergration,
-  deleteTelegramIntergration,
-  getListTelegramIntergration,
-} from "@/app/services/telegram_intergration_list";
+  addSheetIntergration,
+  deleteSheetIntergration,
+  getListSheetIntergration,
+} from "@/app/services/sheet_intergration";
 import BaseModal from "@/app/component/config/BaseModal";
 import { fetchBankAccounts } from "@/app/services/bankAccount";
-import { getListTelegram } from "@/app/services/telegram";
+import { getListSheet } from "@/app/services/sheet";
 
-export interface ListTelegramIntegration {
-  chatName: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  groupChatId: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bankAccountId: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bankId: any;
+export interface ListSheetIntegration {
   id: number;
   code: string;
-  accountNumber: number;
+  accountNumber: string;
   fullName: string;
-  chatId: string;
-  name: string;
+  linkUrl: string;
   transType: string;
+  bankAccountId: string;
 }
 
-const TelegramIntegration = () => {
+const SheetIntergration = () => {
   const [form] = Form.useForm();
-  const [dataTelegramIntegration, setDataTelegramIntegration] = useState<
-    ListTelegramIntegration[]
+  const [dataSheetIntegration, setDataSheetIntegration] = useState<
+    ListSheetIntegration[]
   >([]);
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [currentTelegram, setCurrentTelegram] =
-    useState<ListTelegramIntegration | null>(null);
-  const [banks, setBanks] = useState([]);
-  const [telegram, setTelegram] = useState([]);
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [globalTerm, setGlobalTerm] = useState("");
+  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [currentSheet, setCurrentSheet] = useState<ListSheetIntegration | null>(
+    null
+  );
+  const [banks, setBanks] = useState([]);
+  const [sheet, setSheet] = useState([]);
 
-  const fetchListTelegramIntegration = async (globalTerm = "") => {
+  const fetchSheetIntegration = async (globalTerm = "") => {
     setLoading(true);
     try {
-      const response = await getListTelegramIntergration(1, 50, globalTerm);
-      console.log(response, "bankAccount");
+      const response = await getListSheetIntergration(1, 50, globalTerm);
+      console.log(response, "getListSheetIntergration");
       const formattedData =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         response?.data?.source?.map((item: any) => ({
           id: item.id?.toString() || Date.now().toString(), // id
-          BankAccountId: item.bankAccount.id, // id tài khoản ngân hàng
-          groupChatId: item.groupChatId, // id nhóm chat tele
-          code: item.bank.code, // mã ngân hàng
+          code: item.bank.code, // Mã ngân hàng
           accountNumber: item.bankAccount.accountNumber, // stk
           fullName: item.bankAccount.fullName, // tên chủ tk
-          chatId: item.groupChat.chatId, // mã nhóm chat tele
-          name: item.groupChat.name, // tên nhóm chat
-          transType: item.transType, // loại giao dịch
-          bankId: item.bank.name,
-          chatName: item.groupChat.name,
+          linkUrl: item.sheetDetail.linkUrl, // link url
+          transType: item.transType, // status loại giao dịch
+          bankAccountId: item.bankAccount.id,
         })) || [];
-      setDataTelegramIntegration(formattedData);
+      setDataSheetIntegration(formattedData);
     } catch (error) {
       console.error("Error fetching:", error);
     } finally {
@@ -72,7 +63,7 @@ const TelegramIntegration = () => {
   };
 
   useEffect(() => {
-    fetchListTelegramIntegration(globalTerm);
+    fetchSheetIntegration(globalTerm);
   }, [globalTerm]);
 
   const genBankData = async () => {
@@ -91,16 +82,16 @@ const TelegramIntegration = () => {
     }
   };
 
-  const genTelegramData = async () => {
+  const genSheetData = async () => {
     try {
-      const dataTelegram = await getListTelegram(1, 50);
+      const dataTelegram = await getListSheet(1, 50);
       const formattedTelegram =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dataTelegram?.data?.source?.map((tele: any) => ({
           value: tele.id,
           label: tele.name,
         })) || [];
-      setTelegram(formattedTelegram);
+      setSheet(formattedTelegram);
     } catch (error) {
       console.error("Error fetching:", error);
     }
@@ -111,43 +102,34 @@ const TelegramIntegration = () => {
     setLoading(true);
 
     try {
-      if (currentTelegram) {
-        const response = await addTelegramIntergration({
+      if (currentSheet) {
+        const response = await addSheetIntergration({
+          id: formData.id?.toString() || Date.now().toString(), // id
+          code: formData.code, // Mã ngân hàng
+          accountNumber: formData.accountNumber, // stk
+          fullName: formData.fullName, // tên chủ tk
+          linkUrl: formData.linkUrl, // link url
+          transType: formData.transType, // status loại giao dịch
           bankAccountId: formData.accountNumber,
-          id: currentTelegram.id,
-          groupChatId: formData.groupChatId,
-          transType: formData.transType,
-          accountNumber: formData.accountNumber,
-          chatName: "",
-          bankId: undefined,
-          code: "",
-          fullName: "",
-          chatId: "",
-          name: "",
         });
         console.log("Dữ liệu đã được cập nhật:", response);
       } else {
-        // Thêm mới bản ghi
-        const response = await addTelegramIntergration({
-          bankAccountId: formData.accountNumber,
-          id: formData.id, // id của bản ghi
-          groupChatId: formData.groupChatId, // id nhóm chat trên Telegram
-          transType: formData.transType,
-          accountNumber: formData.accountNumber,
-          chatName: "",
-          bankId: undefined,
-          code: "",
-          fullName: "",
-          chatId: "",
-          name: "",
+        const response = await addSheetIntergration({
+          id: formData.id, // id
+          code: formData.code, // Mã ngân hàng
+          accountNumber: formData.accountNumber, // stk
+          fullName: formData.fullName, // tên chủ tk
+          linkUrl: formData.linkUrl, // link url
+          transType: formData.transType, // status loại giao dịch
+          bankAccountId: formData.accountNumber, // hình như không nhầm thì là lưu stk vào trường có tên là bankAccountId
         });
         console.log("Dữ liệu đã được thêm mới:", response);
       }
 
       setAddModalOpen(false);
       form.resetFields();
-      setCurrentTelegram(null);
-      fetchListTelegramIntegration();
+      setCurrentSheet(null);
+      fetchSheetIntegration();
     } catch (error) {
       console.error("Lỗi:", error);
     } finally {
@@ -155,27 +137,30 @@ const TelegramIntegration = () => {
     }
   };
 
-  const handleEdit = (record: ListTelegramIntegration) => {
+  const handleEdit = (record: ListSheetIntegration) => {
     console.log("data edit", record);
-    setCurrentTelegram(record);
+    setCurrentSheet(record);
     form.setFieldsValue({
-      accountNumber: record.bankAccountId, // Sử dụng bankAccountId để đảm bảo khớp với trường trong form
-      id: record.id, // id của bản ghi
-      groupChatId: record.groupChatId, // id nhóm chat trên Telegram
-      transType: record.transType,
+      id: record.id?.toString() || Date.now().toString(), // id
+      code: record.code, // Mã ngân hàng
+      accountNumber: record.accountNumber, // stk
+      fullName: record.fullName, // tên chủ tk
+      linkUrl: record.linkUrl, // link url
+      transType: record.transType, // status loại giao dịch
+      bankAccountId: record.accountNumber,
     });
     setAddModalOpen(true);
   };
 
-  const handleDelete = (x: ListTelegramIntegration) => {
+  const handleDelete = (x: ListSheetIntegration) => {
     Modal.confirm({
-      title: "Xóa nhóm telegram",
+      title: "Xóa nhóm tích hợp trang tính",
       content: `Bạn có chắc chắn chấp nhận xóa nhóm telegram này không?`,
       onOk: async () => {
         setLoading(true);
         try {
-          await deleteTelegramIntergration(x.id);
-          await fetchListTelegramIntegration();
+          await deleteSheetIntergration(x.id);
+          await fetchSheetIntegration();
         } catch (error) {
           console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
         } finally {
@@ -189,42 +174,33 @@ const TelegramIntegration = () => {
     setGlobalTerm(value);
     try {
       if (value.trim() === "") {
-        const data = await getListTelegram(1, 20);
+        const data = await getListSheetIntergration(1, 20);
         const formattedData =
-          data?.data?.source?.map((x: ListTelegramIntegration) => ({
+          data?.data?.source?.map((x: ListSheetIntegration) => ({
+            id: x.id?.toString() || Date.now().toString(), // id
+            code: x.code, // Mã ngân hàng
+            accountNumber: x.accountNumber, // stk
+            fullName: x.fullName, // tên chủ tk
+            linkUrl: x.linkUrl, // link url
+            transType: x.transType, // status loại giao dịch
             bankAccountId: x.accountNumber,
-            id: x.id, // id của bản ghi
-            groupChatId: x.groupChatId, // id nhóm chat trên Telegram
-            transType: x.transType,
-            accountNumber: x.accountNumber,
-            chatName: "",
-            bankId: undefined,
-            code: "",
-            fullName: "",
-            chatId: "",
-            name: "",
           })) || [];
 
-        setDataTelegramIntegration(formattedData);
+        setDataSheetIntegration(formattedData);
       } else {
-        // Nếu có giá trị tìm kiếm, gọi API với giá trị đó
-        const data = await getListTelegram(1, 20, value);
+        const data = await getListSheetIntergration(1, 20, value);
         const formattedData =
-          data?.data?.source?.map((x: ListTelegramIntegration) => ({
+          data?.data?.source?.map((x: ListSheetIntegration) => ({
+            id: x.id?.toString() || Date.now().toString(), // id
+            code: x.code, // Mã ngân hàng
+            accountNumber: x.accountNumber, // stk
+            fullName: x.fullName, // tên chủ tk
+            linkUrl: x.linkUrl, // link url
+            transType: x.transType, // status loại giao dịch
             bankAccountId: x.accountNumber,
-            id: x.id, // id của bản ghi
-            groupChatId: x.groupChatId, // id nhóm chat trên Telegram
-            transType: x.transType,
-            accountNumber: x.accountNumber,
-            chatName: "",
-            bankId: undefined,
-            code: "",
-            fullName: "",
-            chatId: "",
-            name: "",
           })) || [];
 
-        setDataTelegramIntegration(formattedData);
+        setDataSheetIntegration(formattedData);
       }
     } catch (error) {
       console.error("Lỗi khi tìm kiếm tài khoản ngân hàng:", error);
@@ -232,24 +208,16 @@ const TelegramIntegration = () => {
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id", hidden: true },
+    { title: "ID", dataIndex: "id", key: "id" },
     {
-      title: "BankAccountId",
-      dataIndex: "BankAccountId",
-      key: "BankAccountId",
-      hidden: true,
-    },
-    {
-      title: "groupChatId",
-      dataIndex: "groupChatId",
-      key: "groupChatId",
-      hidden: true,
+      title: "bankAccountId",
+      dataIndex: "bankAccountId",
+      key: "bankAccountId",
     },
     { title: "Ngân hàng", dataIndex: "code", key: "code" },
     { title: "Số tài khoản", dataIndex: "accountNumber", key: "accountNumber" },
     { title: "Tên chủ tài khoản", dataIndex: "fullName", key: "fullName" },
-    { title: "ID nhóm telegram", dataIndex: "chatId", key: "chatId" },
-    { title: "Tên nhóm telegram", dataIndex: "name", key: "name" },
+    { title: "Tên trang tính", dataIndex: "linkUrl", key: "linkUrl" },
     {
       title: "Loại giao dịch",
       dataIndex: "transType",
@@ -270,7 +238,7 @@ const TelegramIntegration = () => {
       title: "Chức năng",
       key: "action",
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      render: (record: ListTelegramIntegration) => (
+      render: (record: ListSheetIntegration) => (
         <Space size="middle">
           <Button onClick={() => handleEdit(record)} icon={<EditOutlined />}>
             Chỉnh sửa
@@ -292,7 +260,7 @@ const TelegramIntegration = () => {
       <Header />
       <div className="px-[30px]">
         <div className="text-[32px] font-bold py-5">
-          Danh sách tích hợp telegram
+          Danh sách tích hợp trang tính
         </div>
         <div className="flex justify-between items-center mb-7">
           <div>
@@ -331,7 +299,7 @@ const TelegramIntegration = () => {
           <Button
             className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
             onClick={() => {
-              setCurrentTelegram(null);
+              setCurrentSheet(null);
               form.resetFields();
               setAddModalOpen(true);
             }}
@@ -344,7 +312,7 @@ const TelegramIntegration = () => {
         ) : (
           <Table
             columns={columns}
-            dataSource={dataTelegramIntegration}
+            dataSource={dataSheetIntegration}
             rowKey="id"
           />
         )}
@@ -356,9 +324,9 @@ const TelegramIntegration = () => {
           form.resetFields();
         }}
         title={
-          currentTelegram
-            ? "Chỉnh sửa nhóm tài khoản"
-            : "Thêm mới nhóm tài khoản"
+          currentSheet
+            ? "Chỉnh sửa tích hợp trang tính"
+            : "Thêm mới tích hợp trang tính"
         }
       >
         <Form
@@ -366,17 +334,14 @@ const TelegramIntegration = () => {
           layout="vertical"
           className="flex flex-col gap-1 w-full"
         >
-          <Form.Item hidden label="id" name="id">
-            <Input hidden />
+          <Form.Item label="id" name="id">
+            <Input disabled />
           </Form.Item>
-          <Form.Item hidden label="BankAccountId" name="BankAccountId">
-            <Input hidden />
+          <Form.Item label="bankAccountId" name="bankAccountId">
+            <Input disabled />
           </Form.Item>
-          <Form.Item hidden label="chatId" name="chatId">
-            <Input hidden />
-          </Form.Item>
-          <Form.Item hidden label="groupChatId" name="groupChatId">
-            <Input hidden />
+          <Form.Item label="groupChatId" name="groupChatId">
+            <Input disabled />
           </Form.Item>
           <Form.Item
             label="Tài khoản ngân hàng"
@@ -390,16 +355,16 @@ const TelegramIntegration = () => {
             />
           </Form.Item>
           <Form.Item
-            label="Chọn nhóm telegram"
-            name="groupChatId"
+            label="Chọn nhóm trang tính"
+            name="linkUrl"
             rules={[
-              { required: true, message: "Vui lòng chọn nhóm telegram!" },
+              { required: true, message: "Vui lòng chọn nhóm trang tính!" },
             ]}
           >
             <Select
-              placeholder="Chọn nhóm telegram"
-              onFocus={genTelegramData}
-              options={telegram}
+              placeholder="Chọn nhóm trang tính"
+              onFocus={genSheetData}
+              options={sheet}
             />
           </Form.Item>
           <Form.Item
@@ -431,7 +396,7 @@ const TelegramIntegration = () => {
               onClick={handleAddConfirm}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
             >
-              {currentTelegram ? "Cập nhật" : "Thêm mới"}
+              {currentSheet ? "Cập nhật" : "Thêm mới"}
             </Button>
           </div>
         </Form>
@@ -440,4 +405,4 @@ const TelegramIntegration = () => {
   );
 };
 
-export default TelegramIntegration;
+export default SheetIntergration;

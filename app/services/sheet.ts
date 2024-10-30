@@ -1,13 +1,13 @@
-import { dataTelegramModal } from "../pages/telegram/page";
+import { dataSheetModal } from "../pages/sheet/page";
 import { apiClient } from "./base_api";
 
-export const getListTelegram = async (
+export const getListSheet = async (
   pageIndex: number,
   pageSize: number,
   globalTerm?: string
 ) => {
   try {
-    const res = await apiClient.get(`/group-chat-api/find`, {
+    const res = await apiClient.get(`/sheet-api/find`, {
       params: {
         pageIndex: pageIndex,
         pageSize: pageSize,
@@ -21,11 +21,9 @@ export const getListTelegram = async (
   }
 };
 
-export const addTelegram = async (tele: dataTelegramModal) => {
+export const addSheet = async (tele: dataSheetModal) => {
   try {
-    const res = await apiClient.post(`/group-chat-api/add-or-update`, tele, {
-      timeout: 30000,
-    });
+    const res = await apiClient.post(`/sheet-api/add-or-update`, tele);
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);
@@ -33,9 +31,9 @@ export const addTelegram = async (tele: dataTelegramModal) => {
   }
 };
 
-export const deleteTelegram = async (id: number) => {
+export const deleteSheet = async (id: number) => {
   try {
-    const res = await apiClient.get(`/group-chat-api/delete`, {
+    const res = await apiClient.get(`sheet-api/delete`, {
       params: {
         id: id,
       },

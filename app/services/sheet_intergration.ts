@@ -1,13 +1,13 @@
-import { dataTelegramModal } from "../pages/telegram/page";
+import { ListSheetIntegration } from "../pages/sheet_intergration/page";
 import { apiClient } from "./base_api";
 
-export const getListTelegram = async (
+export const getListSheetIntergration = async (
   pageIndex: number,
   pageSize: number,
   globalTerm?: string
 ) => {
   try {
-    const res = await apiClient.get(`/group-chat-api/find`, {
+    const res = await apiClient.get(`/sheet-api/map/find`, {
       params: {
         pageIndex: pageIndex,
         pageSize: pageSize,
@@ -21,11 +21,12 @@ export const getListTelegram = async (
   }
 };
 
-export const addTelegram = async (tele: dataTelegramModal) => {
+export const addSheetIntergration = async (sheet: ListSheetIntegration) => {
   try {
-    const res = await apiClient.post(`/group-chat-api/add-or-update`, tele, {
-      timeout: 30000,
-    });
+    const res = await apiClient.post(
+      `/group-chat-api/map/add-or-update`,
+      sheet
+    );
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);
@@ -33,9 +34,9 @@ export const addTelegram = async (tele: dataTelegramModal) => {
   }
 };
 
-export const deleteTelegram = async (id: number) => {
+export const deleteSheetIntergration = async (id: number) => {
   try {
-    const res = await apiClient.get(`/group-chat-api/delete`, {
+    const res = await apiClient.get(`/sheet-api/map/delete`, {
       params: {
         id: id,
       },

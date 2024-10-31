@@ -20,7 +20,8 @@ export interface ListSheetIntegration {
   fullName: string;
   linkUrl: string;
   transType: string;
-  bankAccountId: string;
+  bankAccountId: number;
+  sheetId: number;
 }
 
 const SheetIntergration = () => {
@@ -53,6 +54,7 @@ const SheetIntergration = () => {
           linkUrl: item.sheetDetail.linkUrl, // link url
           transType: item.transType, // status loại giao dịch
           bankAccountId: item.bankAccount.id,
+          sheetId: item.sheetDetail.linkUrl, // id của sheet
         })) || [];
       setDataSheetIntegration(formattedData);
     } catch (error) {
@@ -87,9 +89,9 @@ const SheetIntergration = () => {
       const dataTelegram = await getListSheet(1, 50);
       const formattedTelegram =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        dataTelegram?.data?.source?.map((tele: any) => ({
-          value: tele.id,
-          label: tele.name,
+        dataTelegram?.data?.source?.map((sheet: any) => ({
+          value: sheet.id,
+          label: sheet.name,
         })) || [];
       setSheet(formattedTelegram);
     } catch (error) {
@@ -110,7 +112,8 @@ const SheetIntergration = () => {
           fullName: formData.fullName, // tên chủ tk
           linkUrl: formData.linkUrl, // link url
           transType: formData.transType, // status loại giao dịch
-          bankAccountId: formData.accountNumber,
+          bankAccountId: formData.bankAccountId,
+          sheetId: formData.linkUrl, // id của sheet
         });
         console.log("Dữ liệu đã được cập nhật:", response);
       } else {
@@ -119,9 +122,10 @@ const SheetIntergration = () => {
           code: formData.code, // Mã ngân hàng
           accountNumber: formData.accountNumber, // stk
           fullName: formData.fullName, // tên chủ tk
-          linkUrl: formData.linkUrl, // link url
+          linkUrl: formData.linkUrl, // link url // đổi tên thử thành sheetId
           transType: formData.transType, // status loại giao dịch
-          bankAccountId: formData.accountNumber, // hình như không nhầm thì là lưu stk vào trường có tên là bankAccountId
+          bankAccountId: formData.bankAccountId, // hình như không nhầm thì là lưu stk vào trường có tên là bankAccountId
+          sheetId: formData.linkUrl, // id của sheet
         });
         console.log("Dữ liệu đã được thêm mới:", response);
       }
@@ -147,7 +151,8 @@ const SheetIntergration = () => {
       fullName: record.fullName, // tên chủ tk
       linkUrl: record.linkUrl, // link url
       transType: record.transType, // status loại giao dịch
-      bankAccountId: record.accountNumber,
+      bankAccountId: record.bankAccountId,
+      sheetId: record.sheetId, // id của sheet
     });
     setAddModalOpen(true);
   };
@@ -183,7 +188,8 @@ const SheetIntergration = () => {
             fullName: x.fullName, // tên chủ tk
             linkUrl: x.linkUrl, // link url
             transType: x.transType, // status loại giao dịch
-            bankAccountId: x.accountNumber,
+            bankAccountId: x.bankAccountId,
+            sheetId: x.sheetId, // id của sheet
           })) || [];
 
         setDataSheetIntegration(formattedData);
@@ -197,7 +203,8 @@ const SheetIntergration = () => {
             fullName: x.fullName, // tên chủ tk
             linkUrl: x.linkUrl, // link url
             transType: x.transType, // status loại giao dịch
-            bankAccountId: x.accountNumber,
+            bankAccountId: x.bankAccountId,
+            sheetId: x.sheetId, // id của sheet
           })) || [];
 
         setDataSheetIntegration(formattedData);
@@ -208,11 +215,12 @@ const SheetIntergration = () => {
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
+    { title: "ID", dataIndex: "id", key: "id", hidden: true },
     {
       title: "bankAccountId",
       dataIndex: "bankAccountId",
       key: "bankAccountId",
+      // hidden: true
     },
     { title: "Ngân hàng", dataIndex: "code", key: "code" },
     { title: "Số tài khoản", dataIndex: "accountNumber", key: "accountNumber" },
@@ -334,16 +342,25 @@ const SheetIntergration = () => {
           layout="vertical"
           className="flex flex-col gap-1 w-full"
         >
-          <Form.Item label="id" name="id">
-            <Input disabled />
+          <Form.Item hidden label="id" name="id">
+            <Input hidden />
           </Form.Item>
-          <Form.Item label="bankAccountId" name="bankAccountId">
-            <Input disabled />
-          </Form.Item>
-          <Form.Item label="groupChatId" name="groupChatId">
-            <Input disabled />
+          <Form.Item hidden label="groupChatId" name="groupChatId">
+            <Input hidden />
           </Form.Item>
           <Form.Item
+            label="Tài khoản ngân hàng"
+            name="bankAccountId"
+            rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
+          >
+            <Select
+              placeholder="Chọn ngân hàng"
+              onFocus={genBankData}
+              options={banks}
+            />
+          </Form.Item>
+          <Form.Item
+          hidden
             label="Tài khoản ngân hàng"
             name="accountNumber"
             rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
@@ -357,6 +374,20 @@ const SheetIntergration = () => {
           <Form.Item
             label="Chọn nhóm trang tính"
             name="linkUrl"
+            rules={[
+              { required: true, message: "Vui lòng chọn nhóm trang tính!" },
+            ]}
+          >
+            <Select
+              placeholder="Chọn nhóm trang tính"
+              onFocus={genSheetData}
+              options={sheet}
+            />
+          </Form.Item>
+          <Form.Item
+            hidden
+            label="Chọn nhóm trang tính 2"
+            name="sheetId"
             rules={[
               { required: true, message: "Vui lòng chọn nhóm trang tính!" },
             ]}

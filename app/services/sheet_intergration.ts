@@ -24,7 +24,7 @@ export const getListSheetIntergration = async (
 export const addSheetIntergration = async (sheet: ListSheetIntegration) => {
   try {
     const res = await apiClient.post(
-      `/group-chat-api/map/add-or-update`,
+      `/sheet-api/map/add-or-update`,
       sheet
     );
     return res.data;

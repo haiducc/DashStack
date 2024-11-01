@@ -12,23 +12,29 @@ export interface BankAccounts {
     notes?: string;
     id?: number;
   };
+  phone?: {
+    number: string;
+    com: string;
+    id: number;
+  };
+  typeGroupAccount?: [];
   typeGroupAccountString?: string[];
   typeAccountDescription?: string;
   id: number;
   SelectedAccountGroups?: number[];
 }
 
-export interface DataAccount {
-  key: number;
-  bank: string;
-  account_number: string;
-  account_holder: string;
-  phone: number;
-  SelectedAccountGroups: number[];
-  type_account: string;
-  note: string;
-  TransactionSource: string;
-  groupSystem: number;
-  branchSystem: number;
-  groupTeam: number;
-}
+// export interface DataAccount {
+//   key: number;
+//   bank: string;
+//   account_number: string;
+//   account_holder: string;
+//   phone: number;
+//   SelectedAccountGroups: number[];
+//   type_account: string;
+//   note: string;
+//   TransactionSource: string;
+//   groupSystem: number;
+//   branchSystem: number;
+//   groupTeam: number;
+// }

@@ -1,6 +1,7 @@
 import { AxiosError } from "axios";
 import { apiClient } from "./base_api";
-import { DataAccount } from "../component/modal/modalBankAccount";
+import { BankAccounts } from "../component/modal/modalBankAccount";
+// import { DataAccount } from "../component/modal/modalBankAccount";
 
 // Hàm để lấy danh sách tài khoản ngân hàng
 export const fetchBankAccounts = async (
@@ -33,7 +34,7 @@ export const fetchBankAccounts = async (
 };
 
 // API thêm mới, cập nhật tài khoản ngân hàng
-export const addBankAccounts = async (accountData: DataAccount) => {
+export const addBankAccounts = async (accountData: BankAccounts) => {
   try {
     const res = await apiClient.post(
       `/bank-account-api/add-or-update`,

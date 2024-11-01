@@ -1,13 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "@/app/component/Header";
-import { Button, Form, Input, Select, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Modal, Select, Space, Spin, Table } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import BaseModal from "@/app/component/config/BaseModal";
+import { addRole, deleteRole, getRole } from "@/app/services/role";
+import { getGroupSystem } from "@/app/services/groupSystem";
+import { getBranchSystem } from "@/app/services/branchSystem";
+import { getGroupTeam } from "@/app/services/groupTeam";
+import { toast } from "react-toastify";
 
 export interface dataRole {
   id: number;
+  userName: string;
+  email: string;
+  fullName: string;
 }
 
 const Role = () => {
@@ -15,14 +23,174 @@ const Role = () => {
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [dataRole, setDataRole] = useState<dataRole[]>([]);
   const [currentRole, setCurrentRole] = useState<dataRole | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [globalTerm, setGlobalTerm] = useState("");
+  const [groupSystem, setGroupSystem] = useState([]);
+  const [branchSystem, setBranchSystem] = useState([]);
+  const [groupTeam, setGroupTeam] = useState([]);
+  const [systemId, setSystemId] = useState<number>(0);
+  const [parentId, setParentId] = useState<number>(0);
+
+  const fetchListRole = async (globalTerm = "") => {
+    try {
+      const response = await getRole(1, 20, globalTerm);
+      console.log(response, "Role");
+
+      const formattedData =
+        response?.data?.source?.map((x: dataRole) => ({
+          id: x.id?.toString() || Date.now().toString(),
+          userName: x.userName,
+          fullName: x.fullName,
+          // thêm 1 trường vai trò nữa, tạm thời chưa có trên API
+        })) || [];
+      setDataRole(formattedData);
+    } catch (error) {
+      console.error("Error fetching:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchListRole(globalTerm);
+  }, [globalTerm]);
+
+  const getGroupSystems = async () => {
+    try {
+      const getSystem = await getGroupSystem(1, 20);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = getSystem?.data?.source?.map((x: any) => ({
+        value: x.id,
+        label: x.name || "Không xác định",
+      }));
+      setGroupSystem(res);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getBranchSystems = async () => {
+    try {
+      const getBranch = await getBranchSystem(1, 20, systemId);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = getBranch?.data?.source?.map((x: any) => ({
+        value: x.id,
+        label: x.name || "Không xác định",
+      }));
+      setBranchSystem(res);
+    } catch (error) {
+      console.error("Lỗi khi gọi hàm getBranchSystem:", error);
+    }
+  };
+
+  const getGroupTeams = async () => {
+    try {
+      const groupTeams = await getGroupTeam(systemId, parentId, 1, 20);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = groupTeams?.data?.source?.map((x: any) => ({
+        value: x.id,
+        label: x.name || "Không xác định",
+      }));
+      setGroupTeam(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleAddConfirm = async () => {
+    const formData = form.getFieldsValue();
+    setLoading(true);
+
+    try {
+      if (currentRole) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const response = await addRole({
+          id: currentRole.id,
+          userName: "",
+          email: "",
+          fullName: "",
+        });
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const response = await addRole({
+          id: formData.id,
+          userName: "",
+          email: "",
+          fullName: "",
+        });
+      }
+
+      setAddModalOpen(false);
+      form.resetFields();
+      setCurrentRole(null);
+      setLoading(false);
+      await fetchListRole();
+    } catch (error) {
+      console.error("Lỗi:", error);
+      setLoading(false);
+    }
+  };
+
+  // sửa
+
+  const handleDeleteRole = (role: dataRole) => {
+    Modal.confirm({
+      title: "Xóa tài khoản ngân hàng",
+      content: `Bạn có chắc chắn chấp nhận xóa tài khoản nhóm quyền ${role.userName} này không?`,
+      onOk: async () => {
+        setLoading(true);
+        try {
+          await deleteRole(role.id);
+          await fetchListRole();
+        } catch (error) {
+          console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+        } finally {
+          setLoading(false);
+          toast.success("Xóa tài khoản thành công");
+        }
+      },
+    });
+  };
+
+  const handleSearch = async (value: string) => {
+    setGlobalTerm(value);
+    try {
+      if (value.trim() === "") {
+        const data = await getRole(1, 20);
+        const formattedData =
+          data?.data?.source?.map((x: dataRole) => ({
+            id: x.id,
+            userName: x.userName,
+            fullName: x.fullName,
+          })) || [];
+
+        setDataRole(formattedData);
+      } else {
+        // Nếu có giá trị tìm kiếm, gọi API với giá trị đó
+        const data = await getRole(1, 20, value);
+        const formattedData =
+          data?.data?.source?.map((x: dataRole) => ({
+            id: x.id,
+            userName: x.userName,
+            fullName: x.fullName,
+          })) || [];
+
+        setDataRole(formattedData);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm tài khoản ngân hàng:", error);
+    }
+  };
+
+  // fetch để gọi ra danh sách theo value search
+  useEffect(() => {
+    fetchListRole();
+  }, []);
 
   const columns = [
     { title: "id", dataIndex: "id", key: "id" },
-    { title: "Họ và tên", dataIndex: "", key: "" },
-    { title: "Email đăng nhập", dataIndex: "", key: "" },
+    { title: "Email đăng nhập", dataIndex: "userName", key: "userName" },
+    { title: "Họ và tên", dataIndex: "fullName", key: "fullName" },
     { title: "Vai trò", dataIndex: "", key: "" },
     {
       title: "Chức năng",
@@ -39,7 +207,7 @@ const Role = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            // onClick={() => handleDeleteTele(record)}
+            onClick={() => handleDeleteRole(record)}
           >
             Xóa
           </Button>
@@ -51,9 +219,7 @@ const Role = () => {
     <>
       <Header />
       <div className="px-[30px]">
-        <div className="text-[32px] font-bold py-5">
-          Danh sách nhóm telegram
-        </div>
+        <div className="text-[32px] font-bold py-5">Danh sách nhóm quyền</div>
         <div className="flex justify-between items-center mb-7">
           <Input
             placeholder="Tìm kiếm tên nhóm tài khoản ..."
@@ -63,13 +229,13 @@ const Role = () => {
               height: 38,
               marginRight: 15,
             }}
-            // onChange={(e) => {
-            //   const value = e.target.value;
-            //   handleSearch(value);
-            // }}
-            // onPressEnter={async (e) => {
-            //   handleSearch(e.currentTarget.value);
-            // }}
+            onChange={(e) => {
+              const value = e.target.value;
+              handleSearch(value);
+            }}
+            onPressEnter={async (e) => {
+              handleSearch(e.currentTarget.value);
+            }}
           />
           <Button
             className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
@@ -117,7 +283,7 @@ const Role = () => {
           </Form.Item>
           <Form.Item
             label="Hệ thống"
-            name=""
+            name="groupSystemId"
             rules={[
               {
                 required: true,
@@ -125,29 +291,47 @@ const Role = () => {
               },
             ]}
           >
-            <Input placeholder="Vui lòng chọn hệ thống" />
+            <Select
+              placeholder="Chọn hệ thống"
+              onFocus={getGroupSystems}
+              options={groupSystem}
+              onChange={(value) => {
+                setSystemId(value);
+                getBranchSystems();
+              }}
+              value={systemId}
+            />
           </Form.Item>
           <Form.Item
             label="Chọn chi nhánh"
-            name="branchSystem"
+            name="groupBranchId"
             rules={[{ required: true, message: "Vui lòng chọn chi nhánh!" }]}
           >
-            <Select placeholder="Chọn chi nhánh" />
+            <Select
+              placeholder="Chọn chi nhánh"
+              onFocus={getBranchSystems}
+              options={branchSystem}
+              onChange={(value) => {
+                setParentId(value);
+                getGroupTeams();
+              }}
+              value={systemId}
+            />
           </Form.Item>
           <Form.Item
             label="Chọn đội nhóm"
-            name="groupTeam"
+            name="groupTeamId"
             rules={[{ required: true, message: "Vui lòng chọn đội nhóm!" }]}
           >
             <Select
-              placeholder="Chọn ngân hàng"
-              //   onFocus={getGroupTeams}
-              //   options={groupTeam}
+              placeholder="Chọn đội nhóm"
+              onFocus={getGroupTeams}
+              options={groupTeam}
             />
           </Form.Item>
           <Form.Item
             label="Email đăng nhập"
-            name=""
+            name="userName"
             rules={[{ required: true, message: "Vui lòng nhập email!" }]}
           >
             <Input placeholder="Email đăng nhập" />
@@ -170,7 +354,7 @@ const Role = () => {
             <div className="w-5" />
             <Button
               type="primary"
-              //   onClick={handleAddConfirm}
+              onClick={handleAddConfirm}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
             >
               {currentRole ? "Cập nhật" : "Thêm mới"}

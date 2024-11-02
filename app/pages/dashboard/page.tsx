@@ -1,31 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Select, Space, DatePicker, Table } from "antd";
 import type { TableProps } from "antd/es/table";
 // import "./globals.css";
 import Header from "@/app/component/Header";
 import BarChart from "../products/BarChart";
 import Statistics from "../products/Statistics";
-
-// interface CardData {
-//   title: string;
-//   value: number;
-//   change: string;
-//   backgroundColor: string;
-// }
+import { getListStatistics } from "@/app/services/statistics";
+import BaseModal from "@/app/component/config/BaseModal";
 
 interface DataType {
-  key: string;
-  bank: string;
-  bank_account: number;
-  date: Date;
-  account_holder: string;
-  amount: number;
-  content: string;
-  type: string;
-  balance: number;
-  status: string;
+  id: string;
+  bankName: string;
+  bankAccount: number;
+  transDateString: Date;
+  fullName: string;
+  transAmount: number;
+  narrative: string;
+  transType: string;
+  currentBalance: number;
+  logStatus: string;
 }
 
 const Dashboard = () => {
@@ -35,101 +30,61 @@ const Dashboard = () => {
     accountGroup: "",
   });
   const { RangePicker } = DatePicker;
-
-  //   const cardData: CardData[] = [
-  //     {
-  //       title: "Lợi Nhuận",
-  //       value: 40689,
-  //       change: "8.5% Ngày hôm qua",
-  //       backgroundColor: "#67B173",
-  //     },
-  //     {
-  //       title: "Số dư hiện tại",
-  //       value: 40689,
-  //       change: "8.5% Ngày hôm qua",
-  //       backgroundColor: "#8667B1",
-  //     },
-  //   ];
+  const [dataStatistics, setDataStatistics] = useState([]);
 
   const columns: TableProps<DataType>["columns"] = [
-    { title: "Ngân hàng", dataIndex: "bank", key: "bank" },
-    { title: "TK ngân hàng", dataIndex: "bank_account", key: "bank_account" },
+    { title: "Id", dataIndex: "id", key: "id" },
+    { title: "Ngân hàng", dataIndex: "bankName", key: "bankName" },
+    { title: "TK ngân hàng", dataIndex: "bankAccount", key: "bankAccount" },
     {
       title: "Ngày giao dịch",
-      dataIndex: "date",
-      key: "date",
-      render: (date: Date) =>
-        new Intl.DateTimeFormat("vi-VN", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        }).format(date),
+      dataIndex: "transDateString",
+      key: "transDateString",
     },
     {
       title: "Chủ tài khoản",
-      dataIndex: "account_holder",
-      key: "account_holder",
+      dataIndex: "fullName",
+      key: "fullName",
     },
     {
       title: "Số tiền",
-      dataIndex: "amount",
-      key: "amount",
+      dataIndex: "transAmount",
+      key: "transAmount",
       render: (amount: number) => new Intl.NumberFormat("vi-VN").format(amount),
     },
-    { title: "Nội dung CK", dataIndex: "content", key: "content" },
+    { title: "Nội dung CK", dataIndex: "narrative", key: "narrative" },
     {
       title: "Loại giao dịch",
-      dataIndex: "type",
-      key: "type",
-      render: (type: string) => (
-        <div
-          className={`font-bold ${
-            type === "Tiền ra" ? "text-red-500" : "text-green-500"
-          }`}
-        >
-          {type}
-        </div>
-      ),
+      dataIndex: "transType",
+      key: "transType",
+      render: (type: string) => {
+        const className = type === "3" ? "text-green-500" : "text-red-500";
+        const label = type === "3" ? "Tiền vào" : "Tiền ra";
+
+        return <div className={`font-bold ${className}`}>{label}</div>;
+      },
     },
     {
       title: "Số dư",
-      dataIndex: "balance",
-      key: "balance",
+      dataIndex: "currentBalance",
+      key: "currentBalance",
       render: (balance: number) =>
         new Intl.NumberFormat("vi-VN").format(balance),
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
+      dataIndex: "logStatus",
+      key: "logStatus",
       render: (status: string) => (
         <div
-          className={`text-white flex items-center justify-center rounded-md font-bold w-[93px] h-[27px] ${
-            status === "Thành công" ? "bg-green-500" : "bg-red-500"
+          className={`text-white flex items-center justify-center rounded-md font-bold w-[93px] h-[27px] cursor-pointer ${
+            status === "1" ? "bg-green-500" : "bg-red-500"
           }`}
+          onClick={showModal}
         >
-          {status}
+          {status === "1" ? "Thành công" : "Giao dịch lỗi"}
         </div>
       ),
-    },
-  ];
-
-  const data: DataType[] = [
-    {
-      key: "1",
-      bank: "MB",
-      bank_account: 123123123123,
-      account_holder: "NHD",
-      date: new Date("2024-10-22"),
-      amount: 10000000000,
-      content: "ALO ALO",
-      type: "Tiền ra",
-      balance: 10000,
-      status: "Thành công",
     },
   ];
 
@@ -148,6 +103,45 @@ const Dashboard = () => {
     }));
   };
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+  const handleOk = () => {
+    setIsModalOpen(false);
+  };
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  const fetchListStatistics = async () => {
+    try {
+      const response = await getListStatistics(1, 20);
+      console.log(response);
+
+      const formattedData =
+        response?.data?.source?.map((x: DataType) => ({
+          id: x.id,
+          bankName: x.bankName,
+          bankAccount: x.bankAccount,
+          transDateString: x.transDateString,
+          fullName: x.fullName,
+          transAmount: x.transAmount,
+          narrative: x.narrative,
+          transType: x.transType,
+          currentBalance: x.currentBalance,
+          logStatus: x.logStatus,
+        })) || [];
+      setDataStatistics(formattedData);
+    } catch (error) {
+      console.error("Error fetching phone numbers:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchListStatistics();
+  }, []);
+
   return (
     <>
       <div>
@@ -161,23 +155,6 @@ const Dashboard = () => {
               <Statistics />
             </div>
           </div>
-          {/* <Row gutter={[16, 16]} justify="end">
-            {cardData.map((card, index) => (
-              <Col key={index}>
-                <Card
-                  style={{ backgroundColor: card.backgroundColor }}
-                  bodyStyle={{ padding: 20, textAlign: "center" }}
-                  bordered={false}
-                >
-                  <div>
-                    <h3 className="text-white">{card.title}</h3>
-                    <h2 className="text-white">{card.value.toLocaleString("vi-VN")}</h2>
-                    <div className="text-white">{card.change}</div>
-                  </div>
-                </Card>
-              </Col>
-            ))}
-          </Row> */}
         </div>
         <div className="flex justify-center mt-7">
           <Space direction="horizontal" size="middle">
@@ -194,13 +171,20 @@ const Dashboard = () => {
           </Space>
         </div>
         <div className="mt-5 mx-[35px]">
-          <Table<DataType>
-            columns={columns}
-            dataSource={data}
-            pagination={false}
-          />
+          <Table<DataType> columns={columns} dataSource={dataStatistics} />
         </div>
       </div>
+      <BaseModal
+        title="Basic Modal"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        offPadding
+      >
+        <p>Some contentqưeqweqwe123123s...</p>
+        <p>Some contents...</p>
+        <p>Some contents...</p>
+      </BaseModal>
     </>
   );
 };

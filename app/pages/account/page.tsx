@@ -28,10 +28,11 @@ import { getGroupSystem } from "@/app/services/groupSystem";
 import { getBranchSystem } from "@/app/services/branchSystem";
 import { getGroupTeam } from "@/app/services/groupTeam";
 import { toast } from "react-toastify";
+import { AxiosError } from "axios";
 
 const accountTypeOptions = [
-  { value: "company", label: "Tài khoản công ty" },
-  { value: "marketing", label: "Tài khoản marketing" },
+  { value: "1", label: "Tài khoản công ty" },
+  { value: "2", label: "Tài khoản marketing" },
 ];
 
 const Account: React.FC = () => {
@@ -55,6 +56,9 @@ const Account: React.FC = () => {
   const [globalTerm, setGlobalTerm] = useState("");
   const [searchTerms] = useState("");
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isEditMode, setIsEditMode] = useState(false);
+
   // const [selectedGroup, setSelectedGroup] = useState(null);
 
   const fetchAccounts = async (globalTerm = "") => {
@@ -66,14 +70,22 @@ const Account: React.FC = () => {
       const formattedData =
         response?.data?.source?.map((account: BankAccounts) => ({
           id: account.id,
-          bank: account.bank?.code,
+          bank: account.bank, // đã sửa ở đây .code
           accountNumber: account.accountNumber,
           fullName: account.fullName,
           phone: account.phone?.number,
           phoneId: account.phoneId,
-          SelectedAccountGroups: account.typeGroupAccountString,
+          selectedAccountGroups: account.typeGroupAccountString,
           typeAccount: account.typeAccount,
           notes: account.notes,
+          bankId: account.bankId,
+          groupSystemId: account.groupSystemId,
+          groupBranchId: account.groupBranchId,
+          groupTeamId: account.groupTeamId,
+          transactionSource: account.transactionSource,
+          groupSystem: account.groupSystem,
+          groupBranch: account.groupBranch,
+          groupTeam: account.groupTeam,
         })) || [];
       setDataAccount(formattedData);
     } catch (error) {
@@ -141,6 +153,8 @@ const Account: React.FC = () => {
   const getGroupSystems = async () => {
     try {
       const getSystem = await getGroupSystem(pageIndex, pageSize);
+      console.log("getSystem", getSystem);
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = getSystem?.data?.source?.map((x: any) => ({
         value: x.id,
@@ -191,9 +205,9 @@ const Account: React.FC = () => {
 
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
+    console.log("Form Data trước khi gửi:", formData);
     setLoading(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const res = await addBankAccounts({
         id: formData.id,
         bank: formData.bank,
@@ -201,30 +215,71 @@ const Account: React.FC = () => {
         fullName: formData.fullName,
         phoneId: formData.phoneId,
         phone: formData.phone,
-        SelectedAccountGroups: formData.SelectedAccountGroups,
+        selectedAccountGroups: formData.selectedAccountGroups,
         typeAccount: formData.typeAccount,
         notes: formData.notes,
-        TransactionSource: formData.TransactionSource,
+        transactionSource: formData.transactionSource,
+        groupSystemId: formData.groupSystemId,
+        groupBranchId: formData.groupBranchId,
+        groupTeamId: formData.groupTeamId,
+        bankId: formData.bankId,
+        groupSystem: formData.groupSystem,
+        groupBranch: formData.groupBranch,
+        groupTeam: formData.groupTeam,
       });
       console.log(res, "res");
+      if (!res.success) {
+        // Nếu không thành công, hiển thị thông báo lỗi
+        toast.error(res.message || "Có lỗi xảy ra, vui lòng thử lại.");
+      } else {
+        // Nếu thành công, thực hiện các hành động tiếp theo
+        setAddModalOpen(false);
+        form.resetFields();
+        setCurrentAccount(null);
+        await fetchAccounts();
+        toast.success("Thêm mới thành công!");
+      }
+    } catch (error: unknown) {
+      setLoading(false);
+      setAddModalOpen(false);
 
-      setAddModalOpen(false);
-      form.resetFields();
-      setCurrentAccount(null);
-      setLoading(false);
-      await fetchAccounts();
-      toast.success("Thêm mới thành công!");
-    } catch (error) {
+      const axiosError = error as AxiosError; // Kiểm tra kiểu
+
+      if (axiosError.response) {
+        const responseData = axiosError.response.data as {
+          success: boolean;
+          message: string;
+          messageCode?: string;
+          code: number;
+          errors?: string[]; // Giả định rằng có thể có mảng lỗi
+        };
+
+        if (responseData.code === 400) {
+          const errorMessage = responseData.message || "Thêm mới lỗi";
+          toast.error(errorMessage);
+
+          if (responseData.errors) {
+            responseData.errors.forEach((err) => {
+              toast.error(err);
+            });
+          }
+        } else {
+          toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+        }
+      } else {
+        toast.error("Lỗi kết nối, vui lòng thử lại.");
+      }
+
       console.error("Lỗi khi thêm tài khoản ngân hàng:", error);
+    } finally {
       setLoading(false);
-      setAddModalOpen(false);
-      toast.error("Thêm mới lỗi");
     }
   };
 
   const handleEditAccount = (account: BankAccounts) => {
-    console.log("data edit", account);
+    setIsEditMode(true);
     setCurrentAccount(account);
+    console.log("data edit", account);
     form.setFieldsValue({
       id: account.id,
       bank: account.bank,
@@ -232,10 +287,19 @@ const Account: React.FC = () => {
       fullName: account.fullName,
       phoneId: account.phoneId,
       phone: account.phone,
-      SelectedAccountGroups: account.SelectedAccountGroups,
+      selectedAccountGroups: account.selectedAccountGroups,
       typeAccount: account.typeAccount,
       notes: account.notes,
-      TransactionSource: account.TransactionSource,
+      transactionSource: account.transactionSource,
+      groupSystemId: account.groupSystemId,
+      groupBranchId: account.groupBranchId,
+      groupTeamId: account.groupTeamId,
+      bankId: account.bankId,
+      groupSystemName: account.groupSystem.name,
+      groupBranchName: account.groupBranch.name,
+      groupTeamName: account.groupTeam.name,
+      bankName: account.bank?.fullName,
+      phoneNum: account.phone?.number,
     });
     setAddModalOpen(true);
   };
@@ -272,10 +336,10 @@ const Account: React.FC = () => {
             fullName: account.fullName,
             phoneId: account.phoneId,
             phone: account.phone,
-            SelectedAccountGroups: account.SelectedAccountGroups,
+            selectedAccountGroups: account.selectedAccountGroups,
             typeAccount: account.typeAccount,
             notes: account.notes,
-            TransactionSource: account.TransactionSource,
+            transactionSource: account.transactionSource,
           })) || [];
 
         setDataAccount(formattedData);
@@ -290,10 +354,10 @@ const Account: React.FC = () => {
             fullName: account.fullName,
             phoneId: account.phoneId,
             phone: account.phone,
-            SelectedAccountGroups: account.SelectedAccountGroups,
+            selectedAccountGroups: account.selectedAccountGroups,
             typeAccount: account.typeAccount,
             notes: account.notes,
-            TransactionSource: account.TransactionSource,
+            transactionSource: account.transactionSource,
           })) || [];
 
         setDataAccount(formattedData);
@@ -317,8 +381,8 @@ const Account: React.FC = () => {
   };
 
   const columns = [
-    { title: "id", dataIndex: "id", key: "id" },
-    { title: "Ngân hàng", dataIndex: "bank", key: "bank" },
+    { title: "id", dataIndex: "id", key: "id", hidden: true },
+    { title: "Ngân hàng", dataIndex: "bankId", key: "bankId" },
     {
       title: "Số tài khoản",
       dataIndex: "accountNumber",
@@ -463,7 +527,7 @@ const Account: React.FC = () => {
             <Form.Item
               className="w-[45%]"
               label="Chọn hệ thống"
-              name="groupSystem"
+              name="groupSystemId"
               rules={[{ required: true, message: "Vui lòng chọn hệ thống!" }]}
             >
               <Select
@@ -480,7 +544,7 @@ const Account: React.FC = () => {
             <Form.Item
               className="w-[45%]"
               label="Chọn chi nhánh"
-              name="branchSystem"
+              name="groupBranchId"
               rules={[{ required: true, message: "Vui lòng chọn chi nhánh!" }]}
             >
               <Select
@@ -499,7 +563,7 @@ const Account: React.FC = () => {
             <Form.Item
               className="w-[45%]"
               label="Chọn đội nhóm"
-              name="groupTeam"
+              name="groupTeamId"
               rules={[{ required: true, message: "Vui lòng chọn đội nhóm!" }]}
             >
               <Select
@@ -511,7 +575,8 @@ const Account: React.FC = () => {
             <Form.Item
               className="w-[45%]"
               label="Chọn ngân hàng"
-              name="bank"
+              // name={isEditMode ? "bankName" : "BankId"}
+              name="bankId"
               rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
             >
               <Select
@@ -544,7 +609,7 @@ const Account: React.FC = () => {
             </Form.Item>
           </div>
           <div className="flex justify-between">
-            <Form.Item label="Lấy giao dịch từ" name="TransactionSource">
+            <Form.Item label="Lấy giao dịch từ" name="transactionSource">
               <Radio.Group
                 onChange={(e) => handleValueChange(e.target.value)}
                 value={value}
@@ -572,18 +637,11 @@ const Account: React.FC = () => {
                   placeholder="Chọn số điện thoại"
                 />
               </Form.Item>
-              // <Form.Item label="Nhập số điện thoại" name="phoneId">
-              //   <Select
-              //     options={phoneNumber}
-              //     onFocus={getListPhoneNumber}
-              //     placeholder="Chọn số điện thoại"
-              //   />
-              // </Form.Item>
             )}
           </div>
           <Form.Item
             label="Chọn nhóm tài khoản"
-            name="SelectedAccountGroups"
+            name="selectedAccountGroups"
             rules={[
               { required: true, message: "Vui lòng chọn nhóm tài khoản!" },
             ]}

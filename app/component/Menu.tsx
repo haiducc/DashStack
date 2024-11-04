@@ -6,6 +6,8 @@ import {
   HeartOutlined,
   MessageOutlined,
   AndroidFilled,
+  SlackSquareOutlined,
+  PauseCircleTwoTone
 } from "@ant-design/icons";
 import { Menu as AntMenu } from "antd";
 import Image from "next/image";
@@ -85,10 +87,22 @@ const items: MenuItem[] = [
     ],
   },
   {
-    key: "products-stock",
-    label: "Products Stock",
+    key: "transaction",
+    label: "Giao dịch thủ công",
     icon: <DatabaseOutlined />,
-    path: "/products-stock",
+    path: "/pages/transaction",
+  },
+  {
+    key: "role",
+    label: "Nhóm quyền tài khoản",
+    icon: <SlackSquareOutlined />,
+    path: "/pages/role",
+  },
+  {
+    key: "settings",
+    label: "Cấu hình hề thống",
+    icon: <PauseCircleTwoTone />,
+    path: "/pages/settings",
   },
 ];
 

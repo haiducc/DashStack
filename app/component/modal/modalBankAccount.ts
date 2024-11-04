@@ -4,7 +4,7 @@ export interface BankAccounts {
   fullName?: string;
   phoneId?: number;
   notes?: string;
-  TransactionSource?: string;
+  transactionSource?: string;
   typeAccount?: string;
   bank?: {
     fullName?: string;
@@ -21,20 +21,20 @@ export interface BankAccounts {
   typeGroupAccountString?: string[];
   typeAccountDescription?: string;
   id: number;
-  SelectedAccountGroups?: number[];
+  selectedAccountGroups?: number[];
+  groupSystemId: number;
+  groupBranchId: number;
+  groupTeamId: number;
+  groupSystem: {
+    name: string;
+    id: number;
+  };
+  groupBranch: {
+    name: string;
+    id: number;
+  };
+  groupTeam: {
+    name: string;
+    id: number;
+  };
 }
-
-// export interface DataAccount {
-//   key: number;
-//   bank: string;
-//   account_number: string;
-//   account_holder: string;
-//   phone: number;
-//   SelectedAccountGroups: number[];
-//   type_account: string;
-//   note: string;
-//   TransactionSource: string;
-//   groupSystem: number;
-//   branchSystem: number;
-//   groupTeam: number;
-// }

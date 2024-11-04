@@ -59,3 +59,13 @@ export const getDataGenaral = async (
     throw error;
   }
 };
+
+export const getTransactionById = async (id: number) => {
+  try {
+    const res = await apiClient.get(`/transaction-api/find-by-id?id=${id}`);
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi gọi API:", error);
+    throw error;
+  }
+};

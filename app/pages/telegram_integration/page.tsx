@@ -52,7 +52,7 @@ const TelegramIntegration = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         response?.data?.source?.map((item: any) => ({
           id: item.id?.toString() || Date.now().toString(), // id
-          BankAccountId: item.bankAccount.id, // id tài khoản ngân hàng
+          bankAccountId: item.bankAccount.id, // id tài khoản ngân hàng
           groupChatId: item.groupChatId, // id nhóm chat tele
           code: item.bank.code, // mã ngân hàng
           accountNumber: item.bankAccount.accountNumber, // stk
@@ -82,7 +82,6 @@ const TelegramIntegration = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bankData?.data?.source?.map((bank: any) => ({
           value: bank.id,
-          // label: bank.accountNumber || bank.code || "Không xác định",
           label: `${bank.accountNumber} - ${bank.bank.code} - ${bank.fullName}`,
         })) || [];
       setBanks(formattedBanks);
@@ -113,7 +112,7 @@ const TelegramIntegration = () => {
     try {
       if (currentTelegram) {
         const response = await addTelegramIntergration({
-          bankAccountId: formData.accountNumber,
+          bankAccountId: formData.bankAccountId,
           id: currentTelegram.id,
           groupChatId: formData.groupChatId,
           transType: formData.transType,
@@ -123,13 +122,13 @@ const TelegramIntegration = () => {
           code: "",
           fullName: "",
           chatId: "",
-          name: "",
+          name: ""
         });
         console.log("Dữ liệu đã được cập nhật:", response);
       } else {
         // Thêm mới bản ghi
         const response = await addTelegramIntergration({
-          bankAccountId: formData.accountNumber,
+          bankAccountId: formData.bankAccountId,
           id: formData.id, // id của bản ghi
           groupChatId: formData.groupChatId, // id nhóm chat trên Telegram
           transType: formData.transType,
@@ -159,9 +158,10 @@ const TelegramIntegration = () => {
     console.log("data edit", record);
     setCurrentTelegram(record);
     form.setFieldsValue({
-      accountNumber: record.bankAccountId, // Sử dụng bankAccountId để đảm bảo khớp với trường trong form
-      id: record.id, // id của bản ghi
-      groupChatId: record.groupChatId, // id nhóm chat trên Telegram
+      bankAccountId:record.bankAccountId,
+      accountNumber: record.accountNumber,
+      id: record.id,
+      groupChatId: record.groupChatId,
       transType: record.transType,
     });
     setAddModalOpen(true);
@@ -233,18 +233,18 @@ const TelegramIntegration = () => {
 
   const columns = [
     { title: "ID", dataIndex: "id", key: "id", hidden: true },
-    {
-      title: "BankAccountId",
-      dataIndex: "BankAccountId",
-      key: "BankAccountId",
-      hidden: true,
-    },
-    {
-      title: "groupChatId",
-      dataIndex: "groupChatId",
-      key: "groupChatId",
-      hidden: true,
-    },
+    // {
+    //   title: "BankAccountId",
+    //   dataIndex: "BankAccountId",
+    //   key: "BankAccountId",
+    //   hidden: true,
+    // },
+    // {
+    //   title: "groupChatId",
+    //   dataIndex: "groupChatId",
+    //   key: "groupChatId",
+    //   hidden: true,
+    // },
     { title: "Ngân hàng", dataIndex: "code", key: "code" },
     { title: "Số tài khoản", dataIndex: "accountNumber", key: "accountNumber" },
     { title: "Tên chủ tài khoản", dataIndex: "fullName", key: "fullName" },
@@ -369,13 +369,7 @@ const TelegramIntegration = () => {
           <Form.Item hidden label="id" name="id">
             <Input hidden />
           </Form.Item>
-          <Form.Item hidden label="BankAccountId" name="BankAccountId">
-            <Input hidden />
-          </Form.Item>
-          <Form.Item hidden label="chatId" name="chatId">
-            <Input hidden />
-          </Form.Item>
-          <Form.Item hidden label="groupChatId" name="groupChatId">
+          <Form.Item hidden label="bankAccountId" name="bankAccountId">
             <Input hidden />
           </Form.Item>
           <Form.Item

@@ -16,10 +16,16 @@ import {
   Spin,
   Table,
 } from "antd";
-import { addTransaction, deleteTransaction, getTransaction } from "@/app/services/transaction";
+import {
+  addTransaction,
+  deleteTransaction,
+  getTransaction,
+} from "@/app/services/transaction";
 import BaseModal from "@/app/component/config/BaseModal";
 import { RangePickerProps } from "antd/es/date-picker";
 import { fetchBankAccounts, getBank } from "@/app/services/bankAccount";
+import { toast } from "react-toastify";
+import { AxiosError } from "axios";
 
 export interface TransactionModal {
   id: number;
@@ -130,11 +136,10 @@ const Transaction = () => {
           balanceBeforeTrans: 0,
           currentBalance: 0,
           notes: "",
-          // bankAccountId: 0,
         });
         console.log("Dữ liệu đã được cập nhật:", response);
+        toast.success("Cập nhật giao dịch thành công!"); // Thông báo cập nhật thành công
       } else {
-        // Thêm mới bản ghi
         const response = await addTransaction({
           id: formData.id,
           bankName: formData.bankName,
@@ -147,9 +152,9 @@ const Transaction = () => {
           balanceBeforeTrans: formData.balanceBeforeTrans,
           currentBalance: formData.currentBalance,
           notes: formData.notes,
-          // bankAccountId: formData.bankAccountId,
         });
         console.log("Dữ liệu đã được thêm mới:", response);
+        toast.success("Thêm mới giao dịch thành công!"); // Thông báo thêm mới thành công
       }
 
       setAddModalOpen(false);
@@ -158,6 +163,18 @@ const Transaction = () => {
       fetchTransaction();
     } catch (error) {
       console.error("Lỗi:", error);
+
+      if (error instanceof AxiosError && error.response) {
+        // Lỗi từ BE
+        if (error.response.status === 400) {
+          const message = error.response.data.message || "Có lỗi xảy ra."; // Lấy message từ phản hồi
+          toast.error(message); // Hiển thị thông báo lỗi từ BE
+        } else {
+          toast.error("Đã xảy ra lỗi, vui lòng thử lại."); // Thông báo lỗi cho các trạng thái khác
+        }
+      } else {
+        toast.error("Đã xảy ra lỗi không xác định."); // Thông báo lỗi chung nếu không phải là AxiosError
+      }
     } finally {
       setLoading(false);
     }

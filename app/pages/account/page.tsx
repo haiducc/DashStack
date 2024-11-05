@@ -75,7 +75,7 @@ const Account: React.FC = () => {
           fullName: account.fullName,
           phone: account.phone?.number,
           phoneId: account.phoneId,
-          selectedAccountGroups: account.typeGroupAccountString,
+          selectedAccountGroups: account.typeGroupAccount,
           typeAccount: account.typeAccount,
           notes: account.notes,
           bankId: account.bankId,
@@ -243,7 +243,7 @@ const Account: React.FC = () => {
       setLoading(false);
       setAddModalOpen(false);
 
-      const axiosError = error as AxiosError; // Kiểm tra kiểu
+      const axiosError = error as AxiosError;
 
       if (axiosError.response) {
         const responseData = axiosError.response.data as {
@@ -251,7 +251,7 @@ const Account: React.FC = () => {
           message: string;
           messageCode?: string;
           code: number;
-          errors?: string[]; // Giả định rằng có thể có mảng lỗi
+          errors?: string[];
         };
 
         if (responseData.code === 400) {
@@ -295,11 +295,6 @@ const Account: React.FC = () => {
       groupBranchId: account.groupBranchId,
       groupTeamId: account.groupTeamId,
       bankId: account.bankId,
-      groupSystemName: account.groupSystem.name,
-      groupBranchName: account.groupBranch.name,
-      groupTeamName: account.groupTeam.name,
-      bankName: account.bank?.fullName,
-      phoneNum: account.phone?.number,
     });
     setAddModalOpen(true);
   };
@@ -344,7 +339,6 @@ const Account: React.FC = () => {
 
         setDataAccount(formattedData);
       } else {
-        // Nếu có giá trị tìm kiếm, gọi API với giá trị đó
         const data = await fetchBankAccounts(pageIndex, pageSize, value);
         const formattedData =
           data?.data?.source?.map((account: BankAccounts) => ({
@@ -397,8 +391,8 @@ const Account: React.FC = () => {
     { title: "Số điện thoại", dataIndex: "phone", key: "phone" },
     {
       title: "Nhóm tài khoản",
-      dataIndex: "SelectedAccountGroups",
-      key: "SelectedAccountGroups",
+      dataIndex: "selectedAccountGroups",
+      key: "selectedAccountGroups",
     },
     { title: "Loại tài khoản", dataIndex: "typeAccount", key: "typeAccount" },
     { title: "Ghi chú", dataIndex: "notes", key: "notes" },
@@ -510,7 +504,6 @@ const Account: React.FC = () => {
           <Form.Item hidden label="id" name="id">
             <Input />
           </Form.Item>
-          {/* Loại tài khoản */}
           <Form.Item
             label="Chọn loại tài khoản"
             name="typeAccount"

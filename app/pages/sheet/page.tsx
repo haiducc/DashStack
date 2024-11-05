@@ -6,6 +6,7 @@ import BaseModal from "@/app/component/config/BaseModal";
 import Header from "@/app/component/Header";
 import { Button, Form, Input, Modal, Space, Spin, Table } from "antd";
 import { addSheet, deleteSheet, getListSheet } from "@/app/services/sheet";
+import { toast } from "react-toastify";
 
 export interface dataSheetModal {
   id: number;
@@ -48,21 +49,21 @@ const Sheet = () => {
 
     try {
       if (currentSheet) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const response = await addSheet({
+        await addSheet({
           id: currentSheet.id,
           name: formData.name,
           linkUrl: formData.linkUrl,
           notes: formData.notes,
         });
+        toast.success("Cập nhật thành công!"); // Thông báo thành công
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const response = await addSheet({
-            id: formData.id,
-            name: formData.name,
-            linkUrl: formData.linkUrl,
-            notes: formData.notes,
-          });
+        await addSheet({
+          id: Date.now(), // Hoặc sử dụng logic id của bạn
+          name: formData.name,
+          linkUrl: formData.linkUrl,
+          notes: formData.notes,
+        });
+        toast.success("Thêm mới thành công!"); // Thông báo thêm mới thành công
       }
 
       setAddModalOpen(false);
@@ -72,6 +73,7 @@ const Sheet = () => {
       await fetchSheet();
     } catch (error) {
       console.error("Lỗi:", error);
+      toast.error("Có lỗi xảy ra, vui lòng thử lại!"); // Thông báo lỗi
       setLoading(false);
     }
   };
@@ -96,14 +98,17 @@ const Sheet = () => {
         try {
           await deleteSheet(x.id);
           await fetchSheet();
+          toast.success("Xóa thành công!"); // Thông báo xóa thành công
         } catch (error) {
           console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+          toast.error("Có lỗi khi xóa, vui lòng thử lại!"); // Thông báo lỗi khi xóa
         } finally {
           setLoading(false);
         }
       },
     });
   };
+  
 
   const handleSearch = async (value: string) => {
     setGlobalTerm(value);

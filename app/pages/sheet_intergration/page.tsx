@@ -54,7 +54,7 @@ const SheetIntergration = () => {
           linkUrl: item.sheetDetail.linkUrl, // link url
           transType: item.transType, // status loại giao dịch
           bankAccountId: item.bankAccount.id,
-          sheetId: item.sheetDetail.linkUrl, // id của sheet
+          sheetId: item.sheetDetail.id, // id của sheet
         })) || [];
       setDataSheetIntegration(formattedData);
     } catch (error) {
@@ -113,7 +113,7 @@ const SheetIntergration = () => {
           linkUrl: formData.linkUrl, // link url
           transType: formData.transType, // status loại giao dịch
           bankAccountId: formData.bankAccountId,
-          sheetId: formData.linkUrl, // id của sheet
+          sheetId: formData.sheetId, // id của sheet
         });
         console.log("Dữ liệu đã được cập nhật:", response);
       } else {
@@ -125,7 +125,7 @@ const SheetIntergration = () => {
           linkUrl: formData.linkUrl, // link url // đổi tên thử thành sheetId
           transType: formData.transType, // status loại giao dịch
           bankAccountId: formData.bankAccountId, // hình như không nhầm thì là lưu stk vào trường có tên là bankAccountId
-          sheetId: formData.linkUrl, // id của sheet
+          sheetId: formData.sheetId, // id của sheet
         });
         console.log("Dữ liệu đã được thêm mới:", response);
       }
@@ -220,7 +220,7 @@ const SheetIntergration = () => {
       title: "bankAccountId",
       dataIndex: "bankAccountId",
       key: "bankAccountId",
-      // hidden: true
+      hidden: true
     },
     { title: "Ngân hàng", dataIndex: "code", key: "code" },
     { title: "Số tài khoản", dataIndex: "accountNumber", key: "accountNumber" },
@@ -373,20 +373,6 @@ const SheetIntergration = () => {
           </Form.Item>
           <Form.Item
             label="Chọn nhóm trang tính"
-            name="linkUrl"
-            rules={[
-              { required: true, message: "Vui lòng chọn nhóm trang tính!" },
-            ]}
-          >
-            <Select
-              placeholder="Chọn nhóm trang tính"
-              onFocus={genSheetData}
-              options={sheet}
-            />
-          </Form.Item>
-          <Form.Item
-            hidden
-            label="Chọn nhóm trang tính 2"
             name="sheetId"
             rules={[
               { required: true, message: "Vui lòng chọn nhóm trang tính!" },
@@ -398,6 +384,20 @@ const SheetIntergration = () => {
               options={sheet}
             />
           </Form.Item>
+          {/* <Form.Item
+            // hidden
+            label="Chọn nhóm trang tính 2"
+            name="sheetId"
+            rules={[
+              { required: true, message: "Vui lòng chọn nhóm trang tính!" },
+            ]}
+          >
+            <Select
+              placeholder="Chọn nhóm trang tính"
+              onFocus={genSheetData}
+              options={sheet}
+            />
+          </Form.Item> */}
           <Form.Item
             label="Chọn loại giao dịch"
             name="transType"

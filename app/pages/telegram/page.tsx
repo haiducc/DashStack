@@ -10,6 +10,7 @@ import {
   getListTelegram,
 } from "@/app/services/telegram";
 import BaseModal from "@/app/component/config/BaseModal";
+import { toast } from "react-toastify"; // Import toast
 
 export interface dataTelegramModal {
   id: number;
@@ -52,8 +53,7 @@ const Telegram = () => {
     setLoading(true);
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const response = await addTelegram({
+      await addTelegram({
         id: formData.id,
         name: formData.name,
         chatId: formData.chatId,
@@ -63,15 +63,19 @@ const Telegram = () => {
       setAddModalOpen(false);
       form.resetFields();
       setCurrentTelegram(null);
-      setLoading(false);
+      toast.success(
+        currentTelegram ? "Cập nhật thành công!" : "Thêm mới thành công!"
+      );
       await fetchTelegram();
+      setLoading(false)
     } catch (error) {
       console.error("Lỗi:", error);
-      setLoading(false);
+      toast.error("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
 
   const handleEditTele = (x: dataTelegramModal) => {
+    setCurrentTelegram(x);
     form.setFieldsValue({
       id: x.id,
       name: x.name,
@@ -89,9 +93,11 @@ const Telegram = () => {
         setLoading(true);
         try {
           await deleteTelegram(x.id);
+          toast.success("Xóa nhóm telegram thành công!");
           await fetchTelegram();
         } catch (error) {
           console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+          toast.error("Có lỗi xảy ra khi xóa!");
         } finally {
           setLoading(false);
         }
@@ -114,7 +120,6 @@ const Telegram = () => {
 
         setDataTelegram(formattedData);
       } else {
-        // Nếu có giá trị tìm kiếm, gọi API với giá trị đó
         const data = await getListTelegram(1, 20, value);
         const formattedData =
           data?.data?.source?.map((x: dataTelegramModal) => ({
@@ -128,11 +133,12 @@ const Telegram = () => {
       }
     } catch (error) {
       console.error("Lỗi khi tìm kiếm tài khoản ngân hàng:", error);
+      toast.error("Có lỗi xảy ra khi tìm kiếm!");
     }
   };
 
   const columns = [
-    { title: "id", dataIndex: "id", key: "id" },
+    { title: "id", dataIndex: "id", key: "id", hidden: true },
     { title: "Tên nhóm telegram", dataIndex: "name", key: "name" },
     { title: "Id nhóm telegram", dataIndex: "chatId", key: "chatId" },
     { title: "Ghi chú", dataIndex: "notes", key: "notes" },

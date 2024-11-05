@@ -11,6 +11,7 @@ import {
   deleteAccountGroup,
   getAccountGroup,
 } from "@/app/services/accountGroup";
+import { toast } from "react-toastify";
 
 const PhoneNumber: React.FC = () => {
   const [form] = Form.useForm();
@@ -25,6 +26,7 @@ const PhoneNumber: React.FC = () => {
   const [globalTerm, setGlobalTerm] = useState("");
 
   const fetchAccountGroup = async (globalTerm = "") => {
+    setLoading(true);
     try {
       const response = await getAccountGroup(1, 20, globalTerm);
       const formattedData =
@@ -36,6 +38,9 @@ const PhoneNumber: React.FC = () => {
       setDataAccountGroup(formattedData);
     } catch (error) {
       console.error("Error fetching phone numbers:", error);
+      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,19 +52,23 @@ const PhoneNumber: React.FC = () => {
     const formData = form.getFieldsValue();
     setLoading(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const response = await addAccountGroup({
+      await addAccountGroup({
         id: formData.id,
         fullName: formData.fullName,
         notes: formData.notes,
       });
+      toast.success(
+        currentAccount ? "Cập nhật thành công!" : "Thêm mới thành công!"
+      );
       setAddModalOpen(false);
       form.resetFields();
       setCurrentAccount(null);
-      setLoading(false);
       await fetchAccountGroup();
     } catch (error) {
       console.error("Lỗi:", error);
+      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,20 +78,23 @@ const PhoneNumber: React.FC = () => {
       fullName: accountGroup.fullName,
       notes: accountGroup.notes,
     });
+    setCurrentAccount(accountGroup);
     setAddModalOpen(true);
   };
 
   const handleDeleteAccountGroup = (x: DataAccountGroup) => {
     Modal.confirm({
       title: "Xóa tài khoản ngân hàng",
-      content: `Bạn có chắc chắn chấp nhận xóa nhóm tài khoản ${x.fullName} này không?`,
+      content: `Bạn có chắc chắn muốn xóa nhóm tài khoản ${x.fullName} này không?`,
       onOk: async () => {
         setLoading(true);
         try {
           await deleteAccountGroup(x.id);
+          toast.success("Xóa thành công!");
           await fetchAccountGroup();
         } catch (error) {
           console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+          toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
         } finally {
           setLoading(false);
         }
@@ -92,38 +104,8 @@ const PhoneNumber: React.FC = () => {
 
   const handleSearch = async (value: string) => {
     setGlobalTerm(value);
-    try {
-      if (value.trim() === "") {
-        const data = await getAccountGroup(1, 20);
-        const formattedData =
-          data?.data?.source?.map((x: DataAccountGroup) => ({
-            id: x.id,
-            fullName: x.fullName || "",
-            notes: x.notes,
-          })) || [];
-
-        setDataAccountGroup(formattedData);
-      } else {
-        // Nếu có giá trị tìm kiếm, gọi API với giá trị đó
-        const data = await getAccountGroup(1, 20, value);
-        const formattedData =
-          data?.data?.source?.map((x: DataAccountGroup) => ({
-            id: x.id,
-            fullName: x.fullName || "",
-            notes: x.notes,
-          })) || [];
-
-          setDataAccountGroup(formattedData);
-      }
-    } catch (error) {
-      console.error("Lỗi khi tìm kiếm tài khoản ngân hàng:", error);
-    }
+    await fetchAccountGroup(value);
   };
-
-  // fetch để gọi ra danh sách theo value search
-  useEffect(() => {
-    fetchAccountGroup();
-  }, []);
 
   const columns = [
     { title: "id", dataIndex: "id", key: "id" },
@@ -168,13 +150,8 @@ const PhoneNumber: React.FC = () => {
               height: 38,
               marginRight: 15,
             }}
-            onChange={(e) => {
-              const value = e.target.value;
-              handleSearch(value);
-            }}
-            onPressEnter={async (e) => {
-              handleSearch(e.currentTarget.value);
-            }}
+            onChange={(e) => handleSearch(e.target.value)}
+            onPressEnter={(e) => handleSearch(e.currentTarget.value)}
           />
           <Button
             className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
@@ -187,11 +164,13 @@ const PhoneNumber: React.FC = () => {
             Thêm mới
           </Button>
         </div>
-        {loading ? (
-          <Spin spinning={loading} fullscreen />
-        ) : (
-          <Table columns={columns} dataSource={dataAccountGroup} />
-        )}
+        <Spin spinning={loading}>
+          <Table
+            columns={columns}
+            dataSource={dataAccountGroup}
+            rowKey={"id"}
+          />
+        </Spin>
       </div>
       <BaseModal
         open={isAddModalOpen}
@@ -237,6 +216,7 @@ const PhoneNumber: React.FC = () => {
               type="primary"
               onClick={handleAddConfirm}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              loading={loading}
             >
               {currentAccount ? "Cập nhật" : "Thêm mới"}
             </Button>

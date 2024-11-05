@@ -1,33 +1,32 @@
-import { AxiosError } from "axios";
 import { apiClient } from "./base_api";
 import { BankAccounts } from "../component/modal/modalBankAccount";
-// import { DataAccount } from "../component/modal/modalBankAccount";
+import axios from "axios";
+import { buildSearchParams } from "../pages/utils/buildQueryParams";
 
 // Hàm để lấy danh sách tài khoản ngân hàng
 export const fetchBankAccounts = async (
   pageIndex: number,
   pageSize: number,
   globalTerm?: string,
-  searchTerms?: string
-) => {
+  searchTerms: Array<{ Name: string; Value: string }> = []
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> => {
   try {
-    const response = await apiClient.get(`/bank-account-api/find`, {
-      params: {
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        globalTerm: globalTerm || undefined,
-        search: searchTerms || undefined,
-      },
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
     });
+    const response = await apiClient.get(`/bank-account-api/find`, { params });
     return response.data;
   } catch (error) {
-    if (error instanceof AxiosError) {
+    if (axios.isAxiosError(error)) {
       console.error(
         "Error fetching bank accounts:",
         error.response?.data || error.message
       );
     } else {
-      console.error("Unexpected error:", error);
+      console.error("Unexpected error:", (error as Error).message);
     }
     throw error;
   }

@@ -4,7 +4,8 @@ import { apiClient } from "./base_api";
 export const getAccountGroup = async (
   pageIndex: number,
   pageSize: number,
-  globalTerm?: string
+  globalTerm?: string,
+  searchTerms?: string
 ) => {
   try {
     const res = await apiClient.get(`/group-account-api/find`, {
@@ -12,15 +13,18 @@ export const getAccountGroup = async (
         pageIndex: pageIndex,
         pageSize: pageSize,
         globalTerm: globalTerm,
+        searchTerms: searchTerms,
       },
     });
+    console.log("searchTerms :",searchTerms);
+    
+    
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);
     throw error;
   }
 };
-
 
 export const addAccountGroup = async (accountGroup: DataAccountGroup) => {
   try {

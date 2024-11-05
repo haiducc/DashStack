@@ -39,7 +39,7 @@ const TelegramIntegration = () => {
   const [currentTelegram, setCurrentTelegram] =
     useState<ListTelegramIntegration | null>(null);
   const [banks, setBanks] = useState([]);
-  const [telegram, setTelegram] = useState([]);
+  const [telegram, setTelegram] = useState<Array<ListTelegramIntegration>>([]);
   const [loading, setLoading] = useState(false);
   const [globalTerm, setGlobalTerm] = useState("");
 
@@ -93,11 +93,14 @@ const TelegramIntegration = () => {
   const genTelegramData = async () => {
     try {
       const dataTelegram = await getListTelegram(1, 50);
+      console.log(dataTelegram);
+      
       const formattedTelegram =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dataTelegram?.data?.source?.map((tele: any) => ({
           value: tele.id,
           label: tele.name,
+          groupChatId: tele.id,
         })) || [];
       setTelegram(formattedTelegram);
     } catch (error) {
@@ -122,7 +125,7 @@ const TelegramIntegration = () => {
           code: "",
           fullName: "",
           chatId: "",
-          name: ""
+          name: "",
         });
         console.log("Dữ liệu đã được cập nhật:", response);
       } else {
@@ -158,11 +161,14 @@ const TelegramIntegration = () => {
     console.log("data edit", record);
     setCurrentTelegram(record);
     form.setFieldsValue({
-      bankAccountId:record.bankAccountId,
+      bankAccountId: record.bankAccountId,
       accountNumber: record.accountNumber,
       id: record.id,
       groupChatId: record.groupChatId,
       transType: record.transType,
+      accountFullName:
+        record.accountNumber + " - " + record.code + " - " + record.fullName,
+      chatName: record.chatName,
     });
     setAddModalOpen(true);
   };
@@ -374,7 +380,7 @@ const TelegramIntegration = () => {
           </Form.Item>
           <Form.Item
             label="Tài khoản ngân hàng"
-            name="accountNumber"
+            name="accountFullName"
             rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
           >
             <Select
@@ -385,6 +391,34 @@ const TelegramIntegration = () => {
           </Form.Item>
           <Form.Item
             label="Chọn nhóm telegram"
+            name="chatName"
+            rules={[
+              { required: true, message: "Vui lòng chọn nhóm telegram!" },
+            ]}
+          >
+            <Select
+              placeholder="Chọn nhóm telegram"
+              onFocus={genTelegramData}
+              options={telegram}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={async (value: any) => {
+                const selectedGroup = await telegram.find(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (item: any) => item.value === value
+                );
+                // console.log(selectedGroup,"selectedGroup");
+
+                if (selectedGroup) {
+                  form.setFieldsValue({
+                    groupChatId: selectedGroup.groupChatId,
+                  });
+                }
+              }}
+            />
+          </Form.Item>
+          <Form.Item
+            hidden
+            label="Chọn nhóm telegram 2"
             name="groupChatId"
             rules={[
               { required: true, message: "Vui lòng chọn nhóm telegram!" },

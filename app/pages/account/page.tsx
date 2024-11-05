@@ -44,7 +44,6 @@ const Account: React.FC = () => {
   const [dataAccount, setDataAccount] = useState<BankAccounts[]>([]);
   const [banks, setBanks] = useState([]);
   const [phoneNumber, setPhoneNumber] = useState([]);
-  const [accountGroup, setAccountGroup] = useState([]);
   const [groupSystem, setGroupSystem] = useState([]);
   const [branchSystem, setBranchSystem] = useState([]);
   const [groupTeam, setGroupTeam] = useState([]);
@@ -54,10 +53,14 @@ const Account: React.FC = () => {
   const [parentId, setParentId] = useState<number>(0);
   const [value, setValue] = useState("1");
   const [globalTerm, setGlobalTerm] = useState("");
-  const [searchTerms] = useState("");
   const [loading, setLoading] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isEditMode, setIsEditMode] = useState(false);
+  const [accountGroup, setAccountGroup] = useState([]); // Trạng thái cho nhóm tài khoản
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [searchTerms, setSearchTerms] = useState<
+    Array<{ Name: string; Value: string }>
+  >([]); // Trạng thái cho điều kiện tìm kiếm
 
   // const [selectedGroup, setSelectedGroup] = useState(null);
 
@@ -132,9 +135,12 @@ const Account: React.FC = () => {
     try {
       const accountGroup = await getAccountGroup(
         pageIndex,
-        pageSize,
-        searchTerms
+        pageSize
+        // undefined,
+        // JSON.stringify(filterArr)
       );
+      console.log("accountGroup", accountGroup);
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = accountGroup?.data?.source?.map((x: any) => ({
         value: x.id,
@@ -145,10 +151,6 @@ const Account: React.FC = () => {
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    getListAccountGroup();
-  }, [searchTerms]);
 
   const getGroupSystems = async () => {
     try {
@@ -365,9 +367,75 @@ const Account: React.FC = () => {
     fetchAccounts();
   }, []);
 
-  // const handleFilterChange = (value: string) => {
-  //   setSearchTerms(value);
+  // const handleFilter = async () => {
+  //   try {
+  //     const fetchBankAccountAPI = await fetchBankAccounts(
+  //       pageIndex,
+  //       pageSize,
+  //     );
+  //     console.log("accountGroup", accountGroup);
+
+  //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //     const res = fetchBankAccountAPI?.data?.source?.map((x: any) => ({
+  //       value: x.id,
+  //       label: x.fullName || "Không xác định",
+  //     }));
+  //     setAccountGroup(res);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
   // };
+  const handleFilter = async (
+    value?: string
+  ) => {
+    try {
+      const searchTerms: Array<{ Name: string; Value: string }> = [];
+
+      if (value) {
+        searchTerms.push({ Name: "groupAccountId", Value: value });
+      }
+
+      // if (value) {
+      //   searchTerms.push({ Name: "typeAccount", Value: value });
+      // }
+
+      const fetchBankAccountAPI = await fetchBankAccounts(
+        pageIndex, // Ví dụ: 1
+        pageSize, // Ví dụ: 20
+        globalTerm, // Có thể undefined hoặc một chuỗi
+        searchTerms // Truyền searchTerms
+      );
+
+      console.log("searchTerms[0].Name:", searchTerms[0]?.Name);
+      console.log("searchTerms[1].Value:", searchTerms[1]?.Value);
+      if (
+        fetchBankAccountAPI &&
+        fetchBankAccountAPI.data &&
+        fetchBankAccountAPI.data.source
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res = fetchBankAccountAPI.data.source.map((x: any) => ({
+          value: x.id,
+          label: x.fullName || "Không xác định",
+        }));
+        setAccountGroup(res);
+      } else {
+        setAccountGroup([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  };
+
+  useEffect(() => {
+    handleFilter();
+  }, [searchTerms]);
+
+  const handleSelectChange = (value: string) => {
+    setSearchTerms([{ Name: "groupAccountId", Value: value }]); // Cập nhật searchTerms với giá trị đã chọn
+    console.log(437, value);
+    handleFilter(value); // Gọi lại hàm lọc với giá trị đã chọn
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleValueChange = (newValue: any) => {
@@ -442,20 +510,17 @@ const Account: React.FC = () => {
                 marginRight: 15,
               }}
             />
-            {/* <Space direction="horizontal" size="middle">
-              {["Nhóm tài khoản", "Loại tài khoản", "Tên ngân hàng"].map(
-                (placeholder, index) => (
-                  <Select
-                    key={index}
-                    options={accountGroupOptions}
-                    placeholder={placeholder}
-                    style={{ width: 245 }}
-                  />
-                )
-              )}
-            </Space> */}
             <Space direction="horizontal" size="middle">
-              {["Nhóm tài khoản", "Loại tài khoản", "Tên ngân hàng"].map(
+              <Select
+                options={accountGroup}
+                placeholder={"Nhóm tài khoản"}
+                style={{ width: 245 }}
+                allowClear
+                onChange={handleSelectChange}
+              />
+            </Space>
+            {/* <Space direction="horizontal" size="middle">
+              {["Loại tài khoản", "Tên ngân hàng"].map(
                 (placeholder, index) => (
                   <Select
                     allowClear
@@ -467,7 +532,7 @@ const Account: React.FC = () => {
                   />
                 )
               )}
-            </Space>
+            </Space> */}
           </div>
           <Button
             className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"

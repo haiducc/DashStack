@@ -1,24 +1,22 @@
 import { DataAccountGroup } from "../component/modal/modalAccountGroup";
+import { buildSearchParams } from "../pages/utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
 export const getAccountGroup = async (
   pageIndex: number,
   pageSize: number,
   globalTerm?: string,
-  searchTerms?: string
+  searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    const res = await apiClient.get(`/group-account-api/find`, {
-      params: {
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        globalTerm: globalTerm,
-        searchTerms: searchTerms,
-      },
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
     });
-    console.log("searchTerms :",searchTerms);
-    
-    
+    const res = await apiClient.get(`/group-account-api/find`, {params});
+    console.log("searchTerms :", searchTerms);
+
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

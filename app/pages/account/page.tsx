@@ -29,6 +29,7 @@ import { getBranchSystem } from "@/app/services/branchSystem";
 import { getGroupTeam } from "@/app/services/groupTeam";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
+import HiddenForm from "./form/page";
 
 const accountTypeOptions = [
   { value: "1", label: "Tài khoản công ty" },
@@ -73,7 +74,7 @@ const Account: React.FC = () => {
       const formattedData =
         response?.data?.source?.map((account: BankAccounts) => ({
           id: account.id,
-          bank: account.bank, // đã sửa ở đây .code
+          bank: account.bank?.code, // đã sửa ở đây .code
           accountNumber: account.accountNumber,
           fullName: account.fullName,
           phone: account.phone?.number,
@@ -89,6 +90,13 @@ const Account: React.FC = () => {
           groupSystem: account.groupSystem,
           groupBranch: account.groupBranch,
           groupTeam: account.groupTeam,
+          typeAccountDescription: account.typeAccountDescription,
+          typeGroupAccountString: account.typeGroupAccountString,
+          // bổ sung thêm
+          groupSystemName: account.groupSystem?.name,
+          groupBranchName: account.groupBranch?.name,
+          groupTeamName: account.groupTeam?.name,
+          bankName: account.bank?.fullName,
         })) || [];
       setDataAccount(formattedData);
     } catch (error) {
@@ -131,6 +139,7 @@ const Account: React.FC = () => {
     }
   };
 
+  //API lấy ra nhóm tài khoản
   const getListAccountGroup = async () => {
     try {
       const accountGroup = await getAccountGroup(
@@ -228,6 +237,7 @@ const Account: React.FC = () => {
         groupSystem: formData.groupSystem,
         groupBranch: formData.groupBranch,
         groupTeam: formData.groupTeam,
+        // bankName: formData.bank?.fullNamed
       });
       console.log(res, "res");
       if (!res.success) {
@@ -282,6 +292,8 @@ const Account: React.FC = () => {
     setIsEditMode(true);
     setCurrentAccount(account);
     console.log("data edit", account);
+    console.log(account.bank?.fullName, "account.bank?.fullName");
+
     form.setFieldsValue({
       id: account.id,
       bank: account.bank,
@@ -297,6 +309,11 @@ const Account: React.FC = () => {
       groupBranchId: account.groupBranchId,
       groupTeamId: account.groupTeamId,
       bankId: account.bankId,
+      //
+      groupSystemName: account.groupSystem?.name,
+      groupBranchName: account.groupBranch?.name,
+      groupTeamName: account.groupTeam?.name,
+      bankName: account.bankName,
     });
     setAddModalOpen(true);
   };
@@ -304,7 +321,7 @@ const Account: React.FC = () => {
   const handleDeleteAccount = (account: BankAccounts) => {
     Modal.confirm({
       title: "Xóa tài khoản ngân hàng",
-      content: `Bạn có chắc chắn chấp nhận xóa tài khoản ngân hàng ${account.bank} này không?`,
+      content: `Bạn có chắc chắn chấp nhận xóa tài khoản ngân hàng ${account.bank?.code} này không?`,
       onOk: async () => {
         setLoading(true);
         try {
@@ -367,47 +384,35 @@ const Account: React.FC = () => {
     fetchAccounts();
   }, []);
 
-  // const handleFilter = async () => {
-  //   try {
-  //     const fetchBankAccountAPI = await fetchBankAccounts(
-  //       pageIndex,
-  //       pageSize,
-  //     );
-  //     console.log("accountGroup", accountGroup);
+  // const [accountGroupFilter, setAccountGroupFilter] = useState<
+  //   Array<{ value: string; label: string }>
+  // >([]);
+  // const [filterParams, setFilterParams] = useState<{
+  //   groupAccountId?: string;
+  //   typeAccount?: string;
+  // }>({});
+  const [accountGroupFilter, setAccountGroupFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [filterParams, setFilterParams] = useState<{
+    groupAccountId?: string;
+    // typeAccount?: string;
+  }>({});
 
-  //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //     const res = fetchBankAccountAPI?.data?.source?.map((x: any) => ({
-  //       value: x.id,
-  //       label: x.fullName || "Không xác định",
-  //     }));
-  //     setAccountGroup(res);
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
-  const handleFilter = async (
-    value?: string
-  ) => {
+  const handleFilter = async () => {
     try {
-      const searchTerms: Array<{ Name: string; Value: string }> = [];
-
-      if (value) {
-        searchTerms.push({ Name: "groupAccountId", Value: value });
-      }
-
-      // if (value) {
-      //   searchTerms.push({ Name: "typeAccount", Value: value });
-      // }
+      const { groupAccountId } = filterParams;
+      const searchParams = groupAccountId
+        ? [{ Name: "groupAccountId", Value: groupAccountId }]
+        : [];
 
       const fetchBankAccountAPI = await fetchBankAccounts(
-        pageIndex, // Ví dụ: 1
-        pageSize, // Ví dụ: 20
-        globalTerm, // Có thể undefined hoặc một chuỗi
-        searchTerms // Truyền searchTerms
+        pageIndex,
+        pageSize,
+        globalTerm,
+        searchParams
       );
 
-      console.log("searchTerms[0].Name:", searchTerms[0]?.Name);
-      console.log("searchTerms[1].Value:", searchTerms[1]?.Value);
       if (
         fetchBankAccountAPI &&
         fetchBankAccountAPI.data &&
@@ -418,9 +423,9 @@ const Account: React.FC = () => {
           value: x.id,
           label: x.fullName || "Không xác định",
         }));
-        setAccountGroup(res);
+        setAccountGroupFilter(res);
       } else {
-        setAccountGroup([]);
+        setAccountGroupFilter([]);
       }
     } catch (error) {
       console.error("Error fetching bank accounts:", error);
@@ -429,12 +434,13 @@ const Account: React.FC = () => {
 
   useEffect(() => {
     handleFilter();
-  }, [searchTerms]);
+  }, [filterParams]);
 
   const handleSelectChange = (value: string) => {
-    setSearchTerms([{ Name: "groupAccountId", Value: value }]); // Cập nhật searchTerms với giá trị đã chọn
-    console.log(437, value);
-    handleFilter(value); // Gọi lại hàm lọc với giá trị đã chọn
+    setFilterParams((prevParams) => ({
+      ...prevParams,
+      groupAccountId: value,
+    }));
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -444,7 +450,7 @@ const Account: React.FC = () => {
 
   const columns = [
     { title: "id", dataIndex: "id", key: "id", hidden: true },
-    { title: "Ngân hàng", dataIndex: "bankId", key: "bankId" },
+    { title: "Ngân hàng", dataIndex: "bank", key: "bank" },
     {
       title: "Số tài khoản",
       dataIndex: "accountNumber",
@@ -459,10 +465,14 @@ const Account: React.FC = () => {
     { title: "Số điện thoại", dataIndex: "phone", key: "phone" },
     {
       title: "Nhóm tài khoản",
-      dataIndex: "selectedAccountGroups",
-      key: "selectedAccountGroups",
+      dataIndex: "typeGroupAccountString",
+      key: "typeGroupAccountString",
     },
-    { title: "Loại tài khoản", dataIndex: "typeAccount", key: "typeAccount" },
+    {
+      title: "Loại tài khoản",
+      dataIndex: "typeAccountDescription",
+      key: "typeAccountDescription",
+    },
     { title: "Ghi chú", dataIndex: "notes", key: "notes" },
     {
       title: "Chức năng",
@@ -512,7 +522,7 @@ const Account: React.FC = () => {
             />
             <Space direction="horizontal" size="middle">
               <Select
-                options={accountGroup}
+                options={accountGroupFilter}
                 placeholder={"Nhóm tài khoản"}
                 style={{ width: 245 }}
                 allowClear
@@ -566,6 +576,7 @@ const Account: React.FC = () => {
           layout="vertical"
           className="flex flex-col gap-1 w-full"
         >
+          <HiddenForm />
           <Form.Item hidden label="id" name="id">
             <Input />
           </Form.Item>
@@ -585,7 +596,7 @@ const Account: React.FC = () => {
             <Form.Item
               className="w-[45%]"
               label="Chọn hệ thống"
-              name="groupSystemId"
+              name="groupSystemName"
               rules={[{ required: true, message: "Vui lòng chọn hệ thống!" }]}
             >
               <Select
@@ -602,7 +613,8 @@ const Account: React.FC = () => {
             <Form.Item
               className="w-[45%]"
               label="Chọn chi nhánh"
-              name="groupBranchId"
+              name="groupBranchName"
+              // name="groupBranchId"
               rules={[{ required: true, message: "Vui lòng chọn chi nhánh!" }]}
             >
               <Select
@@ -621,7 +633,7 @@ const Account: React.FC = () => {
             <Form.Item
               className="w-[45%]"
               label="Chọn đội nhóm"
-              name="groupTeamId"
+              name="groupTeamName"
               rules={[{ required: true, message: "Vui lòng chọn đội nhóm!" }]}
             >
               <Select
@@ -633,7 +645,6 @@ const Account: React.FC = () => {
             <Form.Item
               className="w-[45%]"
               label="Chọn ngân hàng"
-              // name={isEditMode ? "bankName" : "BankId"}
               name="bankId"
               rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
             >
@@ -643,6 +654,19 @@ const Account: React.FC = () => {
                 options={banks}
               />
             </Form.Item>
+            {/* <Form.Item
+              hidden
+              className="w-[45%]"
+              label="Chọn ngân hàng"
+              name="bankId"
+              rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
+            >
+              <Select
+                placeholder="Chọn ngân hàng"
+                onFocus={fetchBankData}
+                options={banks}
+              />
+            </Form.Item> */}
           </div>
           <div className="flex justify-between">
             <Form.Item

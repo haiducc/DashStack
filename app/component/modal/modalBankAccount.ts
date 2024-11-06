@@ -2,6 +2,7 @@ export interface BankAccounts {
   bankId?: number;
   accountNumber?: string;
   fullName?: string;
+  bankName?: string;
   phoneId?: number;
   notes?: string;
   transactionSource?: string;

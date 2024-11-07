@@ -372,16 +372,28 @@ const Account: React.FC = () => {
         const formattedData =
           data?.data?.source?.map((account: BankAccounts) => ({
             id: account.id,
-            // bank: account.bank,
+            bank: account.bank?.code,
             accountNumber: account.accountNumber,
             fullName: account.fullName,
+            phone: account.phone?.number,
             phoneId: account.phoneId,
-            phone: account.phone,
-            selectedAccountGroups: account.selectedAccountGroups,
+            selectedAccountGroups: account.typeGroupAccount,
             typeAccount: account.typeAccount,
             notes: account.notes,
+            bankId: account.bankId,
+            groupSystemId: account.groupSystemId,
+            groupBranchId: account.groupBranchId,
+            groupTeamId: account.groupTeamId,
             transactionSource: account.transactionSource,
-            bank: account.bank?.code,
+            groupSystem: account.groupSystem,
+            groupBranch: account.groupBranch,
+            groupTeam: account.groupTeam,
+            typeAccountDescription: account.typeAccountDescription,
+            typeGroupAccountString: account.typeGroupAccountString,
+            groupSystemName: account.groupSystem?.name,
+            groupBranchName: account.groupBranch?.name,
+            groupTeamName: account.groupTeam?.name,
+            bankName: account.bank?.fullName,
           })) || [];
 
         setDataAccount(formattedData);
@@ -390,16 +402,28 @@ const Account: React.FC = () => {
         const formattedData =
           data?.data?.source?.map((account: BankAccounts) => ({
             id: account.id,
-            // bank: account.bank,
+            bank: account.bank?.code,
             accountNumber: account.accountNumber,
             fullName: account.fullName,
+            phone: account.phone?.number,
             phoneId: account.phoneId,
-            phone: account.phone,
-            selectedAccountGroups: account.selectedAccountGroups,
+            selectedAccountGroups: account.typeGroupAccount,
             typeAccount: account.typeAccount,
             notes: account.notes,
+            bankId: account.bankId,
+            groupSystemId: account.groupSystemId,
+            groupBranchId: account.groupBranchId,
+            groupTeamId: account.groupTeamId,
             transactionSource: account.transactionSource,
-            bank: account.bank?.code,
+            groupSystem: account.groupSystem,
+            groupBranch: account.groupBranch,
+            groupTeam: account.groupTeam,
+            typeAccountDescription: account.typeAccountDescription,
+            typeGroupAccountString: account.typeGroupAccountString,
+            groupSystemName: account.groupSystem?.name,
+            groupBranchName: account.groupBranch?.name,
+            groupTeamName: account.groupTeam?.name,
+            bankName: account.bank?.fullName,
           })) || [];
 
         setDataAccount(formattedData);
@@ -433,6 +457,11 @@ const Account: React.FC = () => {
     groupTeamId?: string;
   }>({});
 
+  const [groupAccountFilter, setGroupAccountFilter] = useState();
+  const [groupSystemFilter, setGroupSystemFilter] = useState();
+  const [groupBranchFilter, setGroupBranchFilter] = useState();
+  const [groupTeamFilter, setGroupTeamFilter] = useState();
+  
   // call api lấy dsach filter nhóm tài khoản
   const handleFilter = async () => {
     try {
@@ -446,7 +475,7 @@ const Account: React.FC = () => {
         globalTerm,
         searchParams //searchTerms
       );
-      console.log("fetchBankAccountAPI", fetchBankAccountAPI);
+      // console.log("fetchBankAccountAPI", fetchBankAccountAPI);
 
       if (
         fetchBankAccountAPI &&
@@ -467,10 +496,6 @@ const Account: React.FC = () => {
     }
   };
 
-  const [groupAccountFilter, setGroupAccountFilter] = useState();
-  const [groupSystemFilter, setGroupSystemFilter] = useState();
-  const [groupBranchFilter, setGroupBranchFilter] = useState();
-  const [groupTeamFilter, setGroupTeamFilter] = useState();
 
   const handleSelectChange = (
     groupAccount?: string,
@@ -499,7 +524,7 @@ const Account: React.FC = () => {
         globalTerm,
         searchParams //searchTerms
       );
-      console.log("fetchBankAccountAPI", fetchBankAccountAPI);
+      // console.log("fetchBankAccountAPI", fetchBankAccountAPI);
 
       if (
         fetchBankAccountAPI &&
@@ -654,6 +679,11 @@ const Account: React.FC = () => {
     },
   ];
 
+  const [checkFilter, setCheckFilter] = useState(false);
+  useEffect(() => {
+    fetchAccounts(globalTerm, groupAccountFilter, groupSystemFilter, groupBranchFilter, groupTeamFilter);
+  }, [checkFilter]);
+
   return (
     <>
       <Header />
@@ -667,6 +697,9 @@ const Account: React.FC = () => {
                 const value = e.target.value;
                 // handleSearch(value);
                 setGlobalTerm(value);
+                if (!value) {
+                  setCheckFilter(!checkFilter);
+                }
               }}
               onPressEnter={async (e) => {
                 handleSearch(e.currentTarget.value);
@@ -686,6 +719,7 @@ const Account: React.FC = () => {
                 allowClear
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
+                  setGroupAccountFilter(value);
                   if (!value) {
                     handleSelectChange(
                       value,
@@ -693,8 +727,8 @@ const Account: React.FC = () => {
                       groupBranchFilter,
                       groupTeamFilter
                     );
+                    setCheckFilter(!checkFilter);
                   } else {
-                    setGroupAccountFilter(value);
                     fetchAccounts(
                       globalTerm,
                       value,
@@ -715,6 +749,7 @@ const Account: React.FC = () => {
                 allowClear
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
+                  setGroupSystemFilter(value);
                   if (!value) {
                     handleSelectChange(
                       groupAccountFilter,
@@ -722,8 +757,8 @@ const Account: React.FC = () => {
                       groupBranchFilter,
                       groupTeamFilter
                     );
+                    setCheckFilter(!checkFilter);
                   } else {
-                    setGroupSystemFilter(value);
                     fetchAccounts(
                       globalTerm,
                       groupAccountFilter,
@@ -744,6 +779,7 @@ const Account: React.FC = () => {
                 allowClear
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
+                  setGroupBranchFilter(value);
                   if (!value) {
                     handleSelectChange(
                       groupAccountFilter,
@@ -751,8 +787,8 @@ const Account: React.FC = () => {
                       value,
                       groupTeamFilter
                     );
+                    setCheckFilter(!checkFilter);
                   } else {
-                    setGroupBranchFilter(value);
                     fetchAccounts(
                       globalTerm,
                       groupAccountFilter,
@@ -773,6 +809,7 @@ const Account: React.FC = () => {
                 allowClear
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
+                  setGroupTeamFilter(value);
                   if (!value) {
                     handleSelectChange(
                       groupAccountFilter,
@@ -780,8 +817,8 @@ const Account: React.FC = () => {
                       groupBranchFilter,
                       value
                     );
+                    setCheckFilter(!checkFilter);
                   } else {
-                    setGroupTeamFilter(value);
                     fetchAccounts(
                       globalTerm,
                       groupAccountFilter,

@@ -23,7 +23,7 @@ const PhoneNumber: React.FC = () => {
     []
   );
   const [loading, setLoading] = useState(false);
-  const [globalTerm, setGlobalTerm] = useState("");
+  const [, setGlobalTerm] = useState("");
 
   const fetchAccountGroup = async (globalTerm = "") => {
     setLoading(true);
@@ -45,8 +45,8 @@ const PhoneNumber: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchAccountGroup(globalTerm);
-  }, [globalTerm]);
+    fetchAccountGroup();
+  }, []);
 
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
@@ -134,6 +134,11 @@ const PhoneNumber: React.FC = () => {
     },
   ];
 
+  const [checkFilter, setCheckFilter] = useState(false);
+  useEffect(() => {
+    fetchAccountGroup();
+  }, [checkFilter]);
+
   return (
     <>
       <Header />
@@ -150,7 +155,13 @@ const PhoneNumber: React.FC = () => {
               height: 38,
               marginRight: 15,
             }}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setGlobalTerm(value);
+              if (!value) {
+                setCheckFilter(!checkFilter);
+              }
+            }}
             onPressEnter={(e) => handleSearch(e.currentTarget.value)}
           />
           <Button

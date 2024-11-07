@@ -1,18 +1,21 @@
 import { dataTelegramModal } from "../pages/telegram/page";
+import { buildSearchParams } from "../pages/utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
 export const getListTelegram = async (
   pageIndex: number,
   pageSize: number,
-  globalTerm?: string
+  globalTerm?: string,
+  searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
+    });
     const res = await apiClient.get(`/group-chat-api/find`, {
-      params: {
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        globalTerm: globalTerm,
-      },
+      params
     });
     return res.data;
   } catch (error) {

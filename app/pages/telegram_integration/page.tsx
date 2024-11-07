@@ -30,6 +30,11 @@ export interface ListTelegramIntegration {
   transType: string;
 }
 
+interface filterTeleIntergration {
+  Name: string;
+  Value: string;
+}
+
 const TelegramIntegration = () => {
   const [form] = Form.useForm();
   const [dataTelegramIntegration, setDataTelegramIntegration] = useState<
@@ -42,12 +47,31 @@ const TelegramIntegration = () => {
   const [telegram, setTelegram] = useState<Array<ListTelegramIntegration>>([]);
   const [loading, setLoading] = useState(false);
   const [globalTerm, setGlobalTerm] = useState("");
+  const [pageIndex] = useState(1);
+  const [pageSize] = useState(50);
 
-  const fetchListTelegramIntegration = async (globalTerm = "") => {
+  const fetchListTelegramIntegration = async (
+    globalTerm?: string,
+    groupChat?: string
+  ) => {
+    const arrTeleAccount: filterTeleIntergration[] = [];
+    const bankAccount: filterTeleIntergration = {
+      Name: "groupChatId",
+      Value: groupChat!,
+    };
+    arrTeleAccount.push(bankAccount);
+
+    console.log(groupChat, "groupChat");
+
     setLoading(true);
     try {
-      const response = await getListTelegramIntergration(1, 50, globalTerm);
-      console.log(response, "bankAccount");
+      const response = await getListTelegramIntergration(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        arrTeleAccount
+      );
+      // console.log(response, "bankAccount");
       const formattedData =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         response?.data?.source?.map((item: any) => ({
@@ -72,8 +96,8 @@ const TelegramIntegration = () => {
   };
 
   useEffect(() => {
-    fetchListTelegramIntegration(globalTerm);
-  }, [globalTerm]);
+    fetchListTelegramIntegration();
+  }, []);
 
   const genBankData = async () => {
     try {
@@ -94,7 +118,7 @@ const TelegramIntegration = () => {
     try {
       const dataTelegram = await getListTelegram(1, 50);
       console.log(dataTelegram);
-      
+
       const formattedTelegram =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dataTelegram?.data?.source?.map((tele: any) => ({
@@ -237,20 +261,12 @@ const TelegramIntegration = () => {
     }
   };
 
+  useEffect(() => {
+    fetchListTelegramIntegration();
+  }, []);
+
   const columns = [
     { title: "ID", dataIndex: "id", key: "id", hidden: true },
-    // {
-    //   title: "BankAccountId",
-    //   dataIndex: "BankAccountId",
-    //   key: "BankAccountId",
-    //   hidden: true,
-    // },
-    // {
-    //   title: "groupChatId",
-    //   dataIndex: "groupChatId",
-    //   key: "groupChatId",
-    //   hidden: true,
-    // },
     { title: "Ngân hàng", dataIndex: "code", key: "code" },
     { title: "Số tài khoản", dataIndex: "accountNumber", key: "accountNumber" },
     { title: "Tên chủ tài khoản", dataIndex: "fullName", key: "fullName" },
@@ -293,6 +309,68 @@ const TelegramIntegration = () => {
     },
   ];
 
+  const [teleGroupChatFilter, setTeleGroupChatFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+
+  const [groupChatFilter, setGroupChatFilter] = useState();
+
+  const [filterParams, setFilterParams] = useState<{
+    groupChatId?: string;
+  }>({});
+
+  const handleSelectChange = (groupChat?: string) => {
+    setFilterParams((prevParams) => ({
+      ...prevParams,
+      groupChatId: groupChat,
+    }));
+  };
+  const handleFilterGroupChat = async () => {
+    try {
+      const { groupChatId } = filterParams;
+      const searchParams = groupChatId
+        ? [{ Name: "groupChatId", Value: groupChatId }]
+        : [];
+      const fetchBankAccountAPI = await getListTelegram(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        searchParams
+      );
+      if (
+        fetchBankAccountAPI &&
+        fetchBankAccountAPI.data &&
+        fetchBankAccountAPI.data.source
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res = fetchBankAccountAPI.data.source.map((x: any) => ({
+          value: x.id,
+          label: x.name || "Không xác định",
+        }));
+        setTeleGroupChatFilter(res);
+      } else {
+        setTeleGroupChatFilter([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  };
+
+  useEffect(() => {
+    // const { groupAccountId } = filterParams;
+
+    const fetchData = async () => {
+      await handleFilterGroupChat();
+    };
+
+    fetchData();
+  }, [filterParams]);
+
+  const [checkFilter, setCheckFilter] = useState(false);
+  useEffect(() => {
+    fetchListTelegramIntegration(groupChatFilter);
+  }, [checkFilter]);
+
   return (
     <>
       <Header />
@@ -312,25 +390,32 @@ const TelegramIntegration = () => {
               }}
               onChange={(e) => {
                 const value = e.target.value;
-                handleSearch(value);
+                setGlobalTerm(value);
+                if (!value) {
+                  setCheckFilter(!checkFilter);
+                }
               }}
               onPressEnter={async (e) => {
                 handleSearch(e.currentTarget.value);
               }}
             />
             <Space direction="horizontal" size="middle">
-              {["Nhóm telegram", "Loại giao dịch", "Tên ngân hàng"].map(
-                (placeholder, index) => (
-                  <Select
-                    allowClear
-                    key={index}
-                    // options={accountGroup}
-                    style={{ width: 245 }}
-                    placeholder={placeholder}
-                    // onChange={handleFilterChange}
-                  />
-                )
-              )}
+              <Select
+                options={teleGroupChatFilter}
+                placeholder="Nhóm tài khoản"
+                style={{ width: 245 }}
+                allowClear
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={(value: any) => {
+                  setGroupChatFilter(value);
+                  if (!value) {
+                    handleSelectChange(value);
+                    setCheckFilter(!checkFilter);
+                  } else {
+                    fetchListTelegramIntegration(globalTerm, value);
+                  }
+                }}
+              />
             </Space>
           </div>
 

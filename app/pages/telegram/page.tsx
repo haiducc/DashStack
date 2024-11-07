@@ -26,7 +26,7 @@ const Telegram = () => {
   const [currentTelegram, setCurrentTelegram] =
     useState<dataTelegramModal | null>(null);
   const [dataTelegram, setDataTelegram] = useState<dataTelegramModal[]>([]);
-  const [globalTerm, setGlobalTerm] = useState("");
+  const [, setGlobalTerm] = useState("");
 
   const fetchTelegram = async (globalTerm = "") => {
     try {
@@ -45,8 +45,8 @@ const Telegram = () => {
   };
 
   useEffect(() => {
-    fetchTelegram(globalTerm);
-  }, [globalTerm]);
+    fetchTelegram();
+  }, []);
 
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
@@ -165,6 +165,11 @@ const Telegram = () => {
     },
   ];
 
+  const [checkFilter, setCheckFilter] = useState(false);
+  useEffect(() => {
+    fetchTelegram();
+  }, [checkFilter]);
+
   return (
     <>
       <Header />
@@ -183,7 +188,10 @@ const Telegram = () => {
             }}
             onChange={(e) => {
               const value = e.target.value;
-              handleSearch(value);
+              setGlobalTerm(value);
+              if (!value) {
+                setCheckFilter(!checkFilter);
+              }
             }}
             onPressEnter={async (e) => {
               handleSearch(e.currentTarget.value);

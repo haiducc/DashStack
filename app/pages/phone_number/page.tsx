@@ -22,6 +22,7 @@ const PhoneNumber: React.FC = () => {
     []
   );
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [globalTerm, setGlobalTerm] = useState("");
 
   const fetchListPhone = async (globalTerm = "") => {
@@ -44,8 +45,8 @@ const PhoneNumber: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchListPhone(globalTerm);
-  }, [globalTerm]);
+    fetchListPhone();
+  }, []);
 
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
@@ -169,6 +170,11 @@ const PhoneNumber: React.FC = () => {
     },
   ];
 
+  const [checkFilter, setCheckFilter] = useState(false);
+  useEffect(() => {
+    fetchListPhone();
+  }, [checkFilter]);
+
   return (
     <>
       <Header />
@@ -187,7 +193,10 @@ const PhoneNumber: React.FC = () => {
             }}
             onChange={(e) => {
               const value = e.target.value;
-              handleSearch(value);
+              setGlobalTerm(value);
+              if (!value) {
+                setCheckFilter(!checkFilter);
+              }
             }}
             onPressEnter={async (e) => {
               handleSearch(e.currentTarget.value);

@@ -31,6 +31,7 @@ const Role = () => {
   const [branchSystem, setBranchSystem] = useState([]);
   const [groupTeam, setGroupTeam] = useState([]);
   const [systemId, setSystemId] = useState<number>(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [parentId, setParentId] = useState<number>(0);
 
   const fetchListRole = async (globalTerm = "") => {
@@ -71,7 +72,7 @@ const Role = () => {
 
   const getBranchSystems = async () => {
     try {
-      const getBranch = await getBranchSystem(1, 20, systemId);
+      const getBranch = await getBranchSystem(1, 20);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = getBranch?.data?.source?.map((x: any) => ({
         value: x.id,
@@ -85,7 +86,7 @@ const Role = () => {
 
   const getGroupTeams = async () => {
     try {
-      const groupTeams = await getGroupTeam(systemId, parentId, 1, 20);
+      const groupTeams = await getGroupTeam( 1, 20);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = groupTeams?.data?.source?.map((x: any) => ({
         value: x.id,

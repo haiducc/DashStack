@@ -1,19 +1,20 @@
+import { buildSearchParams } from "../pages/utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
 export const getGroupTeam = async (
-  grandparentId: number,
-  parentId: number,
   pageIndex: number,
-  pageSize: number
+  pageSize: number,
+  globalTerm?: string,
+  searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
+    });
     const res = await apiClient.get(`/group-team-api/find`, {
-      params: {
-        grandparentId: grandparentId,
-        parentId: parentId,
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-      },
+      params,
     });
     return res.data;
   } catch (error) {

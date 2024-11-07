@@ -1,13 +1,20 @@
+import { buildSearchParams } from "../pages/utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
-export const getBranchSystem = async (grandparentId: number, pageIndex: number, pageSize: number) => {
+export const getBranchSystem = async (
+  pageIndex: number,
+  pageSize: number,
+  globalTerm?: string,
+  searchTerms: Array<{ Name: string; Value: string }> = []
+) => {
   try {
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
+    });
     const res = await apiClient.get(`/group-branch-api/find`, {
-      params: {
-        grandparentId: grandparentId,
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-      },
+      params,
     });
     return res.data;
   } catch (error) {

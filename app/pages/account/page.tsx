@@ -56,35 +56,42 @@ const Account: React.FC = () => {
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
   const [grandparentId, setGrandparentId] = useState<number>(0);
-  const [parentId, setParentId] = useState<number>(0);
+  const [, setParentId] = useState<number>(0);
   const [value, setValue] = useState("1");
   const [globalTerm, setGlobalTerm] = useState("");
   const [loading, setLoading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [, setIsEditMode] = useState(false);
   const [accountGroup, setAccountGroup] = useState([]);
-  // const [searchTerms, setSearchTerms] = useState<
-  //   Array<{ Name: string; Value: string }>
-  // >([]);
-
-  // const [selectedGroup, setSelectedGroup] = useState(null);
 
   // API để lấy ra dsach tài khoản
   const fetchAccounts = async (
     globalTerm?: string,
     searchTerms?: string,
-    heThong?: string
+    system?: string,
+    branch?: string,
+    team?: string
   ) => {
+    console.log(globalTerm, searchTerms, system, branch, team);
+
     const arrBankAccount: filterGroupAccount[] = [];
     const bankAccount: filterGroupAccount = {
       Name: "groupAccountId",
       Value: searchTerms!,
     };
-    const heThongs: filterGroupAccount = {
-      Name: "heThongId",
-      Value: heThong!,
+    const groupSystem: filterGroupAccount = {
+      Name: "groupSystemId",
+      Value: system!,
     };
-    arrBankAccount.push(bankAccount, heThongs);
+    const groupBranch: filterGroupAccount = {
+      Name: "groupBranchId",
+      Value: branch!,
+    };
+    const groupTeam: filterGroupAccount = {
+      Name: "groupTeamId",
+      Value: team!,
+    };
+
+    arrBankAccount.push(bankAccount, groupSystem, groupBranch, groupTeam);
 
     setLoading(true);
     try {
@@ -132,8 +139,8 @@ const Account: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchAccounts(globalTerm);
-  }, [globalTerm]);
+    fetchAccounts();
+  }, []);
 
   const fetchBankData = async () => {
     try {
@@ -203,11 +210,7 @@ const Account: React.FC = () => {
 
   const getBranchSystems = async () => {
     try {
-      const getBranch = await getBranchSystem(
-        grandparentId,
-        pageIndex,
-        pageSize
-      );
+      const getBranch = await getBranchSystem(pageIndex, pageSize);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = getBranch?.data?.source?.map((x: any) => ({
         value: x.id,
@@ -222,8 +225,8 @@ const Account: React.FC = () => {
   const getGroupTeams = async () => {
     try {
       const groupTeams = await getGroupTeam(
-        grandparentId,
-        parentId,
+        // grandparentId,
+        // parentId,
         pageIndex,
         pageSize
       );
@@ -369,7 +372,7 @@ const Account: React.FC = () => {
         const formattedData =
           data?.data?.source?.map((account: BankAccounts) => ({
             id: account.id,
-            bank: account.bank,
+            // bank: account.bank,
             accountNumber: account.accountNumber,
             fullName: account.fullName,
             phoneId: account.phoneId,
@@ -378,6 +381,7 @@ const Account: React.FC = () => {
             typeAccount: account.typeAccount,
             notes: account.notes,
             transactionSource: account.transactionSource,
+            bank: account.bank?.code,
           })) || [];
 
         setDataAccount(formattedData);
@@ -386,7 +390,7 @@ const Account: React.FC = () => {
         const formattedData =
           data?.data?.source?.map((account: BankAccounts) => ({
             id: account.id,
-            bank: account.bank,
+            // bank: account.bank,
             accountNumber: account.accountNumber,
             fullName: account.fullName,
             phoneId: account.phoneId,
@@ -395,6 +399,7 @@ const Account: React.FC = () => {
             typeAccount: account.typeAccount,
             notes: account.notes,
             transactionSource: account.transactionSource,
+            bank: account.bank?.code,
           })) || [];
 
         setDataAccount(formattedData);
@@ -411,10 +416,21 @@ const Account: React.FC = () => {
   const [accountGroupFilter, setAccountGroupFilter] = useState<
     Array<{ value: string; label: string }>
   >([]);
+  const [systemFilter, setSystemFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [branchFilter, setBranchFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [TeamFilter, setTeamFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
 
   const [filterParams, setFilterParams] = useState<{
     groupAccountId?: string;
-    typeAccount?: string;
+    groupSystemId?: string;
+    groupBranchId?: string;
+    groupTeamId?: string;
   }>({});
 
   // call api lấy dsach filter nhóm tài khoản
@@ -451,27 +467,138 @@ const Account: React.FC = () => {
     }
   };
 
+  const [groupAccountFilter, setGroupAccountFilter] = useState();
+  const [groupSystemFilter, setGroupSystemFilter] = useState();
+  const [groupBranchFilter, setGroupBranchFilter] = useState();
+  const [groupTeamFilter, setGroupTeamFilter] = useState();
+
+  const handleSelectChange = (
+    groupAccount?: string,
+    groupSystem?: string,
+    groupBranch?: string,
+    groupTeam?: string
+  ) => {
+    setFilterParams((prevParams) => ({
+      ...prevParams,
+      groupAccountId: groupAccount,
+      groupSystemId: groupSystem,
+      groupBranchId: groupBranch,
+      groupTeamId: groupTeam,
+    }));
+  };
+
+  const handleFilterSystem = async () => {
+    try {
+      const { groupSystemId } = filterParams;
+      const searchParams = groupSystemId
+        ? [{ Name: "groupSystemId", Value: groupSystemId }]
+        : [];
+      const fetchBankAccountAPI = await getGroupSystem(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        searchParams //searchTerms
+      );
+      console.log("fetchBankAccountAPI", fetchBankAccountAPI);
+
+      if (
+        fetchBankAccountAPI &&
+        fetchBankAccountAPI.data &&
+        fetchBankAccountAPI.data.source
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res = fetchBankAccountAPI.data.source.map((x: any) => ({
+          value: x.id,
+          label: x.name || "Không xác định",
+        }));
+        setSystemFilter(res);
+      } else {
+        setSystemFilter([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  };
+
+  const handleFilterBranch = async () => {
+    try {
+      const { groupBranchId } = filterParams;
+      const searchParams = groupBranchId
+        ? [{ Name: "groupBranchId", Value: groupBranchId }]
+        : [];
+      const fetchBankAccountAPI = await getBranchSystem(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        searchParams //searchTerms
+      );
+      // console.log("fetchBankAccountAPI", fetchBankAccountAPI);
+
+      if (
+        fetchBankAccountAPI &&
+        fetchBankAccountAPI.data &&
+        fetchBankAccountAPI.data.source
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res = fetchBankAccountAPI.data.source.map((x: any) => ({
+          value: x.id,
+          label: x.name || "Không xác định",
+        }));
+        setBranchFilter(res);
+      } else {
+        setBranchFilter([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  };
+
+  const handleFilterTeam = async () => {
+    try {
+      const { groupTeamId } = filterParams;
+      const searchParams = groupTeamId
+        ? [{ Name: "groupTeamId", Value: groupTeamId }]
+        : [];
+      const fetchBankAccountAPI = await getGroupTeam(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        searchParams //searchTerms
+      );
+      // console.log("fetchBankAccountAPI", fetchBankAccountAPI);
+
+      if (
+        fetchBankAccountAPI &&
+        fetchBankAccountAPI.data &&
+        fetchBankAccountAPI.data.source
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res = fetchBankAccountAPI.data.source.map((x: any) => ({
+          value: x.id,
+          label: x.name || "Không xác định",
+        }));
+        setTeamFilter(res);
+      } else {
+        setTeamFilter([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  };
+
   useEffect(() => {
     // const { groupAccountId } = filterParams;
 
     const fetchData = async () => {
       await handleFilter();
       // await fetchAccounts(groupAccountId);
+      await handleFilterSystem();
+      await handleFilterBranch();
+      await handleFilterTeam();
     };
 
     fetchData();
   }, [filterParams]);
-
-  const [groupAccountFilter ,setGroupAccountFilter] = useState()
-  const [typeAccountFilter ,setTypeAccountFilter] = useState()
-
-  const handleSelectChange = (groupAccount?: string, heThong?: string) => {
-    setFilterParams((prevParams) => ({
-      ...prevParams,
-      groupAccountId: groupAccount,
-      typeAccount: heThong,
-    }));
-  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleValueChange = (newValue: any) => {
@@ -538,7 +665,8 @@ const Account: React.FC = () => {
               placeholder="Số tài khoản, tên tài khoản ..."
               onChange={(e) => {
                 const value = e.target.value;
-                handleSearch(value);
+                // handleSearch(value);
+                setGlobalTerm(value);
               }}
               onPressEnter={async (e) => {
                 handleSearch(e.currentTarget.value);
@@ -559,10 +687,21 @@ const Account: React.FC = () => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
                   if (!value) {
-                    setGroupAccountFilter(value)
-                    handleSelectChange(value, typeAccountFilter);
+                    handleSelectChange(
+                      value,
+                      groupSystemFilter,
+                      groupBranchFilter,
+                      groupTeamFilter
+                    );
                   } else {
-                    fetchAccounts(undefined, value);
+                    setGroupAccountFilter(value);
+                    fetchAccounts(
+                      globalTerm,
+                      value,
+                      groupSystemFilter,
+                      groupBranchFilter,
+                      groupTeamFilter
+                    );
                   }
                 }}
               />
@@ -570,17 +709,86 @@ const Account: React.FC = () => {
             <div className="w-2" />
             <Space direction="horizontal" size="middle">
               <Select
-                options={accountGroupFilter}
+                options={systemFilter}
                 placeholder="Hệ thống"
                 style={{ width: 245 }}
                 allowClear
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
                   if (!value) {
-                    setTypeAccountFilter(value)
-                    handleSelectChange(groupAccountFilter,value);
+                    handleSelectChange(
+                      groupAccountFilter,
+                      value,
+                      groupBranchFilter,
+                      groupTeamFilter
+                    );
                   } else {
-                    fetchAccounts(undefined, value);
+                    setGroupSystemFilter(value);
+                    fetchAccounts(
+                      globalTerm,
+                      groupAccountFilter,
+                      value,
+                      groupBranchFilter,
+                      groupTeamFilter
+                    );
+                  }
+                }}
+              />
+            </Space>
+            <div className="w-2" />
+            <Space direction="horizontal" size="middle">
+              <Select
+                options={branchFilter}
+                placeholder="Chi nhánh"
+                style={{ width: 245 }}
+                allowClear
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={(value: any) => {
+                  if (!value) {
+                    handleSelectChange(
+                      groupAccountFilter,
+                      groupSystemFilter,
+                      value,
+                      groupTeamFilter
+                    );
+                  } else {
+                    setGroupBranchFilter(value);
+                    fetchAccounts(
+                      globalTerm,
+                      groupAccountFilter,
+                      groupSystemFilter,
+                      value,
+                      groupTeamFilter
+                    );
+                  }
+                }}
+              />
+            </Space>
+            <div className="w-2" />
+            <Space direction="horizontal" size="middle">
+              <Select
+                options={TeamFilter}
+                placeholder="Đội nhóm"
+                style={{ width: 245 }}
+                allowClear
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={(value: any) => {
+                  if (!value) {
+                    handleSelectChange(
+                      groupAccountFilter,
+                      groupSystemFilter,
+                      groupBranchFilter,
+                      value
+                    );
+                  } else {
+                    setGroupTeamFilter(value);
+                    fetchAccounts(
+                      globalTerm,
+                      groupAccountFilter,
+                      groupSystemFilter,
+                      groupBranchFilter,
+                      value
+                    );
                   }
                 }}
               />

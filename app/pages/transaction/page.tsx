@@ -311,15 +311,15 @@ const Transaction = () => {
                 height: 38,
                 marginRight: 15,
               }}
-              //   onChange={(e) => {
-              //     const value = e.target.value;
-              //     handleSearch(value);
-              //   }}
-              //   onPressEnter={async (e) => {
-              //     handleSearch(e.currentTarget.value);
-              //   }}
+                // onChange={(e) => {
+                //   const value = e.target.value;
+                //   handleSearch(value);
+                // }}
+                // onPressEnter={async (e) => {
+                //   handleSearch(e.currentTarget.value);
+                // }}
             />
-            <Space direction="horizontal" size="middle">
+            {/* <Space direction="horizontal" size="middle">
               {["Nhóm telegram", "Loại giao dịch", "Tên ngân hàng"].map(
                 (placeholder, index) => (
                   <Select
@@ -332,7 +332,7 @@ const Transaction = () => {
                   />
                 )
               )}
-            </Space>
+            </Space> */}
           </div>
 
           <Button

@@ -24,6 +24,11 @@ export interface ListSheetIntegration {
   sheetId: number;
 }
 
+interface filterSheetIntergration {
+  Name: string;
+  Value: string;
+}
+
 const SheetIntergration = () => {
   const [form] = Form.useForm();
   const [dataSheetIntegration, setDataSheetIntegration] = useState<
@@ -39,11 +44,25 @@ const SheetIntergration = () => {
   const [banks, setBanks] = useState([]);
   const [sheet, setSheet] = useState([]);
 
-  const fetchSheetIntegration = async (globalTerm = "") => {
+  const fetchSheetIntegration = async (
+    globalTerm?: string,
+    sheetId?: string
+  ) => {
+    const arrSheet: filterSheetIntergration[] = [];
+    const Sheet: filterSheetIntergration = {
+      Name: "sheetId",
+      Value: sheetId!,
+    };
+    arrSheet.push(Sheet);
     setLoading(true);
     try {
-      const response = await getListSheetIntergration(1, 50, globalTerm);
-      console.log(response, "getListSheetIntergration");
+      const response = await getListSheetIntergration(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        arrSheet
+      );
+      // console.log(response, "getListSheetIntergration");
       const formattedData =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         response?.data?.source?.map((item: any) => ({
@@ -220,7 +239,7 @@ const SheetIntergration = () => {
       title: "bankAccountId",
       dataIndex: "bankAccountId",
       key: "bankAccountId",
-      hidden: true
+      hidden: true,
     },
     { title: "Ngân hàng", dataIndex: "code", key: "code" },
     { title: "Số tài khoản", dataIndex: "accountNumber", key: "accountNumber" },
@@ -263,6 +282,70 @@ const SheetIntergration = () => {
     },
   ];
 
+  const [sheetFilter, setSheetFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+
+  const [sheetIdFilter, setSheetIdFilter] = useState();
+
+  const [filterParams, setFilterParams] = useState<{
+    groupChatId?: string;
+  }>({});
+
+  const handleSelectChange = (groupChat?: string) => {
+    setFilterParams((prevParams) => ({
+      ...prevParams,
+      groupChatId: groupChat,
+    }));
+  };
+  const [pageIndex] = useState(1);
+  const [pageSize] = useState(50);
+  const handleFilterSheet = async () => {
+    try {
+      const { groupChatId } = filterParams;
+      const searchParams = groupChatId
+        ? [{ Name: "groupChatId", Value: groupChatId }]
+        : [];
+      const fetchBankAccountAPI = await getListSheet(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        searchParams
+      );
+      if (
+        fetchBankAccountAPI &&
+        fetchBankAccountAPI.data &&
+        fetchBankAccountAPI.data.source
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res = fetchBankAccountAPI.data.source.map((x: any) => ({
+          value: x.id,
+          label: x.name || "Không xác định",
+        }));
+        setSheetFilter(res);
+      } else {
+        setSheetFilter([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  };
+
+  useEffect(() => {
+    // const { groupAccountId } = filterParams;
+
+    const fetchData = async () => {
+      await handleFilterSheet();
+    };
+
+    fetchData();
+  }, [filterParams]);
+
+  const [checkFilter, setCheckFilter] = useState(false);
+  useEffect(() => {
+    fetchSheetIntegration(sheetIdFilter);
+  }, [checkFilter]);
+
   return (
     <>
       <Header />
@@ -289,18 +372,22 @@ const SheetIntergration = () => {
               }}
             />
             <Space direction="horizontal" size="middle">
-              {["Nhóm telegram", "Loại giao dịch", "Tên ngân hàng"].map(
-                (placeholder, index) => (
-                  <Select
-                    allowClear
-                    key={index}
-                    // options={accountGroup}
-                    style={{ width: 245 }}
-                    placeholder={placeholder}
-                    // onChange={handleFilterChange}
-                  />
-                )
-              )}
+              <Select
+                options={sheetFilter}
+                placeholder="Nhóm trang tính"
+                style={{ width: 245 }}
+                allowClear
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={(value: any) => {
+                  setSheetIdFilter(value);
+                  if (!value) {
+                    handleSelectChange(value);
+                    setCheckFilter(!checkFilter);
+                  } else {
+                    fetchSheetIntegration(globalTerm, value);
+                  }
+                }}
+              />
             </Space>
           </div>
 
@@ -360,7 +447,7 @@ const SheetIntergration = () => {
             />
           </Form.Item>
           <Form.Item
-          hidden
+            hidden
             label="Tài khoản ngân hàng"
             name="accountNumber"
             rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}

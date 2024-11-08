@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import "./globals.css";
-import 'tailwindcss/tailwind.css';
+// import "./globals.css";
+// import 'tailwindcss/tailwind.css';
 
 const Page = () => {
   return (

@@ -98,7 +98,7 @@ const BarChart = () => {
   return (
     <div>
       {dataChart ? (
-        <Bar data={dataChart} options={options} />
+        <Bar data={dataChart} options={options}/>
       ) : (
         <p>Loading...</p>
       )}

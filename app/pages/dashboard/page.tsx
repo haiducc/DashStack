@@ -11,6 +11,7 @@ import {
   getTransactionById,
 } from "@/app/services/statistics";
 import BaseModal from "@/app/component/config/BaseModal";
+import './style.css'
 
 interface DataType {
   id: number;

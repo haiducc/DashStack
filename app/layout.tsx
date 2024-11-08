@@ -1,5 +1,6 @@
 "use client";
 import "./globals.css";
+import 'tailwindcss/tailwind.css';
 import React from "react";
 import { Layout } from "antd";
 import SideMenu from "./component/Menu";

@@ -1,18 +1,10 @@
 "use client";
 import React from "react";
-import {
-  ClockCircleOutlined,
-  DatabaseOutlined,
-  HeartOutlined,
-  MessageOutlined,
-  AndroidFilled,
-  SlackSquareOutlined,
-  PauseCircleTwoTone
-} from "@ant-design/icons";
 import { Menu as AntMenu } from "antd";
 import Image from "next/image";
 import Logo from "../../public/img/logo.png";
 import { useRouter } from "next/navigation";
+
 
 type MenuItem = {
   key: string;
@@ -27,13 +19,11 @@ const items: MenuItem[] = [
   {
     key: "statistics",
     label: "Thống kê",
-    icon: <ClockCircleOutlined />,
     path: "/pages/dashboard",
   },
   {
     key: "account",
     label: "Cấu hình tài khoản",
-    icon: <HeartOutlined />,
     children: [
       {
         key: "account_group",
@@ -55,7 +45,6 @@ const items: MenuItem[] = [
   {
     key: "telegram_seting",
     label: "Cấu hình telegram",
-    icon: <AndroidFilled />,
     children: [
       {
         key: "group_telegram",
@@ -72,7 +61,6 @@ const items: MenuItem[] = [
   {
     key: "sheet_setting",
     label: "Cấu hình trang tính",
-    icon: <MessageOutlined />,
     children: [
       {
         key: "group_sheet",
@@ -89,19 +77,16 @@ const items: MenuItem[] = [
   {
     key: "transaction",
     label: "Giao dịch thủ công",
-    icon: <DatabaseOutlined />,
     path: "/pages/transaction",
   },
   {
     key: "role",
     label: "Nhóm quyền tài khoản",
-    icon: <SlackSquareOutlined />,
     path: "/pages/role",
   },
   {
     key: "settings",
     label: "Cấu hình hề thống",
-    icon: <PauseCircleTwoTone />,
     path: "/pages/settings",
   },
 ];

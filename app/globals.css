@@ -49,11 +49,11 @@ body {
 }
 
 .ant-menu-submenu-arrow {
-  color: #ffffff;
+  color: #ffffff !important;
 } 
 
-:where(.css-dev-only-do-not-override-ni1kz0).ant-menu-light .ant-menu-item-selected, :where(.css-dev-only-do-not-override-ni1kz0).ant-menu-light>.ant-menu .ant-menu-item-selected {
-  background-color: #48B9FF;
+:where(.css-dev-only-do-not-override-apn68).ant-menu-light .ant-menu-item-selected, :where(.css-dev-only-do-not-override-apn68).ant-menu-light>.ant-menu .ant-menu-item-selected {
+  background-color: #48B9FF !important;
 }
 
 :where(.css-dev-only-do-not-override-ni1kz0).ant-menu-light .ant-menu-submenu-selected >.ant-menu-submenu-title, :where(.css-dev-only-do-not-override-ni1kz0).ant-menu-light>.ant-menu .ant-menu-submenu-selected >.ant-menu-submenu-title {
@@ -81,7 +81,7 @@ body {
   padding: 0 !important;
 }
 
-:where(.css-dev-only-do-not-override-ni1kz0).ant-table-wrapper .ant-table-thead >tr>th, :where(.css-dev-only-do-not-override-ni1kz0).ant-table-wrapper .ant-table-thead >tr>td {
+:where(.css-dev-only-do-not-override-apn68).ant-table-wrapper .ant-table-thead >tr>th, :where(.css-dev-only-do-not-override-apn68).ant-table-wrapper .ant-table-thead >tr>td {
   background-color: #4B5CB8 !important;
   color: #ffffff;
 }
@@ -106,7 +106,6 @@ body {
   margin-bottom: 5px;
 }
 
-/* :where(.css-dev-only-do-not-override-ni1kz0).ant-row-center {
-  justify-content: space-between;
-  padding: 0 20px;
+/* .ant-table-cell {
+  background-color: #4B5CB8;
 } */

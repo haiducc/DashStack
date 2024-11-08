@@ -1,6 +1,6 @@
 "use client";
+
 import "./globals.css";
-// import 'tailwindcss/tailwind.css';
 import React from "react";
 import { Layout } from "antd";
 import SideMenu from "./component/Menu";
@@ -18,10 +18,12 @@ const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <html lang="en">
       <body>
         <Layout>
-          {!isLoginPage && <SideMenu />}
-          <Content style={{ padding: "0 50px", minHeight: "100vh" }}>
-            {children}
-          </Content>
+          <div className="flex">
+            {!isLoginPage && <SideMenu />}
+            <Content style={{ padding: "0 50px", minHeight: "100vh" }}>
+              {children}
+            </Content>
+          </div>
           <ToastContainer />
         </Layout>
       </body>

@@ -1,12 +1,10 @@
 "use client";
 import React from "react";
 
-const Page = () => {
+export default function page() {
   return (
     <>
       <div>Hello</div>
     </>
   );
 };
-
-export default Page;

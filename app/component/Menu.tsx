@@ -11,7 +11,7 @@ type MenuItem = {
   label: string;
   icon?: React.ReactNode;
   path?: string;
-  children?: MenuItem[];
+  items?: MenuItem[];
   type?: "group" | "divider";
 };
 
@@ -24,7 +24,7 @@ const items: MenuItem[] = [
   {
     key: "account",
     label: "Cấu hình tài khoản",
-    children: [
+    items: [
       {
         key: "account_group",
         label: "Nhóm tài khoản",
@@ -45,7 +45,7 @@ const items: MenuItem[] = [
   {
     key: "telegram_seting",
     label: "Cấu hình telegram",
-    children: [
+    items: [
       {
         key: "group_telegram",
         label: "Nhóm telegram",
@@ -61,7 +61,7 @@ const items: MenuItem[] = [
   {
     key: "sheet_setting",
     label: "Cấu hình trang tính",
-    children: [
+    items: [
       {
         key: "group_sheet",
         label: "Nhóm trang tính",
@@ -97,8 +97,8 @@ const SideMenu = () => {
   const onClick = (e: { key: string }) => {
     const clickedItem = items
       .flatMap((item) =>
-        item.children
-          ? [{ ...item, children: undefined }, ...item.children]
+        item.items
+          ? [{ ...item, children: undefined }, ...item.items]
           : item
       )
       .find((item) => item.key === e.key);
@@ -130,11 +130,11 @@ const SideMenu = () => {
         }}
         mode="inline"
       >
-        {items.map(({ key, label, icon, children }) => {
-          if (children && children.length > 0) {
+        {items.map(({ key, label, icon, items }) => {
+          if (items && items.length > 0) {
             return (
               <AntMenu.SubMenu key={key} icon={icon} title={label}>
-                {children.map((child) => (
+                {items.map((child) => (
                   <AntMenu.Item key={child.key}>{child.label}</AntMenu.Item>
                 ))}
               </AntMenu.SubMenu>

@@ -1,5 +1,7 @@
 "use client";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import * as React from "react";
 import Header from "@/app/component/Header";
 import {
   Button,
@@ -8,12 +10,11 @@ import {
   Select,
   Space,
   Table,
-  Modal,
   Radio,
   Spin,
 } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import BaseModal from "@/app/component/config/BaseModal";
 import {
   addBankAccounts,
@@ -29,7 +30,7 @@ import { getBranchSystem } from "@/app/services/branchSystem";
 import { getGroupTeam } from "@/app/services/groupTeam";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
-import HiddenForm from "./form/page";
+import DeleteModal from "@/app/component/config/modalDelete";
 
 interface filterGroupAccount {
   Name: string;
@@ -41,7 +42,7 @@ const accountTypeOptions = [
   { value: "2", label: "Tài khoản marketing" },
 ];
 
-const Account: React.FC = () => {
+const Account = () => {
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [currentAccount, setCurrentAccount] = useState<BankAccounts | null>(
@@ -268,10 +269,8 @@ const Account: React.FC = () => {
       });
       // console.log(res, "res");
       if (!res.success) {
-        // Nếu không thành công, hiển thị thông báo lỗi
         toast.error(res.message || "Có lỗi xảy ra, vui lòng thử lại.");
       } else {
-        // Nếu thành công, thực hiện các hành động tiếp theo
         setAddModalOpen(false);
         form.resetFields();
         setCurrentAccount(null);
@@ -345,23 +344,40 @@ const Account: React.FC = () => {
     setAddModalOpen(true);
   };
 
-  const handleDeleteAccount = (account: BankAccounts) => {
-    Modal.confirm({
-      title: "Xóa tài khoản ngân hàng",
-      content: `Bạn có chắc chắn chấp nhận xóa tài khoản ngân hàng ${account.bank?.code} này không?`,
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await deleteBankAccount(account.id);
-          await fetchAccounts();
-        } catch (error) {
-          console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-        } finally {
-          setLoading(false);
-          toast.success("Xóa tài khoản thành công");
-        }
-      },
-    });
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<BankAccounts | null>(
+    null
+  );
+
+  const handleDeleteAccount = async (x: BankAccounts) => {
+    setLoading(true);
+    try {
+      await deleteBankAccount(x.id);
+      toast.success("Xóa thành công tài khoản ngân hàng!");
+      await fetchAccounts();
+    } catch (error) {
+      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (accountGroup: BankAccounts) => {
+    setSelectedAccount(accountGroup);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedAccount(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedAccount) {
+      handleDeleteAccount(selectedAccount);
+      setIsDeleteModalOpen(false);
+    }
   };
 
   const handleSearch = async (value: string) => {
@@ -461,7 +477,7 @@ const Account: React.FC = () => {
   const [groupSystemFilter, setGroupSystemFilter] = useState();
   const [groupBranchFilter, setGroupBranchFilter] = useState();
   const [groupTeamFilter, setGroupTeamFilter] = useState();
-  
+
   // call api lấy dsach filter nhóm tài khoản
   const handleFilter = async () => {
     try {
@@ -495,7 +511,6 @@ const Account: React.FC = () => {
       console.error("Error fetching bank accounts:", error);
     }
   };
-
 
   const handleSelectChange = (
     groupAccount?: string,
@@ -670,7 +685,7 @@ const Account: React.FC = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDeleteAccount(record)}
+            onClick={() => handleDeleteClick(record)}
           >
             Xóa
           </Button>
@@ -681,7 +696,13 @@ const Account: React.FC = () => {
 
   const [checkFilter, setCheckFilter] = useState(false);
   useEffect(() => {
-    fetchAccounts(globalTerm, groupAccountFilter, groupSystemFilter, groupBranchFilter, groupTeamFilter);
+    fetchAccounts(
+      globalTerm,
+      groupAccountFilter,
+      groupSystemFilter,
+      groupBranchFilter,
+      groupTeamFilter
+    );
   }, [checkFilter]);
 
   return (
@@ -843,7 +864,7 @@ const Account: React.FC = () => {
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} fullscreen />
+          <Spin spinning={loading} />
         ) : (
           <Table columns={columns} dataSource={dataAccount} />
         )}
@@ -863,7 +884,6 @@ const Account: React.FC = () => {
           layout="vertical"
           className="flex flex-col gap-1 w-full"
         >
-          <HiddenForm />
           <Form.Item hidden label="id" name="id">
             <Input />
           </Form.Item>
@@ -1026,6 +1046,12 @@ const Account: React.FC = () => {
           </Form.Item>
         </Form>
       </BaseModal>
+      <DeleteModal
+        open={isDeleteModalOpen}
+        onCancel={handleCancel}
+        onConfirm={handleConfirmDelete}
+        selectedAccount={handleDeleteAccount}
+      />
     </>
   );
 };

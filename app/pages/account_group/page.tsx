@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/app/component/Header";
-import { Button, Form, Input, Space, Table, Modal, Spin } from "antd";
+import { Button, Form, Input, Space, Table, Spin } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
 import BaseModal from "@/app/component/config/BaseModal";
@@ -12,6 +12,7 @@ import {
   getAccountGroup,
 } from "@/app/services/accountGroup";
 import { toast } from "react-toastify";
+import DeleteModal from "@/app/component/config/modalDelete";
 
 const PhoneNumber: React.FC = () => {
   const [form] = Form.useForm();
@@ -82,24 +83,39 @@ const PhoneNumber: React.FC = () => {
     setAddModalOpen(true);
   };
 
-  const handleDeleteAccountGroup = (x: DataAccountGroup) => {
-    Modal.confirm({
-      title: "Xóa tài khoản ngân hàng",
-      content: `Bạn có chắc chắn muốn xóa nhóm tài khoản ${x.fullName} này không?`,
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await deleteAccountGroup(x.id);
-          toast.success("Xóa thành công!");
-          await fetchAccountGroup();
-        } catch (error) {
-          console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-          toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedAccountGroup, setSelectedAccountGroup] =
+    useState<DataAccountGroup | null>(null);
+
+  const handleDeleteAccountGroup = async (x: DataAccountGroup) => {
+    setLoading(true);
+    try {
+      await deleteAccountGroup(x.id);
+      toast.success("Xóa thành công!");
+      await fetchAccountGroup();
+    } catch (error) {
+      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (accountGroup: DataAccountGroup) => {
+    setSelectedAccountGroup(accountGroup);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedAccountGroup(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedAccountGroup) {
+      handleDeleteAccountGroup(selectedAccountGroup);
+      setIsDeleteModalOpen(false);
+    }
   };
 
   const handleSearch = async (value: string) => {
@@ -125,7 +141,7 @@ const PhoneNumber: React.FC = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDeleteAccountGroup(record)}
+            onClick={() => handleDeleteClick(record)}
           >
             Xóa
           </Button>
@@ -234,6 +250,48 @@ const PhoneNumber: React.FC = () => {
           </div>
         </Form>
       </BaseModal>
+      {/* <Modal
+        open={isDeleteModalOpen}
+        footer={
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setIsDeleteModalOpen(false)} // Nút hủy
+              className="w-[100px] h-[40px] mr-2"
+            >
+              Quay lại
+            </Button>
+            <button
+              onClick={() => {
+                if (selectedAccountGroup) {
+                  handleDeleteAccountGroup(selectedAccountGroup);
+                  setIsDeleteModalOpen(false);
+                }
+              }}
+              className="w-[100px] h-[40px] bg-red-600 border-red-600 text-white rounded-md"
+            >
+              Xác nhận
+            </button>
+          </div>
+        }
+        onCancel={() => {
+          setIsDeleteModalOpen(false);
+        }}
+      >
+        <div className="flex justify-center flex-col items-center">
+          <div className="text-xl font-bold text-[#DB0606]">
+            Xóa tài khoản giao dịch thủ công
+          </div>
+          <p className="flex justify-center items-center">
+            Bạn có chắc chắn chấp nhận xóa nhóm tài khoản này không?
+          </p>
+        </div>
+      </Modal> */}
+      <DeleteModal
+        open={isDeleteModalOpen}
+        onCancel={handleCancel}
+        onConfirm={handleConfirmDelete}
+        selectedAccountGroup={selectedAccountGroup}
+      />
     </>
   );
 };

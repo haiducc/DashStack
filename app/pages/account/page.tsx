@@ -3,16 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as React from "react";
 import Header from "@/app/component/Header";
-import {
-  Button,
-  Form,
-  Input,
-  Select,
-  Space,
-  Table,
-  Radio,
-  Spin,
-} from "antd";
+import { Button, Form, Input, Select, Space, Table, Radio, Spin } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import BaseModal from "@/app/component/config/BaseModal";
@@ -36,6 +27,11 @@ interface filterGroupAccount {
   Name: string;
   Value: string;
 }
+
+// interface roleAccount {
+//   key: string;
+//   Value: number;
+// }
 
 const accountTypeOptions = [
   { value: "1", label: "Tài khoản công ty" },
@@ -63,6 +59,12 @@ const Account = () => {
   const [loading, setLoading] = useState(false);
   const [, setIsEditMode] = useState(false);
   const [accountGroup, setAccountGroup] = useState([]);
+  //
+  const keys = localStorage.getItem("key");
+  const values = localStorage.getItem("value");
+
+  // const [keyLocalStorage] = useState(keys);
+  // const [valueLocalStorage] = useState(values);
 
   // API để lấy ra dsach tài khoản
   const fetchAccounts = async (
@@ -72,7 +74,7 @@ const Account = () => {
     branch?: string,
     team?: string
   ) => {
-    console.log(globalTerm, searchTerms, system, branch, team);
+    // console.log(globalTerm, searchTerms, system, branch, team);
 
     const arrBankAccount: filterGroupAccount[] = [];
     const bankAccount: filterGroupAccount = {
@@ -92,7 +94,12 @@ const Account = () => {
       Value: team!,
     };
 
-    arrBankAccount.push(bankAccount, groupSystem, groupBranch, groupTeam);
+    const obj: filterGroupAccount = {
+      Name: keys!,
+      Value: values!,
+    };
+
+    arrBankAccount.push(bankAccount, groupSystem, groupBranch, groupTeam, obj);
 
     setLoading(true);
     try {

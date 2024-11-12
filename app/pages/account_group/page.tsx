@@ -14,6 +14,11 @@ import {
 import { toast } from "react-toastify";
 import DeleteModal from "@/app/component/config/modalDelete";
 
+interface filterGroupAccount {
+  Name: string;
+  Value: string;
+}
+
 const PhoneNumber: React.FC = () => {
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
@@ -25,11 +30,29 @@ const PhoneNumber: React.FC = () => {
   );
   const [loading, setLoading] = useState(false);
   const [, setGlobalTerm] = useState("");
+  const [pageIndex] = useState(1);
+  const [pageSize] = useState(20);
 
-  const fetchAccountGroup = async (globalTerm = "") => {
+  const keys = localStorage.getItem("key");
+  const values = localStorage.getItem("value");
+
+  const fetchAccountGroup = async (
+    globalTerm?: string
+  ) => {
+    const arrAccountGroup: filterGroupAccount[] = [];
+    const obj: filterGroupAccount = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrAccountGroup.push(obj);
     setLoading(true);
     try {
-      const response = await getAccountGroup(1, 20, globalTerm);
+      const response = await getAccountGroup(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        arrAccountGroup
+      );
       const formattedData =
         response?.data?.source?.map((x: DataAccountGroup) => ({
           id: x.id?.toString() || Date.now().toString(),
@@ -250,42 +273,6 @@ const PhoneNumber: React.FC = () => {
           </div>
         </Form>
       </BaseModal>
-      {/* <Modal
-        open={isDeleteModalOpen}
-        footer={
-          <div className="flex justify-end">
-            <Button
-              onClick={() => setIsDeleteModalOpen(false)} // Nút hủy
-              className="w-[100px] h-[40px] mr-2"
-            >
-              Quay lại
-            </Button>
-            <button
-              onClick={() => {
-                if (selectedAccountGroup) {
-                  handleDeleteAccountGroup(selectedAccountGroup);
-                  setIsDeleteModalOpen(false);
-                }
-              }}
-              className="w-[100px] h-[40px] bg-red-600 border-red-600 text-white rounded-md"
-            >
-              Xác nhận
-            </button>
-          </div>
-        }
-        onCancel={() => {
-          setIsDeleteModalOpen(false);
-        }}
-      >
-        <div className="flex justify-center flex-col items-center">
-          <div className="text-xl font-bold text-[#DB0606]">
-            Xóa tài khoản giao dịch thủ công
-          </div>
-          <p className="flex justify-center items-center">
-            Bạn có chắc chắn chấp nhận xóa nhóm tài khoản này không?
-          </p>
-        </div>
-      </Modal> */}
       <DeleteModal
         open={isDeleteModalOpen}
         onCancel={handleCancel}

@@ -1,18 +1,21 @@
 import { TransactionModal } from "../pages/transaction/page";
+import { buildSearchParams } from "../pages/utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
 export const getTransaction = async (
   pageIndex: number,
   pageSize: number,
-  globalTerm?: string
+  globalTerm?: string,
+  searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
+    });
     const res = await apiClient.get(`/transaction-api/manual/find`, {
-      params: {
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        globalTerm: globalTerm,
-      },
+      params,
     });
     return res.data;
   } catch (error) {

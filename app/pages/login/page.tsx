@@ -5,11 +5,71 @@ import imgrt from "../../../public/img/imgrt.png";
 import imglb from "../../../public/img/imglb.png";
 import imglt from "../../../public/img/imglt.png";
 import Image from "next/image";
+import { apiClient } from "@/app/services/base_api";
+import { useRouter } from "next/navigation";
+
+// export interface GetLoginResponseProps {
+//   token: string;
+//   id: string;
+//   username: string;
+//   role: string[];
+//   message?: string;
+// }
 
 function Login() {
+  const [username, setUsername] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const router = useRouter();
+
+  const handleLogin = async () => {
+    try {
+      console.log(1);
+
+      const response = await apiClient.post(
+        "/account/login",
+        JSON.stringify({
+          username,
+          password,
+        })
+      );
+
+      const data = response.data;
+      console.log("Phản hồi API:", data);
+
+      if (data) {
+        // console.log(40, data.token)
+        localStorage.setItem("accessToken", data.data.token);
+        // const userResponse = await fetch(
+        //   "https://apiweb.bankings.vnrsoftware.vn/account/find-role-by-account",
+        //   {
+        //     method: "GET",
+        //     headers: {
+        //       "x-access-token": `${data.accessToken}`,
+        //     },
+        //   }
+        // );
+
+        // if (!userResponse.ok) {
+        //   throw new Error("Không thể lấy thông tin vai trò người dùng");
+        // }
+        // console.log("Đang điều hướng...");
+        router.push("/");
+      } else {
+        alert("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      alert(
+        "Đăng nhập thất bại: " +
+          (error.response?.data?.message || error.message)
+      );
+      console.error("Đã xảy ra lỗi:", error);
+    }
+  };
+
   return (
     <div className="bg-[#4880FF] w-full min-h-screen flex justify-center items-center relative">
-      <form className="w-full max-w-[90%] sm:max-w-[630px] bg-white p-6 sm:p-8 rounded-lg shadow-md flex flex-col z-10">
+      <div className="w-full max-w-[90%] sm:max-w-[630px] bg-white p-6 sm:p-8 rounded-lg shadow-md flex flex-col z-10">
         <h2 className="text-center text-lg sm:text-xl font-semibold">
           Đăng nhập tài khoản
         </h2>
@@ -21,10 +81,12 @@ function Login() {
           Email
         </label>
         <input
-          type="email"
+          // type="email"
           id="email"
           placeholder="Nhập email của bạn"
           required
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           className="border border-gray-300 rounded p-2 mb-4 focus:outline-none focus:ring focus:ring-blue-300"
         />
 
@@ -36,6 +98,8 @@ function Login() {
           id="password"
           placeholder="Nhập mật khẩu của bạn"
           required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           className="border border-gray-300 rounded p-2 mb-4 focus:outline-none focus:ring focus:ring-blue-300"
         />
 
@@ -46,20 +110,21 @@ function Login() {
 
         <div className="flex flex-col justify-center items-center">
           <button
-            type="submit"
+            // type="submit"
+            onClick={() => handleLogin()}
             className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600 transition duration-200 w-full sm:w-[418px] h-[48px] sm:h-[56px] m-0 font-bold text-lg sm:text-xl"
           >
             Đăng nhập
           </button>
 
           <div className="mt-4">
-            Bạn chưa có tài khoản đăng nhập{" "}
+            Bạn chưa có tài khoản đăng nhập
             <a href="/" className="text-[#5A8CFF] underline">
               Tạo tài khoản
             </a>
           </div>
         </div>
-      </form>
+      </div>
 
       <div>
         <Image

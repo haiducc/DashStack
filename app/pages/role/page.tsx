@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Header from "@/app/component/Header";
-import { Button, Form, Input, Modal, Select, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Select, Space, Spin, Table } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import BaseModal from "@/app/component/config/BaseModal";
 import { addRole, deleteRole, getRole } from "@/app/services/role";
@@ -10,12 +10,18 @@ import { getGroupSystem } from "@/app/services/groupSystem";
 import { getBranchSystem } from "@/app/services/branchSystem";
 import { getGroupTeam } from "@/app/services/groupTeam";
 import { toast } from "react-toastify";
+import DeleteModal from "@/app/component/config/modalDelete";
 
 export interface dataRole {
   id: number;
   userName: string;
   email: string;
   fullName: string;
+}
+
+interface filterRole {
+  Name: string;
+  Value: string;
 }
 
 const Role = () => {
@@ -33,12 +39,23 @@ const Role = () => {
   const [systemId, setSystemId] = useState<number>(0);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [parentId, setParentId] = useState<number>(0);
+  const [pageIndex] = useState(1);
+  const [pageSize] = useState(20);
 
-  const fetchListRole = async (globalTerm = "") => {
+  const keys = localStorage.getItem("key");
+  const values = localStorage.getItem("value");
+
+  const fetchListRole = async (globalTerm?: string) => {
+    const arrRole: filterRole[] = [];
+    const obj: filterRole = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrRole.push(obj);
+    // setLoading(true);
     try {
-      const response = await getRole(1, 20, globalTerm);
-      console.log(response, "Role");
-
+      const response = await getRole(pageIndex, pageSize, globalTerm, arrRole);
+      // console.log(response, "Role");
       const formattedData =
         response?.data?.source?.map((x: dataRole) => ({
           id: x.id?.toString() || Date.now().toString(),
@@ -86,7 +103,7 @@ const Role = () => {
 
   const getGroupTeams = async () => {
     try {
-      const groupTeams = await getGroupTeam( 1, 20);
+      const groupTeams = await getGroupTeam(1, 20);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = groupTeams?.data?.source?.map((x: any) => ({
         value: x.id,
@@ -134,23 +151,17 @@ const Role = () => {
 
   // sửa
 
-  const handleDeleteRole = (role: dataRole) => {
-    Modal.confirm({
-      title: "Xóa tài khoản ngân hàng",
-      content: `Bạn có chắc chắn chấp nhận xóa tài khoản nhóm quyền ${role.userName} này không?`,
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await deleteRole(role.id);
-          await fetchListRole();
-        } catch (error) {
-          console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-        } finally {
-          setLoading(false);
-          toast.success("Xóa tài khoản thành công");
-        }
-      },
-    });
+  const handleDeleteRole = async (role: dataRole) => {
+    setLoading(true);
+    try {
+      await deleteRole(role.id);
+      await fetchListRole();
+    } catch (error) {
+      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+    } finally {
+      setLoading(false);
+      toast.success("Xóa tài khoản thành công");
+    }
   };
 
   const handleSearch = async (value: string) => {
@@ -188,6 +199,27 @@ const Role = () => {
     fetchListRole();
   }, []);
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedAccountGroup, setSelectedAccountGroup] =
+    useState<dataRole | null>(null);
+
+  const handleDeleteClick = (tele: dataRole) => {
+    setSelectedAccountGroup(tele);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedAccountGroup(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedAccountGroup) {
+      handleDeleteRole(selectedAccountGroup);
+      setIsDeleteModalOpen(false);
+    }
+  };
+
   const columns = [
     { title: "id", dataIndex: "id", key: "id" },
     { title: "Email đăng nhập", dataIndex: "userName", key: "userName" },
@@ -208,7 +240,7 @@ const Role = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDeleteRole(record)}
+            onClick={() => handleDeleteClick(record)}
           >
             Xóa
           </Button>
@@ -363,6 +395,12 @@ const Role = () => {
           </div>
         </Form>
       </BaseModal>
+      <DeleteModal
+        open={isDeleteModalOpen}
+        onCancel={handleCancel}
+        onConfirm={handleConfirmDelete}
+        role={selectedAccountGroup}
+      />
     </>
   );
 };

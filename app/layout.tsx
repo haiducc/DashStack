@@ -12,7 +12,7 @@ const { Content } = Layout;
 
 const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
-  const isLoginPage = pathname === "/login";
+  const isLoginPage = pathname === "/pages/login";
 
   return (
     <html lang="en">

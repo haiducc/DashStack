@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Header from "@/app/component/Header";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Modal, Select, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Select, Space, Spin, Table } from "antd";
 import {
   addTelegramIntergration,
   deleteTelegramIntergration,
@@ -12,6 +12,7 @@ import {
 import BaseModal from "@/app/component/config/BaseModal";
 import { fetchBankAccounts } from "@/app/services/bankAccount";
 import { getListTelegram } from "@/app/services/telegram";
+import DeleteModal from "@/app/component/config/modalDelete";
 
 export interface ListTelegramIntegration {
   chatName: string;
@@ -197,22 +198,16 @@ const TelegramIntegration = () => {
     setAddModalOpen(true);
   };
 
-  const handleDelete = (x: ListTelegramIntegration) => {
-    Modal.confirm({
-      title: "Xóa nhóm telegram",
-      content: `Bạn có chắc chắn chấp nhận xóa nhóm telegram này không?`,
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await deleteTelegramIntergration(x.id);
-          await fetchListTelegramIntegration();
-        } catch (error) {
-          console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
+  const handleDelete = async (x: ListTelegramIntegration) => {
+    setLoading(true);
+    try {
+      await deleteTelegramIntergration(x.id);
+      await fetchListTelegramIntegration();
+    } catch (error) {
+      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearch = async (value: string) => {
@@ -298,7 +293,7 @@ const TelegramIntegration = () => {
             Chỉnh sửa
           </Button>
           <Button
-            onClick={() => handleDelete(record)}
+            onClick={() => handleDeleteClick(record)}
             icon={<DeleteOutlined />}
             danger
           >
@@ -308,6 +303,27 @@ const TelegramIntegration = () => {
       ),
     },
   ];
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedAccountGroup, setSelectedAccountGroup] =
+    useState<ListTelegramIntegration | null>(null);
+
+  const handleDeleteClick = (tele: ListTelegramIntegration) => {
+    setSelectedAccountGroup(tele);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedAccountGroup(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedAccountGroup) {
+      handleDelete(selectedAccountGroup);
+      setIsDeleteModalOpen(false);
+    }
+  };
 
   const [teleGroupChatFilter, setTeleGroupChatFilter] = useState<
     Array<{ value: string; label: string }>
@@ -549,6 +565,12 @@ const TelegramIntegration = () => {
           </div>
         </Form>
       </BaseModal>
+      <DeleteModal
+        open={isDeleteModalOpen}
+        onCancel={handleCancel}
+        onConfirm={handleConfirmDelete}
+        handleDeleteTeleIntergration={selectedAccountGroup}
+      />
     </>
   );
 };

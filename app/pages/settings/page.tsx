@@ -97,7 +97,7 @@ const Settings = () => {
       <Header />
       <div className="px-[30px]">
         <div className="text-[32px] font-bold py-5">
-          Danh sách tích hợp trang tính
+          Danh sách cấu hình trang tính
         </div>
         {loading ? (
           <Spin spinning={loading} />

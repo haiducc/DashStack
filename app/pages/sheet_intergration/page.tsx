@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Header from "@/app/component/Header";
-import { Button, Form, Input, Modal, Select, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Select, Space, Spin, Table } from "antd";
 import {
   addSheetIntergration,
   deleteSheetIntergration,
@@ -12,6 +12,7 @@ import {
 import BaseModal from "@/app/component/config/BaseModal";
 import { fetchBankAccounts } from "@/app/services/bankAccount";
 import { getListSheet } from "@/app/services/sheet";
+import DeleteModal from "@/app/component/config/modalDelete";
 
 export interface ListSheetIntegration {
   id: number;
@@ -44,6 +45,9 @@ const SheetIntergration = () => {
   const [banks, setBanks] = useState([]);
   const [sheet, setSheet] = useState([]);
 
+  const keys = localStorage.getItem("key");
+  const values = localStorage.getItem("value");
+
   const fetchSheetIntegration = async (
     globalTerm?: string,
     sheetId?: string
@@ -53,7 +57,11 @@ const SheetIntergration = () => {
       Name: "sheetId",
       Value: sheetId!,
     };
-    arrSheet.push(Sheet);
+    const obj: filterSheetIntergration = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrSheet.push(Sheet, obj);
     setLoading(true);
     try {
       const response = await getListSheetIntergration(
@@ -176,22 +184,37 @@ const SheetIntergration = () => {
     setAddModalOpen(true);
   };
 
-  const handleDelete = (x: ListSheetIntegration) => {
-    Modal.confirm({
-      title: "Xóa nhóm tích hợp trang tính",
-      content: `Bạn có chắc chắn chấp nhận xóa nhóm telegram này không?`,
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await deleteSheetIntergration(x.id);
-          await fetchSheetIntegration();
-        } catch (error) {
-          console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
+  const handleDelete = async (x: ListSheetIntegration) => {
+    setLoading(true);
+    try {
+      await deleteSheetIntergration(x.id);
+      await fetchSheetIntegration();
+    } catch (error) {
+      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedAccountGroup, setSelectedAccountGroup] =
+    useState<ListSheetIntegration | null>(null);
+
+  const handleDeleteClick = (tele: ListSheetIntegration) => {
+    setSelectedAccountGroup(tele);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedAccountGroup(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedAccountGroup) {
+      handleDelete(selectedAccountGroup);
+      setIsDeleteModalOpen(false);
+    }
   };
 
   const handleSearch = async (value: string) => {
@@ -271,7 +294,7 @@ const SheetIntergration = () => {
             Chỉnh sửa
           </Button>
           <Button
-            onClick={() => handleDelete(record)}
+            onClick={() => handleDeleteClick(record)}
             icon={<DeleteOutlined />}
             danger
           >
@@ -471,20 +494,6 @@ const SheetIntergration = () => {
               options={sheet}
             />
           </Form.Item>
-          {/* <Form.Item
-            // hidden
-            label="Chọn nhóm trang tính 2"
-            name="sheetId"
-            rules={[
-              { required: true, message: "Vui lòng chọn nhóm trang tính!" },
-            ]}
-          >
-            <Select
-              placeholder="Chọn nhóm trang tính"
-              onFocus={genSheetData}
-              options={sheet}
-            />
-          </Form.Item> */}
           <Form.Item
             label="Chọn loại giao dịch"
             name="transType"
@@ -519,6 +528,12 @@ const SheetIntergration = () => {
           </div>
         </Form>
       </BaseModal>
+      <DeleteModal
+        open={isDeleteModalOpen}
+        onCancel={handleCancel}
+        onConfirm={handleConfirmDelete}
+        handleDeleteSheetIntergration={selectedAccountGroup}
+      />
     </>
   );
 };

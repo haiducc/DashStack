@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/app/component/Header";
-import { Button, Form, Input, Space, Table, Modal, Spin } from "antd";
+import { Button, Form, Input, Space, Table, Spin } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
 import BaseModal from "@/app/component/config/BaseModal";
@@ -12,6 +12,12 @@ import {
 } from "@/app/services/phone";
 import { PhoneNumberModal } from "@/app/component/modal/modalPhoneNumber";
 import { toast } from "react-toastify"; // Import toast
+import DeleteModal from "@/app/component/config/modalDelete";
+
+interface filterRole {
+  Name: string;
+  Value: string;
+}
 
 const PhoneNumber: React.FC = () => {
   const [form] = Form.useForm();
@@ -24,11 +30,27 @@ const PhoneNumber: React.FC = () => {
   const [loading, setLoading] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [globalTerm, setGlobalTerm] = useState("");
+  const [pageIndex] = useState(1);
+  const [pageSize] = useState(20);
 
-  const fetchListPhone = async (globalTerm = "") => {
+  const keys = localStorage.getItem("key");
+  const values = localStorage.getItem("value");
+
+  const fetchListPhone = async (globalTerm?: string) => {
+    const arrRole: filterRole[] = [];
+    const obj: filterRole = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrRole.push(obj);
     setLoading(true);
     try {
-      const response = await getListPhone(1, 20, globalTerm);
+      const response = await getListPhone(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        arrRole
+      );
       const formattedData =
         response?.data?.source?.map((x: PhoneNumberModal) => ({
           id: x.id,
@@ -58,13 +80,20 @@ const PhoneNumber: React.FC = () => {
         notes: formData.notes,
         id: formData.id,
       });
-      toast.success("Đã thêm số điện thoại thành công!"); // Sử dụng toast
+      toast.success("Đã thêm số điện thoại thành công!");
       setAddModalOpen(false);
       form.resetFields();
       setCurrentPhoneNumber(null);
       await fetchListPhone();
-    } catch (error) {
-      console.error("Lỗi:", error);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (error.response && error.response.data) {
+        // Hiển thị thông báo từ message của BE
+        toast.error(`Lỗi: ${error.response.data.message}`);
+      } else {
+        console.error("Lỗi:", error);
+        toast.error("Đã xảy ra lỗi không xác định.");
+      }
     } finally {
       setLoading(false);
     }
@@ -81,23 +110,17 @@ const PhoneNumber: React.FC = () => {
     setAddModalOpen(true);
   };
 
-  const handleDeletePhoneNumber = (phone: PhoneNumberModal) => {
-    Modal.confirm({
-      title: "Xóa số điện thoại",
-      content: `Bạn có chắc chắn muốn xóa số điện thoại ${phone.number}?`,
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await deletePhone(phone.id);
-          toast.success("Đã xóa số điện thoại thành công!");
-          await fetchListPhone();
-        } catch (error) {
-          console.error("Lỗi khi xóa số điện thoại:", error);
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
+  const handleDeletePhoneNumber = async (phone: PhoneNumberModal) => {
+    setLoading(true);
+    try {
+      await deletePhone(phone.id);
+      toast.success("Đã xóa số điện thoại thành công!");
+      await fetchListPhone();
+    } catch (error) {
+      console.error("Lỗi khi xóa số điện thoại:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearch = async (value: string) => {
@@ -161,7 +184,7 @@ const PhoneNumber: React.FC = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDeletePhoneNumber(record)}
+            onClick={() => handleDeleteClick(record)}
           >
             Xóa
           </Button>
@@ -169,6 +192,27 @@ const PhoneNumber: React.FC = () => {
       ),
     },
   ];
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedAccountGroup, setSelectedAccountGroup] =
+    useState<PhoneNumberModal | null>(null);
+
+  const handleDeleteClick = (accountGroup: PhoneNumberModal) => {
+    setSelectedAccountGroup(accountGroup);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedAccountGroup(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedAccountGroup) {
+      handleDeletePhoneNumber(selectedAccountGroup);
+      setIsDeleteModalOpen(false);
+    }
+  };
 
   const [checkFilter, setCheckFilter] = useState(false);
   useEffect(() => {
@@ -276,6 +320,12 @@ const PhoneNumber: React.FC = () => {
           </div>
         </Form>
       </BaseModal>
+      <DeleteModal
+        open={isDeleteModalOpen}
+        onCancel={handleCancel}
+        onConfirm={handleConfirmDelete}
+        handleDeletePhoneNumber={selectedAccountGroup}
+      />
     </>
   );
 };

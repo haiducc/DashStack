@@ -10,7 +10,6 @@ import {
   Form,
   Input,
   InputNumber,
-  Modal,
   Select,
   Space,
   Spin,
@@ -26,6 +25,7 @@ import { RangePickerProps } from "antd/es/date-picker";
 import { fetchBankAccounts, getBank } from "@/app/services/bankAccount";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
+import DeleteModal from "@/app/component/config/modalDelete";
 
 export interface TransactionModal {
   id: number;
@@ -40,6 +40,11 @@ export interface TransactionModal {
   currentBalance: number;
   notes: string;
   // bankAccountId: number;
+}
+
+interface filterRole {
+  Name: string;
+  Value: string;
 }
 
 const Transaction = () => {
@@ -58,10 +63,27 @@ const Transaction = () => {
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
 
-  const fetchTransaction = async (globalTerm = "") => {
+  const keys = localStorage.getItem("key");
+  const values = localStorage.getItem("value");
+
+  const fetchTransaction = async (
+    globalTerm?: string
+    // searchTerms?: string
+  ) => {
+    const arrRole: filterRole[] = [];
+    const obj: filterRole = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrRole.push(obj);
     setLoading(true);
     try {
-      const response = await getTransaction(1, 50, globalTerm);
+      const response = await getTransaction(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        arrRole
+      );
       console.log(response, "transaction");
       const formattedData =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -180,22 +202,37 @@ const Transaction = () => {
     }
   };
 
-  const handleDelete = (x: TransactionModal) => {
-    Modal.confirm({
-      title: "Xóa nhóm telegram",
-      content: `Bạn có chắc chắn chấp nhận xóa nhóm telegram này không?`,
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await deleteTransaction(x.id);
-          await fetchTransaction();
-        } catch (error) {
-          console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
+  const handleDelete = async (x: TransactionModal) => {
+    setLoading(true);
+    try {
+      await deleteTransaction(x.id);
+      await fetchTransaction();
+    } catch (error) {
+      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedAccountGroup, setSelectedAccountGroup] =
+    useState<TransactionModal | null>(null);
+
+  const handleDeleteClick = (tele: TransactionModal) => {
+    setSelectedAccountGroup(tele);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedAccountGroup(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedAccountGroup) {
+      handleDelete(selectedAccountGroup);
+      setIsDeleteModalOpen(false);
+    }
   };
 
   useEffect(() => {
@@ -277,7 +314,7 @@ const Transaction = () => {
             Chỉnh sửa
           </Button>
           <Button
-            onClick={() => handleDelete(record)}
+            onClick={() => handleDeleteClick(record)}
             icon={<DeleteOutlined />}
             danger
           >
@@ -311,13 +348,13 @@ const Transaction = () => {
                 height: 38,
                 marginRight: 15,
               }}
-                // onChange={(e) => {
-                //   const value = e.target.value;
-                //   handleSearch(value);
-                // }}
-                // onPressEnter={async (e) => {
-                //   handleSearch(e.currentTarget.value);
-                // }}
+              // onChange={(e) => {
+              //   const value = e.target.value;
+              //   handleSearch(value);
+              // }}
+              // onPressEnter={async (e) => {
+              //   handleSearch(e.currentTarget.value);
+              // }}
             />
             {/* <Space direction="horizontal" size="middle">
               {["Nhóm telegram", "Loại giao dịch", "Tên ngân hàng"].map(
@@ -582,6 +619,12 @@ const Transaction = () => {
           </div>
         </Form>
       </BaseModal>
+      <DeleteModal
+        open={isDeleteModalOpen}
+        onCancel={handleCancel}
+        onConfirm={handleConfirmDelete}
+        transaction={selectedAccountGroup}
+      />
     </>
   );
 };

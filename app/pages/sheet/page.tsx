@@ -4,15 +4,21 @@ import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import BaseModal from "@/app/component/config/BaseModal";
 import Header from "@/app/component/Header";
-import { Button, Form, Input, Modal, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Space, Spin, Table } from "antd";
 import { addSheet, deleteSheet, getListSheet } from "@/app/services/sheet";
 import { toast } from "react-toastify";
+import DeleteModal from "@/app/component/config/modalDelete";
 
 export interface dataSheetModal {
   id: number;
   name: string;
   linkUrl: string;
   notes: string;
+}
+
+interface filterRole {
+  Name: string;
+  Value: string;
 }
 
 const Sheet = () => {
@@ -22,10 +28,26 @@ const Sheet = () => {
   const [currentSheet, setCurrentSheet] = useState<dataSheetModal | null>(null);
   const [dataSheet, setDataSheet] = useState<dataSheetModal[]>([]);
   const [globalTerm, setGlobalTerm] = useState("");
+  const [pageIndex] = useState(1);
+  const [pageSize] = useState(20);
 
-  const fetchSheet = async (globalTerm = "") => {
+  const keys = localStorage.getItem("key");
+  const values = localStorage.getItem("value");
+
+  const fetchSheet = async (globalTerm?: string) => {
+    const arrRole: filterRole[] = [];
+    const obj: filterRole = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrRole.push(obj);
     try {
-      const response = await getListSheet(1, 20, globalTerm);
+      const response = await getListSheet(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        arrRole
+      );
       const formattedData =
         response?.data?.source?.map((x: dataSheetModal) => ({
           id: x.id?.toString() || Date.now().toString(),
@@ -73,7 +95,7 @@ const Sheet = () => {
       await fetchSheet();
     } catch (error) {
       console.error("Lỗi:", error);
-      toast.error("Có lỗi xảy ra, vui lòng thử lại!"); // Thông báo lỗi
+      toast.error("Có lỗi xảy ra, vui lòng thử lại!");
       setLoading(false);
     }
   };
@@ -89,26 +111,40 @@ const Sheet = () => {
     setAddModalOpen(true);
   };
 
-  const handleDeleteSheet = (x: dataSheetModal) => {
-    Modal.confirm({
-      title: "Xóa nhóm telegram",
-      content: `Bạn có chắc chắn chấp nhận xóa nhóm telegram ${x.name} này không?`,
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await deleteSheet(x.id);
-          await fetchSheet();
-          toast.success("Xóa thành công!"); // Thông báo xóa thành công
-        } catch (error) {
-          console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-          toast.error("Có lỗi khi xóa, vui lòng thử lại!"); // Thông báo lỗi khi xóa
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
+  const handleDeleteSheet = async (x: dataSheetModal) => {
+    setLoading(true);
+    try {
+      await deleteSheet(x.id);
+      await fetchSheet();
+      toast.success("Xóa thành công!"); // Thông báo xóa thành công
+    } catch (error) {
+      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+      toast.error("Có lỗi khi xóa, vui lòng thử lại!"); // Thông báo lỗi khi xóa
+    } finally {
+      setLoading(false);
+    }
   };
-  
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedAccountGroup, setSelectedAccountGroup] =
+    useState<dataSheetModal | null>(null);
+
+  const handleDeleteClick = (tele: dataSheetModal) => {
+    setSelectedAccountGroup(tele);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedAccountGroup(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedAccountGroup) {
+      handleDeleteSheet(selectedAccountGroup);
+      setIsDeleteModalOpen(false);
+    }
+  };
 
   const handleSearch = async (value: string) => {
     setGlobalTerm(value);
@@ -161,7 +197,7 @@ const Sheet = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDeleteSheet(record)}
+            onClick={() => handleDeleteClick(record)}
           >
             Xóa
           </Button>
@@ -269,6 +305,12 @@ const Sheet = () => {
           </div>
         </Form>
       </BaseModal>
+      <DeleteModal
+        open={isDeleteModalOpen}
+        onCancel={handleCancel}
+        onConfirm={handleConfirmDelete}
+        handleDeleteSheet={selectedAccountGroup}
+      />
     </>
   );
 };

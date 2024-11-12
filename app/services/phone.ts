@@ -1,15 +1,21 @@
-
 import { PhoneNumberModal } from "../component/modal/modalPhoneNumber";
+import { buildSearchParams } from "../pages/utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
-export const getListPhone = async (pageIndex: number, pageSize: number, globalTerm?: string) => {
+export const getListPhone = async (
+  pageIndex: number,
+  pageSize: number,
+  globalTerm?: string,
+  searchTerms: Array<{ Name: string; Value: string }> = []
+) => {
   try {
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
+    });
     const res = await apiClient.get(`/phone-api/find`, {
-      params: {
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        globalTerm:globalTerm
-      },
+      params,
     });
     return res.data;
   } catch (error) {
@@ -20,10 +26,7 @@ export const getListPhone = async (pageIndex: number, pageSize: number, globalTe
 
 export const addPhoneNumber = async (phoneData: PhoneNumberModal) => {
   try {
-    const res = await apiClient.post(
-      `/phone-api/add-or-update`,
-      phoneData
-    );
+    const res = await apiClient.post(`/phone-api/add-or-update`, phoneData);
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);

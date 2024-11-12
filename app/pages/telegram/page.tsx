@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Header from "@/app/component/Header";
-import { Button, Form, Input, Modal, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Space, Spin, Table } from "antd";
 import {
   addTelegram,
   deleteTelegram,
@@ -11,6 +11,7 @@ import {
 } from "@/app/services/telegram";
 import BaseModal from "@/app/component/config/BaseModal";
 import { toast } from "react-toastify"; // Import toast
+import DeleteModal from "@/app/component/config/modalDelete";
 
 export interface dataTelegramModal {
   id: number;
@@ -67,7 +68,7 @@ const Telegram = () => {
         currentTelegram ? "Cập nhật thành công!" : "Thêm mới thành công!"
       );
       await fetchTelegram();
-      setLoading(false)
+      setLoading(false);
     } catch (error) {
       console.error("Lỗi:", error);
       toast.error("Có lỗi xảy ra, vui lòng thử lại!");
@@ -85,24 +86,18 @@ const Telegram = () => {
     setAddModalOpen(true);
   };
 
-  const handleDeleteTele = (x: dataTelegramModal) => {
-    Modal.confirm({
-      title: "Xóa nhóm telegram",
-      content: `Bạn có chắc chắn chấp nhận xóa nhóm telegram ${x.name} này không?`,
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await deleteTelegram(x.id);
-          toast.success("Xóa nhóm telegram thành công!");
-          await fetchTelegram();
-        } catch (error) {
-          console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-          toast.error("Có lỗi xảy ra khi xóa!");
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
+  const handleDeleteTele = async (x: dataTelegramModal) => {
+    setLoading(true);
+    try {
+      await deleteTelegram(x.id);
+      toast.success("Xóa nhóm telegram thành công!");
+      await fetchTelegram();
+    } catch (error) {
+      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+      toast.error("Có lỗi xảy ra khi xóa!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearch = async (value: string) => {
@@ -137,6 +132,27 @@ const Telegram = () => {
     }
   };
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedAccountGroup, setSelectedAccountGroup] =
+    useState<dataTelegramModal | null>(null);
+
+  const handleDeleteClick = (tele: dataTelegramModal) => {
+    setSelectedAccountGroup(tele);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedAccountGroup(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedAccountGroup) {
+      handleDeleteTele(selectedAccountGroup);
+      setIsDeleteModalOpen(false);
+    }
+  };
+
   const columns = [
     { title: "id", dataIndex: "id", key: "id", hidden: true },
     { title: "Tên nhóm telegram", dataIndex: "name", key: "name" },
@@ -156,7 +172,7 @@ const Telegram = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDeleteTele(record)}
+            onClick={() => handleDeleteClick(record)}
           >
             Xóa
           </Button>
@@ -276,6 +292,12 @@ const Telegram = () => {
           </div>
         </Form>
       </BaseModal>
+      <DeleteModal
+        open={isDeleteModalOpen}
+        onCancel={handleCancel}
+        onConfirm={handleConfirmDelete}
+        handleDeleteTele={selectedAccountGroup}
+      />
     </>
   );
 };

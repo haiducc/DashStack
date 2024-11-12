@@ -1,14 +1,21 @@
 import { dataRole } from "../pages/role/page";
+import { buildSearchParams } from "../pages/utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
-export const getRole = async (pageIndex: number, pageSize: number, globalTerm?: string) => {
+export const getRole = async (
+  pageIndex: number,
+  pageSize: number,
+  globalTerm?: string,
+  searchTerms: Array<{ Name: string; Value: string }> = []
+) => {
   try {
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
+    });
     const res = await apiClient.get(`/account/find`, {
-      params: {
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        globalTerm:globalTerm
-      },
+      params,
     });
     return res.data;
   } catch (error) {
@@ -19,10 +26,7 @@ export const getRole = async (pageIndex: number, pageSize: number, globalTerm?: 
 
 export const addRole = async (phoneData: dataRole) => {
   try {
-    const res = await apiClient.post(
-      `/account/add-or-update`,
-      phoneData
-    );
+    const res = await apiClient.post(`/account/add-or-update`, phoneData);
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);

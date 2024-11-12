@@ -20,6 +20,11 @@ export interface dataTelegramModal {
   notes: string;
 }
 
+interface filterRole {
+  Name: string;
+  Value: string;
+}
+
 const Telegram = () => {
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
@@ -28,10 +33,26 @@ const Telegram = () => {
     useState<dataTelegramModal | null>(null);
   const [dataTelegram, setDataTelegram] = useState<dataTelegramModal[]>([]);
   const [, setGlobalTerm] = useState("");
+  const [pageIndex] = useState(1);
+  const [pageSize] = useState(20);
 
-  const fetchTelegram = async (globalTerm = "") => {
+  const keys = localStorage.getItem("key");
+  const values = localStorage.getItem("value");
+
+  const fetchTelegram = async (globalTerm?: string) => {
+    const arrRole: filterRole[] = [];
+    const obj: filterRole = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrRole.push(obj);
     try {
-      const response = await getListTelegram(1, 20, globalTerm);
+      const response = await getListTelegram(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        arrRole
+      );
       const formattedData =
         response?.data?.source?.map((x: dataTelegramModal) => ({
           id: x.id?.toString() || Date.now().toString(),

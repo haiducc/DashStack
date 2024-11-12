@@ -36,9 +36,7 @@ const PhoneNumber: React.FC = () => {
   const keys = localStorage.getItem("key");
   const values = localStorage.getItem("value");
 
-  const fetchAccountGroup = async (
-    globalTerm?: string
-  ) => {
+  const fetchAccountGroup = async (globalTerm?: string) => {
     const arrAccountGroup: filterGroupAccount[] = [];
     const obj: filterGroupAccount = {
       Name: keys!,

@@ -45,8 +45,16 @@ const SheetIntergration = () => {
   const [banks, setBanks] = useState([]);
   const [sheet, setSheet] = useState([]);
 
-  const keys = localStorage.getItem("key");
-  const values = localStorage.getItem("value");
+  // const keys = localStorage.getItem("key");
+  // const values = localStorage.getItem("value");
+  const [keys, setKeys] = useState<string | null>(null);
+  const [values, setValues] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setKeys(localStorage.getItem("key"));
+      setValues(localStorage.getItem("value"));
+    }
+  }, []);
 
   const fetchSheetIntegration = async (
     globalTerm?: string,

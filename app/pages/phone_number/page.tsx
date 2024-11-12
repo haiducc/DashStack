@@ -11,7 +11,7 @@ import {
   getListPhone,
 } from "@/app/services/phone";
 import { PhoneNumberModal } from "@/app/component/modal/modalPhoneNumber";
-import { toast } from "react-toastify"; // Import toast
+import { toast } from "react-toastify";
 import DeleteModal from "@/app/component/config/modalDelete";
 
 interface filterRole {
@@ -33,8 +33,16 @@ const PhoneNumber: React.FC = () => {
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
 
-  const keys = localStorage.getItem("key");
-  const values = localStorage.getItem("value");
+  // const keys = localStorage.getItem("key");
+  // const values = localStorage.getItem("value");
+  const [keys, setKeys] = useState<string | null>(null);
+  const [values, setValues] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setKeys(localStorage.getItem("key"));
+      setValues(localStorage.getItem("value"));
+    }
+  }, []);
 
   const fetchListPhone = async (globalTerm?: string) => {
     const arrRole: filterRole[] = [];
@@ -60,7 +68,7 @@ const PhoneNumber: React.FC = () => {
         })) || [];
       setDataPhoneNumber(formattedData);
     } catch (error) {
-      console.error("Lỗi khi tải danh sách số điện thoại:", error);
+      console.error("Error while loading phone list:", error);
     } finally {
       setLoading(false);
     }
@@ -80,7 +88,7 @@ const PhoneNumber: React.FC = () => {
         notes: formData.notes,
         id: formData.id,
       });
-      toast.success("Đã thêm số điện thoại thành công!");
+      toast.success("Phone number added successfully!");
       setAddModalOpen(false);
       form.resetFields();
       setCurrentPhoneNumber(null);
@@ -88,11 +96,10 @@ const PhoneNumber: React.FC = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error.response && error.response.data) {
-        // Hiển thị thông báo từ message của BE
-        toast.error(`Lỗi: ${error.response.data.message}`);
+        toast.error(`Error: ${error.response.data.message}`);
       } else {
-        console.error("Lỗi:", error);
-        toast.error("Đã xảy ra lỗi không xác định.");
+        console.error("Error:", error);
+        toast.error("An unexpected error occurred.");
       }
     } finally {
       setLoading(false);
@@ -114,10 +121,10 @@ const PhoneNumber: React.FC = () => {
     setLoading(true);
     try {
       await deletePhone(phone.id);
-      toast.success("Đã xóa số điện thoại thành công!");
+      toast.success("Phone number deleted successfully!");
       await fetchListPhone();
     } catch (error) {
-      console.error("Lỗi khi xóa số điện thoại:", error);
+      console.error("Error deleting phone number:", error);
     } finally {
       setLoading(false);
     }
@@ -151,27 +158,19 @@ const PhoneNumber: React.FC = () => {
         setDataPhoneNumber(formattedData);
       }
     } catch (error) {
-      console.error("Lỗi khi tìm kiếm số điện thoại:", error);
+      console.error("Error while searching for phone number:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchListPhone();
-  }, []);
-
   const columns = [
     { title: "id", dataIndex: "id", key: "id", hidden: true },
     { title: "Số điện thoại", dataIndex: "number", key: "number" },
-    {
-      title: "Nhà mạng",
-      dataIndex: "com",
-      key: "com",
-    },
+    { title: "Nhà cung cấp mạng", dataIndex: "com", key: "com" },
     { title: "Ghi chú", dataIndex: "notes", key: "notes" },
     {
-      title: "Hành động",
+      title: "Actions",
       key: "action",
       render: (record: PhoneNumberModal) => (
         <Space size="middle">
@@ -179,14 +178,14 @@ const PhoneNumber: React.FC = () => {
             icon={<EditOutlined />}
             onClick={() => handleEditPhoneNumber(record)}
           >
-            Chỉnh sửa
+            Edit
           </Button>
           <Button
             icon={<DeleteOutlined />}
             danger
             onClick={() => handleDeleteClick(record)}
           >
-            Xóa
+            Delete
           </Button>
         </Space>
       ),
@@ -228,7 +227,7 @@ const PhoneNumber: React.FC = () => {
         </div>
         <div className="flex justify-between items-center mb-7">
           <Input
-            placeholder="Tìm kiếm số điện thoại ..."
+            placeholder="Search phone number ..."
             style={{
               width: 253,
               borderRadius: 10,
@@ -254,7 +253,7 @@ const PhoneNumber: React.FC = () => {
               setAddModalOpen(true);
             }}
           >
-            Thêm mới
+            Thêm mưới
           </Button>
         </div>
         {loading ? (
@@ -284,30 +283,32 @@ const PhoneNumber: React.FC = () => {
             <Input hidden />
           </Form.Item>
           <Form.Item
-            label="Số điện thoại"
+            label="Phone Number"
             name="number"
             rules={[
-              { required: true, message: "Vui lòng nhập số điện thoại!" },
+              { required: true, message: "Please enter a phone number!" },
             ]}
           >
-            <Input placeholder="Nhập số điện thoại" />
+            <Input placeholder="Enter phone number" />
           </Form.Item>
           <Form.Item
-            label="Nhà mạng"
+            label="Network Provider"
             name="com"
-            rules={[{ required: true, message: "Vui lòng nhập nhà mạng!" }]}
+            rules={[
+              { required: true, message: "Please enter a network provider!" },
+            ]}
           >
-            <Input placeholder="Nhập nhà mạng" />
+            <Input placeholder="Enter network provider" />
           </Form.Item>
-          <Form.Item label="Ghi chú" name="notes">
-            <Input.TextArea rows={4} placeholder="Nhập ghi chú" />
+          <Form.Item label="Notes" name="notes">
+            <Input.TextArea rows={4} placeholder="Enter notes" />
           </Form.Item>
           <div className="flex justify-end">
             <Button
               onClick={() => setAddModalOpen(false)}
               className="w-[189px] h-[42px]"
             >
-              Đóng
+              Close
             </Button>
             <div className="w-5" />
             <Button
@@ -320,6 +321,7 @@ const PhoneNumber: React.FC = () => {
           </div>
         </Form>
       </BaseModal>
+
       <DeleteModal
         open={isDeleteModalOpen}
         onCancel={handleCancel}

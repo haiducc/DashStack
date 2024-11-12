@@ -63,9 +63,6 @@ const Account = () => {
   const keys = localStorage.getItem("key");
   const values = localStorage.getItem("value");
 
-  // const [keyLocalStorage] = useState(keys);
-  // const [valueLocalStorage] = useState(values);
-
   // API để lấy ra dsach tài khoản
   const fetchAccounts = async (
     globalTerm?: string,

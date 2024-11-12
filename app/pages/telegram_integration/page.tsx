@@ -51,6 +51,9 @@ const TelegramIntegration = () => {
   const [pageIndex] = useState(1);
   const [pageSize] = useState(50);
 
+  const keys = localStorage.getItem("key");
+  const values = localStorage.getItem("value");
+
   const fetchListTelegramIntegration = async (
     globalTerm?: string,
     groupChat?: string
@@ -60,7 +63,11 @@ const TelegramIntegration = () => {
       Name: "groupChatId",
       Value: groupChat!,
     };
-    arrTeleAccount.push(bankAccount);
+    const obj: filterTeleIntergration = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrTeleAccount.push(bankAccount, obj);
 
     console.log(groupChat, "groupChat");
 

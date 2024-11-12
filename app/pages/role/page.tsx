@@ -42,8 +42,12 @@ const Role = () => {
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
 
-  const keys = localStorage.getItem("key");
-  const values = localStorage.getItem("value");
+  const [keys, setKeys] = useState<string | null>(null);
+  const [values, setValues] = useState<string | null>(null);
+  useEffect(() => {
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
+  }, []);
 
   const fetchListRole = async (globalTerm?: string) => {
     const arrRole: filterRole[] = [];
@@ -197,7 +201,7 @@ const Role = () => {
   // fetch để gọi ra danh sách theo value search
   useEffect(() => {
     fetchListRole();
-  }, []);
+  }, [keys]);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAccountGroup, setSelectedAccountGroup] =

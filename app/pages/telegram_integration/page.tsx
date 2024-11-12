@@ -51,8 +51,12 @@ const TelegramIntegration = () => {
   const [pageIndex] = useState(1);
   const [pageSize] = useState(50);
 
-  const keys = localStorage.getItem("key");
-  const values = localStorage.getItem("value");
+  const [keys, setKeys] = useState<string | null>(null);
+  const [values, setValues] = useState<string | null>(null);
+  useEffect(() => {
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
+  }, []);
 
   const fetchListTelegramIntegration = async (
     globalTerm?: string,
@@ -105,7 +109,7 @@ const TelegramIntegration = () => {
 
   useEffect(() => {
     fetchListTelegramIntegration();
-  }, []);
+  }, [keys]);
 
   const genBankData = async () => {
     try {

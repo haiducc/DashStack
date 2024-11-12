@@ -60,8 +60,12 @@ const Account = () => {
   const [, setIsEditMode] = useState(false);
   const [accountGroup, setAccountGroup] = useState([]);
   //
-  const keys = localStorage.getItem("key");
-  const values = localStorage.getItem("value");
+  const [keys, setKeys] = useState<string | null>(null);
+  const [values, setValues] = useState<string | null>(null);
+  useEffect(() => {
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
+  }, []);
 
   // API để lấy ra dsach tài khoản
   const fetchAccounts = async (
@@ -145,7 +149,7 @@ const Account = () => {
 
   useEffect(() => {
     fetchAccounts();
-  }, []);
+  }, [keys]);
 
   const fetchBankData = async () => {
     try {

@@ -50,10 +50,8 @@ const SheetIntergration = () => {
   const [keys, setKeys] = useState<string | null>(null);
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
-    if (typeof window !== "undefined") {
       setKeys(localStorage.getItem("key"));
       setValues(localStorage.getItem("value"));
-    }
   }, []);
 
   const fetchSheetIntegration = async (
@@ -376,6 +374,10 @@ const SheetIntergration = () => {
   useEffect(() => {
     fetchSheetIntegration(sheetIdFilter);
   }, [checkFilter]);
+
+  useEffect(() => {
+    fetchSheetIntegration();
+  }, [keys]);
 
   return (
     <>

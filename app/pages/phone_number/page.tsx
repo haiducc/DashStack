@@ -38,10 +38,8 @@ const PhoneNumber: React.FC = () => {
   const [keys, setKeys] = useState<string | null>(null);
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
-    if (typeof window !== "undefined") {
       setKeys(localStorage.getItem("key"));
       setValues(localStorage.getItem("value"));
-    }
   }, []);
 
   const fetchListPhone = async (globalTerm?: string) => {
@@ -76,7 +74,7 @@ const PhoneNumber: React.FC = () => {
 
   useEffect(() => {
     fetchListPhone();
-  }, []);
+  }, [keys]);
 
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();

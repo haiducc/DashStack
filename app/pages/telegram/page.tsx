@@ -36,8 +36,12 @@ const Telegram = () => {
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
 
-  const keys = localStorage.getItem("key");
-  const values = localStorage.getItem("value");
+  const [keys, setKeys] = useState<string | null>(null);
+  const [values, setValues] = useState<string | null>(null);
+  useEffect(() => {
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
+  }, []);
 
   const fetchTelegram = async (globalTerm?: string) => {
     const arrRole: filterRole[] = [];
@@ -68,7 +72,7 @@ const Telegram = () => {
 
   useEffect(() => {
     fetchTelegram();
-  }, []);
+  }, [keys]);
 
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();

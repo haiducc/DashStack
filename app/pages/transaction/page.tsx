@@ -63,8 +63,12 @@ const Transaction = () => {
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
 
-  const keys = localStorage.getItem("key");
-  const values = localStorage.getItem("value");
+  const [keys, setKeys] = useState<string | null>(null);
+  const [values, setValues] = useState<string | null>(null);
+  useEffect(() => {
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
+  }, []);
 
   const fetchTransaction = async (
     globalTerm?: string
@@ -238,6 +242,10 @@ const Transaction = () => {
   useEffect(() => {
     fetchTransaction(globalTerm);
   }, [globalTerm]);
+
+  useEffect(() => {
+    fetchTransaction();
+  }, [keys]);
 
   const columns = [
     // {

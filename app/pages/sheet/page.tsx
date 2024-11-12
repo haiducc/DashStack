@@ -31,8 +31,12 @@ const Sheet = () => {
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
 
-  const keys = localStorage.getItem("key");
-  const values = localStorage.getItem("value");
+  const [keys, setKeys] = useState<string | null>(null);
+  const [values, setValues] = useState<string | null>(null);
+  useEffect(() => {
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
+  }, []);
 
   const fetchSheet = async (globalTerm?: string) => {
     const arrRole: filterRole[] = [];
@@ -205,6 +209,10 @@ const Sheet = () => {
       ),
     },
   ];
+
+  useEffect(() => {
+    fetchSheet();
+  }, [keys]);
 
   return (
     <>

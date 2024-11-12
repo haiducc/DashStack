@@ -25,3 +25,7 @@
     background-color: #4b5cb8 !important;
     background: #4b5cb8 !important;
   }
+
+  :where(.css-apn68).ant-menu-dark.ant-menu-inline .ant-menu-sub.ant-menu-inline, :where(.css-apn68).ant-menu-dark>.ant-menu.ant-menu-inline .ant-menu-sub.ant-menu-inline {
+    background: #4b5cb8 !important;
+  }

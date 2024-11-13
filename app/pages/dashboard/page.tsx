@@ -11,7 +11,8 @@ import {
   getTransactionById,
 } from "@/app/services/statistics";
 import BaseModal from "@/app/component/config/BaseModal";
-import './style.css'
+import "./style.css";
+import { fetchBankAccounts } from "@/app/services/bankAccount";
 
 interface DataType {
   id: number;
@@ -24,6 +25,7 @@ interface DataType {
   transType: string;
   currentBalance: number;
   logStatus: string;
+  bankAccountId: number;
 }
 
 interface LogEntry {
@@ -56,22 +58,45 @@ interface TransactionData {
   transaction: Transaction;
 }
 
+interface filterProducts {
+  Name: string;
+  Value: string;
+}
+
 const Dashboard = () => {
-  const [, setSelectedOptions] = useState({
-    accountType: "",
-    transactionType: "",
-    accountGroup: "",
-  });
+  // const [, setSelectedOptions] = useState({
+  //   accountType: "",
+  //   transactionType: "",
+  //   accountGroup: "",
+  // });
   const { RangePicker } = DatePicker;
   const [dataStatistics, setDataStatistics] = useState<DataType[]>([]);
-  const [dataTransaction, setDataTransaction] = useState<TransactionData | null>(null);
-  const [loading, setLoading] = useState(false); // Loading state
+  const [dataTransaction, setDataTransaction] =
+    useState<TransactionData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [keys, setKeys] = useState<string | null>(null);
+  const [values, setValues] = useState<string | null>(null);
+  useEffect(() => {
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
+  }, []);
 
-  const fetchListStatistics = async () => {
-    setLoading(true); // Set loading to true before fetching
+  const fetchListStatistics = async (bankAccount?: string) => {
+    const arrFilter: filterProducts[] = [];
+    const bank: filterProducts = {
+      Name: "bankAccountId",
+      Value: bankAccount!,
+    };
+    const obj: filterProducts = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrFilter.push(bank, obj);
+    console.log(bankAccount, "bankAccount");
+    setLoading(true);
     try {
-      const response = await getListStatistics(1, 20);
-      console.log(response);
+      const response = await getListStatistics(1, 20, arrFilter);
+      // console.log(response);
 
       const formattedData =
         response?.data?.source?.map((x: DataType) => ({
@@ -85,6 +110,7 @@ const Dashboard = () => {
           transType: x.transType,
           currentBalance: x.currentBalance,
           logStatus: x.logStatus,
+          bankAccountId: x.bankAccountId,
         })) || [];
       setDataStatistics(formattedData);
     } catch (error) {
@@ -96,7 +122,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchListStatistics();
-  }, []);
+  }, [keys]);
 
   const fetchStatisticsById = async (id: number) => {
     try {
@@ -167,20 +193,20 @@ const Dashboard = () => {
     },
   ];
 
-  const options = [
-    { key: "accountType", value: "company", label: "Tài khoản công ty" },
-    { key: "accountType", value: "bank", label: "Tài khoản ngân hàng" },
-    { key: "accountGroup", value: "telegram", label: "Nhóm chat Telegram" },
-    { key: "transactionType", value: "transaction", label: "Loại giao dịch" },
-    { key: "accountGroup", value: "accountGroup", label: "Nhóm tài khoản" },
-  ];
+  // const options = [
+  //   // { key: "accountType", value: "company", label: "Tài khoản công ty" },
+  //   { key: "accountType", value: "bank", label: "Tài khoản ngân hàng" },
+  //   { key: "accountGroup", value: "telegram", label: "Nhóm chat Telegram" },
+  //   { key: "transactionType", value: "transaction", label: "Loại giao dịch" },
+  //   { key: "accountGroup", value: "accountGroup", label: "Nhóm tài khoản" },
+  // ];
 
-  const handleChange = (key: string, value: string) => {
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
+  // const handleChange = (key: string, value: string) => {
+  //   setSelectedOptions((prev) => ({
+  //     ...prev,
+  //     [key]: value,
+  //   }));
+  // };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
@@ -192,6 +218,143 @@ const Dashboard = () => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+
+  const [pageIndex] = useState(1);
+  const [pageSize] = useState(20);
+  const [bankFilter, setBankFilter] = useState();
+
+  // const fetchBankData = async (bankAccount?: string) => {
+  //   const arr: filterProducts[] = [];
+  //   const groupChatFilter: filterProducts = {
+  //     Name: "bankAccountId",
+  //     Value: bankAccount!,
+  //   };
+  //   const obj: filterProducts = {
+  //     Name: keys!,
+  //     Value: values!,
+  //   };
+  //   arr.push(obj, groupChatFilter);
+  //   try {
+  //     const bankData = await getBank(pageIndex, pageSize, arr);
+  //     const formattedBanks =
+  //       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //       bankData?.data?.source?.map((bank: any) => ({
+  //         value: bank.id,
+  //         label: bank.code || "Không xác định",
+  //       })) || [];
+  //     setBanks(formattedBanks);
+  //   } catch (error) {
+  //     console.error("Error fetching banks:", error);
+  //   }
+  // };
+
+  const [bankAccountFilter, setBankAccountFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+
+  const fetchBankData = async (bankAccount?: string) => {
+    const arr: filterProducts[] = [];
+    const groupChatFilter: filterProducts = {
+      Name: "bankAccountId",
+      Value: bankAccount!,
+    };
+    const obj: filterProducts = {
+      Name: keys!,
+      Value: values!,
+    };
+    arr.push(obj, groupChatFilter);
+    try {
+      const fetchBankAccountAPI = await fetchBankAccounts(
+        pageIndex,
+        pageSize,
+        undefined,
+        arr
+      );
+
+      if (
+        fetchBankAccountAPI &&
+        fetchBankAccountAPI.data &&
+        fetchBankAccountAPI.data.source
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res = fetchBankAccountAPI.data.source.map((x: any) => ({
+          value: x.id,
+          label: x.fullName + "-" + x.accountNumber || "Không xác định",
+        }));
+        console.log(fetchBankAccountAPI, "fetchBankAccountAPI");
+
+        setBankAccountFilter(res);
+      } else {
+        setBankAccountFilter([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  };
+
+  // const fetchBankData = async (groupChat?: string) => {
+  //   const arr: filterProducts[] = [];
+  //   const groupChatFilter: filterProducts = {
+  //     Name: "groupChatId",
+  //     Value: groupChat!,
+  //   };
+  //   const obj: filterProducts = {
+  //     Name: keys!,
+  //     Value: values!,
+  //   };
+  //   arr.push(obj, groupChatFilter);
+  //   try {
+  //     const fetchBankAccountAPI = await getListTelegram(
+  //       pageIndex,
+  //       pageSize,
+  //       undefined,
+  //       arr
+  //     );
+
+  //     if (
+  //       fetchBankAccountAPI &&
+  //       fetchBankAccountAPI.data &&
+  //       fetchBankAccountAPI.data.source
+  //     ) {
+  //       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //       const res = fetchBankAccountAPI.data.source.map((x: any) => ({
+  //         value: x.id,
+  //         label: x.fullName + "-" + x.accountNumber || "Không xác định",
+  //       }));
+  //       console.log(fetchBankAccountAPI, "fetchBankAccountAPI");
+
+  //       setBankAccountFilter(res);
+  //     } else {
+  //       setBankAccountFilter([]);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching bank accounts:", error);
+  //   }
+  // };
+
+  const [filterParams, setFilterParams] = useState<{
+    bankAccountId?: string;
+  }>({});
+
+  const handleSelectChange = (bankAccount?: string) => {
+    setFilterParams((prevParams) => ({
+      ...prevParams,
+      bankAccountId: bankAccount,
+    }));
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchBankData();
+    };
+
+    fetchData();
+  }, [filterParams]);
+
+  const [checkFilter, setCheckFilter] = useState(false);
+  useEffect(() => {
+    fetchListStatistics(bankFilter);
+  }, [checkFilter]);
 
   return (
     <>
@@ -209,7 +372,25 @@ const Dashboard = () => {
         </div>
         <div className="flex justify-center mt-7">
           <Space direction="horizontal" size="middle">
-            {options.map((option) => (
+            <Select
+              options={bankAccountFilter}
+              placeholder="Tài khoản ngân hàng"
+              style={{ width: 245 }}
+              allowClear
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={(value: any) => {
+                setBankFilter(value);
+                console.log(value, "value");
+
+                if (!value) {
+                  handleSelectChange(value);
+                  setCheckFilter(!checkFilter);
+                } else {
+                  fetchListStatistics(value);
+                }
+              }}
+            />
+            {/* {options.map((option) => (
               <Select
                 key={option.value}
                 options={options.filter((opt) => opt.key === option.key)}
@@ -217,7 +398,7 @@ const Dashboard = () => {
                 onChange={(value) => handleChange(option.key, value)}
                 style={{ width: 245 }}
               />
-            ))}
+            ))} */}
             <RangePicker />
           </Space>
         </div>
@@ -225,7 +406,7 @@ const Dashboard = () => {
           <Table<DataType>
             columns={columns}
             dataSource={dataStatistics}
-            loading={loading} 
+            loading={loading}
           />
         </div>
       </div>

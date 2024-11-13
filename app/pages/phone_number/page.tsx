@@ -38,8 +38,8 @@ const PhoneNumber: React.FC = () => {
   const [keys, setKeys] = useState<string | null>(null);
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
-      setKeys(localStorage.getItem("key"));
-      setValues(localStorage.getItem("value"));
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
   }, []);
 
   const fetchListPhone = async (globalTerm?: string) => {
@@ -77,16 +77,18 @@ const PhoneNumber: React.FC = () => {
   }, [keys]);
 
   const handleAddConfirm = async () => {
-    const formData = form.getFieldsValue();
-    setLoading(true);
     try {
+      await form.validateFields();
+      const formData = form.getFieldsValue();
+      setLoading(true);
       await addPhoneNumber({
         number: formData.number,
         com: formData.com,
         notes: formData.notes,
         id: formData.id,
       });
-      toast.success("Phone number added successfully!");
+
+      toast.success("Thêm mới số điện thoại thành công!");
       setAddModalOpen(false);
       form.resetFields();
       setCurrentPhoneNumber(null);
@@ -97,7 +99,7 @@ const PhoneNumber: React.FC = () => {
         toast.error(`Error: ${error.response.data.message}`);
       } else {
         console.error("Error:", error);
-        toast.error("An unexpected error occurred.");
+        toast.error("Thêm mới số điện thoại lỗi.");
       }
     } finally {
       setLoading(false);
@@ -119,7 +121,7 @@ const PhoneNumber: React.FC = () => {
     setLoading(true);
     try {
       await deletePhone(phone.id);
-      toast.success("Phone number deleted successfully!");
+      toast.success("Xóa số điện thoại thành công!");
       await fetchListPhone();
     } catch (error) {
       console.error("Error deleting phone number:", error);
@@ -168,7 +170,7 @@ const PhoneNumber: React.FC = () => {
     { title: "Nhà cung cấp mạng", dataIndex: "com", key: "com" },
     { title: "Ghi chú", dataIndex: "notes", key: "notes" },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "action",
       render: (record: PhoneNumberModal) => (
         <Space size="middle">
@@ -176,14 +178,14 @@ const PhoneNumber: React.FC = () => {
             icon={<EditOutlined />}
             onClick={() => handleEditPhoneNumber(record)}
           >
-            Edit
+            Chỉnh sửa
           </Button>
           <Button
             icon={<DeleteOutlined />}
             danger
             onClick={() => handleDeleteClick(record)}
           >
-            Delete
+            Xóa
           </Button>
         </Space>
       ),
@@ -225,7 +227,7 @@ const PhoneNumber: React.FC = () => {
         </div>
         <div className="flex justify-between items-center mb-7">
           <Input
-            placeholder="Search phone number ..."
+            placeholder="Tìm kiếm số điện ..."
             style={{
               width: 253,
               borderRadius: 10,
@@ -251,7 +253,7 @@ const PhoneNumber: React.FC = () => {
               setAddModalOpen(true);
             }}
           >
-            Thêm mưới
+            Thêm mới
           </Button>
         </div>
         {loading ? (
@@ -281,25 +283,23 @@ const PhoneNumber: React.FC = () => {
             <Input hidden />
           </Form.Item>
           <Form.Item
-            label="Phone Number"
+            label="Số điện thoại"
             name="number"
             rules={[
-              { required: true, message: "Please enter a phone number!" },
+              { required: true, message: "Vui lòng nhập số điện thoại!" },
             ]}
           >
-            <Input placeholder="Enter phone number" />
+            <Input placeholder="Nhập số điện thoại" />
           </Form.Item>
           <Form.Item
-            label="Network Provider"
+            label="Nhà mạng"
             name="com"
-            rules={[
-              { required: true, message: "Please enter a network provider!" },
-            ]}
+            rules={[{ required: true, message: "Vui lòng nhập tên nhà mạng!" }]}
           >
-            <Input placeholder="Enter network provider" />
+            <Input placeholder="Nhập tên nhà mạng" />
           </Form.Item>
-          <Form.Item label="Notes" name="notes">
-            <Input.TextArea rows={4} placeholder="Enter notes" />
+          <Form.Item label="Ghi chú" name="notes">
+            <Input.TextArea rows={4} placeholder="Ghi chú" />
           </Form.Item>
           <div className="flex justify-end">
             <Button

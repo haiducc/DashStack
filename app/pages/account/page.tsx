@@ -181,14 +181,20 @@ const Account = () => {
   };
 
   const getListAccountGroup = async () => {
+    const arrAccountGroup: filterGroupAccount[] = [];
+    const obj: filterGroupAccount = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrAccountGroup.push(obj);
     try {
       const accountGroup = await getAccountGroup(
         pageIndex,
-        pageSize
-        // undefined,
-        // JSON.stringify(filterArr)
+        pageSize,
+        globalTerm,
+        arrAccountGroup
       );
-      // console.log("accountGroup", accountGroup);
+      console.log("accountGroup", accountGroup);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = accountGroup?.data?.source?.map((x: any) => ({
@@ -202,8 +208,19 @@ const Account = () => {
   };
 
   const getGroupSystems = async () => {
+    const arrAccountGroup: filterGroupAccount[] = [];
+    const obj: filterGroupAccount = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrAccountGroup.push(obj);
     try {
-      const getSystem = await getGroupSystem(pageIndex, pageSize);
+      const getSystem = await getGroupSystem(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        arrAccountGroup
+      );
       // console.log("getSystem", getSystem);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -218,8 +235,19 @@ const Account = () => {
   };
 
   const getBranchSystems = async () => {
+    const arrAccountGroup: filterGroupAccount[] = [];
+    const obj: filterGroupAccount = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrAccountGroup.push(obj);
     try {
-      const getBranch = await getBranchSystem(pageIndex, pageSize);
+      const getBranch = await getBranchSystem(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        arrAccountGroup
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = getBranch?.data?.source?.map((x: any) => ({
         value: x.id,
@@ -232,12 +260,18 @@ const Account = () => {
   };
 
   const getGroupTeams = async () => {
+    const arrAccountGroup: filterGroupAccount[] = [];
+    const obj: filterGroupAccount = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrAccountGroup.push(obj);
     try {
       const groupTeams = await getGroupTeam(
-        // grandparentId,
-        // parentId,
         pageIndex,
-        pageSize
+        pageSize,
+        globalTerm,
+        arrAccountGroup
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = groupTeams?.data?.source?.map((x: any) => ({
@@ -251,10 +285,10 @@ const Account = () => {
   };
 
   const handleAddConfirm = async () => {
-    const formData = form.getFieldsValue();
-    // console.log("Form Data trước khi gửi:", formData);
-    setLoading(true);
     try {
+      await form.validateFields();
+      const formData = form.getFieldsValue();
+      setLoading(true);
       const res = await addBankAccounts({
         id: formData.id,
         bank: formData.bank,
@@ -285,12 +319,11 @@ const Account = () => {
         await fetchAccounts();
         toast.success("Thêm mới thành công!");
       }
-    } catch (error: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       setLoading(false);
       setAddModalOpen(false);
-
       const axiosError = error as AxiosError;
-
       if (axiosError.response) {
         const responseData = axiosError.response.data as {
           success: boolean;
@@ -299,11 +332,9 @@ const Account = () => {
           code: number;
           errors?: string[];
         };
-
         if (responseData.code === 400) {
           const errorMessage = responseData.message || "Thêm mới lỗi";
           toast.error(errorMessage);
-
           if (responseData.errors) {
             responseData.errors.forEach((err) => {
               toast.error(err);
@@ -315,7 +346,6 @@ const Account = () => {
       } else {
         toast.error("Lỗi kết nối, vui lòng thử lại.");
       }
-
       console.error("Lỗi khi thêm tài khoản ngân hàng:", error);
     } finally {
       setLoading(false);
@@ -487,20 +517,24 @@ const Account = () => {
   const [groupTeamFilter, setGroupTeamFilter] = useState();
 
   // call api lấy dsach filter nhóm tài khoản
-  const handleFilter = async () => {
+  const handleFilter = async (searchTerms?: string) => {
+    const arrAccountGroup: filterGroupAccount[] = [];
+    const groupAccount: filterGroupAccount = {
+      Name: "groupAccountId",
+      Value: searchTerms!,
+    };
+    const obj: filterGroupAccount = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrAccountGroup.push(obj, groupAccount);
     try {
-      const { groupAccountId } = filterParams;
-      const searchParams = groupAccountId
-        ? [{ Name: "groupAccountId", Value: groupAccountId }]
-        : [];
       const fetchBankAccountAPI = await getAccountGroup(
         pageIndex,
         pageSize,
         globalTerm,
-        searchParams //searchTerms
+        arrAccountGroup
       );
-      // console.log("fetchBankAccountAPI", fetchBankAccountAPI);
-
       if (
         fetchBankAccountAPI &&
         fetchBankAccountAPI.data &&
@@ -535,17 +569,23 @@ const Account = () => {
     }));
   };
 
-  const handleFilterSystem = async () => {
+  const handleFilterSystem = async (groupSystemId?: string) => {
+    const arrAccountGroup: filterGroupAccount[] = [];
+    const system: filterGroupAccount = {
+      Name: "groupSystemId",
+      Value: groupSystemId!,
+    };
+    const obj: filterGroupAccount = {
+      Name: keys!,
+      Value: values!,
+    };
+    arrAccountGroup.push(obj, system);
     try {
-      const { groupSystemId } = filterParams;
-      const searchParams = groupSystemId
-        ? [{ Name: "groupSystemId", Value: groupSystemId }]
-        : [];
       const fetchBankAccountAPI = await getGroupSystem(
         pageIndex,
         pageSize,
         globalTerm,
-        searchParams //searchTerms
+        arrAccountGroup
       );
       // console.log("fetchBankAccountAPI", fetchBankAccountAPI);
 
@@ -568,17 +608,27 @@ const Account = () => {
     }
   };
 
-  const handleFilterBranch = async () => {
+  const handleFilterBranch = async (groupBranchId?: string) => {
+    const arr: filterGroupAccount[] = [];
+    const branch: filterGroupAccount = {
+      Name: "groupBranchId",
+      Value: groupBranchId!,
+    };
+    const obj: filterGroupAccount = {
+      Name: keys!,
+      Value: values!,
+    };
+    arr.push(obj, branch);
     try {
-      const { groupBranchId } = filterParams;
-      const searchParams = groupBranchId
-        ? [{ Name: "groupBranchId", Value: groupBranchId }]
-        : [];
+      // const { groupBranchId } = filterParams;
+      // const searchParams = groupBranchId
+      //   ? [{ Name: "groupBranchId", Value: groupBranchId }]
+      //   : [];
       const fetchBankAccountAPI = await getBranchSystem(
         pageIndex,
         pageSize,
         globalTerm,
-        searchParams //searchTerms
+        arr //searchTerms
       );
       // console.log("fetchBankAccountAPI", fetchBankAccountAPI);
 
@@ -601,17 +651,27 @@ const Account = () => {
     }
   };
 
-  const handleFilterTeam = async () => {
+  const handleFilterTeam = async (groupTeamId?: string) => {
+    const arr: filterGroupAccount[] = [];
+    const system: filterGroupAccount = {
+      Name: "groupTeamId",
+      Value: groupTeamId!,
+    };
+    const obj: filterGroupAccount = {
+      Name: keys!,
+      Value: values!,
+    };
+    arr.push(obj, system);
     try {
-      const { groupTeamId } = filterParams;
-      const searchParams = groupTeamId
-        ? [{ Name: "groupTeamId", Value: groupTeamId }]
-        : [];
+      // const { groupTeamId } = filterParams;
+      // const searchParams = groupTeamId
+      //   ? [{ Name: "groupTeamId", Value: groupTeamId }]
+      //   : [];
       const fetchBankAccountAPI = await getGroupTeam(
         pageIndex,
         pageSize,
         globalTerm,
-        searchParams //searchTerms
+        arr //searchTerms
       );
       // console.log("fetchBankAccountAPI", fetchBankAccountAPI);
 

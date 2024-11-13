@@ -38,8 +38,8 @@ const PhoneNumber: React.FC = () => {
   const [keys, setKeys] = useState<string | null>(null);
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
-      setKeys(localStorage.getItem("key"));
-      setValues(localStorage.getItem("value"));
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
   }, []);
 
   const fetchAccountGroup = async (globalTerm?: string) => {
@@ -77,9 +77,11 @@ const PhoneNumber: React.FC = () => {
   }, [keys]);
 
   const handleAddConfirm = async () => {
-    const formData = form.getFieldsValue();
-    setLoading(true);
     try {
+      await form.validateFields();
+      const formData = form.getFieldsValue();
+      setLoading(true);
+      
       await addAccountGroup({
         id: formData.id,
         fullName: formData.fullName,

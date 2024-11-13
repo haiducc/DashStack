@@ -26,7 +26,12 @@ export const getListPhone = async (
 
 export const addPhoneNumber = async (phoneData: PhoneNumberModal) => {
   try {
-    const res = await apiClient.post(`/phone-api/add-or-update`, phoneData);
+    const token = localStorage.getItem("accessToken");
+    const res = await apiClient.post(`/phone-api/add-or-update`, phoneData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);

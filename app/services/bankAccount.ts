@@ -9,7 +9,7 @@ export const fetchBankAccounts = async (
   pageSize: number,
   globalTerm?: string,
   searchTerms: Array<{ Name: string; Value: string }> = []
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> => {
   try {
     const params = buildSearchParams(searchTerms, {
@@ -46,13 +46,19 @@ export const addBankAccounts = async (accountData: BankAccounts) => {
   }
 };
 
-export const getBank = async (pageIndex: number, pageSize: number) => {
+export const getBank = async (
+  pageIndex: number,
+  pageSize: number,
+  searchTerms: Array<{ Name: string; Value: string }> = []
+) => {
   try {
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      // globalTerm: globalTerm || undefined,
+    });
     const res = await apiClient.get(`/bank-api/find`, {
-      params: {
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-      },
+      params,
     });
     return res.data;
   } catch (error) {

@@ -83,22 +83,26 @@ const TelegramIntegration = () => {
         globalTerm,
         arrTeleAccount
       );
-      // console.log(response, "bankAccount");
+      console.log(response, "bankAccount");
       const formattedData =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        response?.data?.source?.map((item: any) => ({
-          id: item.id?.toString() || Date.now().toString(), // id
-          bankAccountId: item.bankAccount.id, // id tài khoản ngân hàng
-          groupChatId: item.groupChatId, // id nhóm chat tele
-          code: item.bank.code, // mã ngân hàng
-          accountNumber: item.bankAccount.accountNumber, // stk
-          fullName: item.bankAccount.fullName, // tên chủ tk
-          chatId: item.groupChat.chatId, // mã nhóm chat tele
-          name: item.groupChat.name, // tên nhóm chat
-          transType: item.transType, // loại giao dịch
-          bankId: item.bank.name,
-          chatName: item.groupChat.name,
-        })) || [];
+        response?.data?.source?.map((item: any) => {
+          // console.log(item.bankAccount.id);
+          return {
+            id: item.id?.toString() || Date.now().toString(), // id
+            bankAccountId: item.bankAccount.id, // id tài khoản ngân hàng
+            groupChatId: item.groupChatId, // id nhóm chat tele
+            code: item.bank.code, // mã ngân hàng
+            accountNumber: item.bankAccount.accountNumber, // stk
+            fullName: item.bankAccount.fullName, // tên chủ tk
+            chatId: item.groupChat.chatId, // mã nhóm chat tele
+            name: item.groupChat.name, // tên nhóm chat
+            transType: item.transType, // loại giao dịch
+            bankId: item.bank.name,
+            chatName: item.groupChat.name,
+          };
+        }) || [];
+
       setDataTelegramIntegration(formattedData);
     } catch (error) {
       console.error("Error fetching:", error);
@@ -145,10 +149,10 @@ const TelegramIntegration = () => {
   };
 
   const handleAddConfirm = async () => {
-    const formData = form.getFieldsValue();
-    setLoading(true);
-
     try {
+      await form.validateFields();
+      const formData = form.getFieldsValue();
+      setLoading(true);
       if (currentTelegram) {
         const response = await addTelegramIntergration({
           bankAccountId: formData.bankAccountId,
@@ -167,7 +171,7 @@ const TelegramIntegration = () => {
       } else {
         // Thêm mới bản ghi
         const response = await addTelegramIntergration({
-          bankAccountId: formData.bankAccountId,
+          bankAccountId: bankAccountIdSelect,
           id: formData.id, // id của bản ghi
           groupChatId: formData.groupChatId, // id nhóm chat trên Telegram
           transType: formData.transType,
@@ -352,17 +356,24 @@ const TelegramIntegration = () => {
       groupChatId: groupChat,
     }));
   };
-  const handleFilterGroupChat = async () => {
+
+  const handleFilterGroupChat = async (groupChat?: string) => {
+    const arr: filterTeleIntergration[] = [];
+    const groupChatFilter: filterTeleIntergration = {
+      Name: "groupChatId",
+      Value: groupChat!,
+    };
+    const obj: filterTeleIntergration = {
+      Name: keys!,
+      Value: values!,
+    };
+    arr.push(obj, groupChatFilter);
     try {
-      const { groupChatId } = filterParams;
-      const searchParams = groupChatId
-        ? [{ Name: "groupChatId", Value: groupChatId }]
-        : [];
       const fetchBankAccountAPI = await getListTelegram(
         pageIndex,
         pageSize,
         globalTerm,
-        searchParams
+        arr
       );
       if (
         fetchBankAccountAPI &&
@@ -397,6 +408,8 @@ const TelegramIntegration = () => {
   useEffect(() => {
     fetchListTelegramIntegration(groupChatFilter);
   }, [checkFilter]);
+
+  const [bankAccountIdSelect, setBankAccountIdSelect] = useState();
 
   return (
     <>
@@ -487,9 +500,9 @@ const TelegramIntegration = () => {
           <Form.Item hidden label="id" name="id">
             <Input hidden />
           </Form.Item>
-          <Form.Item hidden label="bankAccountId" name="bankAccountId">
-            <Input hidden />
-          </Form.Item>
+          {/* <Form.Item label="bankAccountId" name="bankAccountId">
+            <Input />
+          </Form.Item> */}
           <Form.Item
             label="Tài khoản ngân hàng"
             name="accountFullName"
@@ -499,6 +512,7 @@ const TelegramIntegration = () => {
               placeholder="Chọn ngân hàng"
               onFocus={genBankData}
               options={banks}
+              onChange={(value) => setBankAccountIdSelect(value)}
             />
           </Form.Item>
           <Form.Item

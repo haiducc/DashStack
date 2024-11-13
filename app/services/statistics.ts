@@ -1,17 +1,20 @@
+import { buildSearchParams } from "../pages/utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
 export const getListStatistics = async (
   pageIndex: number,
   pageSize: number,
-  globalTerm?: string
+  // globalTerm?: string,
+  searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      // globalTerm: globalTerm || undefined,
+    });
     const res = await apiClient.get(`/transaction-api/find-transaction`, {
-      params: {
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        globalTerm: globalTerm,
-      },
+      params,
     });
     return res.data;
   } catch (error) {

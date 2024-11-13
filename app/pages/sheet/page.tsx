@@ -70,10 +70,10 @@ const Sheet = () => {
   }, [globalTerm]);
 
   const handleAddConfirm = async () => {
-    const formData = form.getFieldsValue();
-    setLoading(true);
-
     try {
+      await form.validateFields();
+      const formData = form.getFieldsValue();
+      setLoading(true);
       if (currentSheet) {
         await addSheet({
           id: currentSheet.id,
@@ -81,15 +81,15 @@ const Sheet = () => {
           linkUrl: formData.linkUrl,
           notes: formData.notes,
         });
-        toast.success("Cập nhật thành công!"); // Thông báo thành công
+        toast.success("Cập nhật thành công!");
       } else {
         await addSheet({
-          id: Date.now(), // Hoặc sử dụng logic id của bạn
+          id: Date.now(),
           name: formData.name,
           linkUrl: formData.linkUrl,
           notes: formData.notes,
         });
-        toast.success("Thêm mới thành công!"); // Thông báo thêm mới thành công
+        toast.success("Thêm mới thành công!");
       }
 
       setAddModalOpen(false);
@@ -286,11 +286,11 @@ const Sheet = () => {
             rules={[
               {
                 required: true,
-                message: "Vui lòng nhập tên ID nhóm telegram!",
+                message: "Vui lòng nhập tên ID trang tính!",
               },
             ]}
           >
-            <Input placeholder="Nhập ID nhóm telegram" />
+            <Input placeholder="Nhập ID trang tính" />
           </Form.Item>
           <Form.Item label="Ghi chú" name="notes">
             <Input.TextArea rows={4} placeholder="Nhập ghi chú" />

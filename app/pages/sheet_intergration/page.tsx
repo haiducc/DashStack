@@ -50,8 +50,8 @@ const SheetIntergration = () => {
   const [keys, setKeys] = useState<string | null>(null);
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
-      setKeys(localStorage.getItem("key"));
-      setValues(localStorage.getItem("value"));
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
   }, []);
 
   const fetchSheetIntegration = async (
@@ -133,10 +133,10 @@ const SheetIntergration = () => {
   };
 
   const handleAddConfirm = async () => {
-    const formData = form.getFieldsValue();
-    setLoading(true);
-
     try {
+      await form.validateFields();
+      const formData = form.getFieldsValue();
+      setLoading(true);
       if (currentSheet) {
         const response = await addSheetIntergration({
           id: formData.id?.toString() || Date.now().toString(), // id

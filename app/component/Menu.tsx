@@ -233,7 +233,7 @@ const SideMenu = () => {
           // Điều hướng nếu có quyền
           if (menuItem.path) {
             router.push(menuItem.path);
-            toast.info(`Đang chuyển đến ${menuItem.label}`);
+            // toast.info(`Đang chuyển đến ${menuItem.label}`);
           }
         } else {
           toast.error("Bạn không có quyền truy cập vào trang này.");

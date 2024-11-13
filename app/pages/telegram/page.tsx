@@ -75,10 +75,10 @@ const Telegram = () => {
   }, [keys]);
 
   const handleAddConfirm = async () => {
-    const formData = form.getFieldsValue();
-    setLoading(true);
-
     try {
+      await form.validateFields();
+      const formData = form.getFieldsValue();
+      setLoading(true);
       await addTelegram({
         id: formData.id,
         name: formData.name,

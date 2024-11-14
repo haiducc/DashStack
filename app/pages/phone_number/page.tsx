@@ -32,6 +32,8 @@ const PhoneNumber: React.FC = () => {
   const [globalTerm, setGlobalTerm] = useState("");
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
+  const [currentTelegram, setCurrentTelegram] =
+    useState<PhoneNumberModal | null>(null);
 
   // const keys = localStorage.getItem("key");
   // const values = localStorage.getItem("value");
@@ -81,22 +83,38 @@ const PhoneNumber: React.FC = () => {
       await form.validateFields();
       const formData = form.getFieldsValue();
       setLoading(true);
-      await addPhoneNumber({
+      const response = await addPhoneNumber({
         number: formData.number,
         com: formData.com,
         notes: formData.notes,
         id: formData.id,
       });
-
-      toast.success("Thêm mới số điện thoại thành công!");
+      if (response && response.success === false) {
+        toast.error(response.message || "Thêm mới số điện thoại lỗi.");
+        setLoading(false);
+        return;
+      }
+      // toast.success("Thêm mới số điện thoại thành công!");
+      setCurrentTelegram(null);
+      toast.success(
+        currentTelegram ? "Cập nhật thành công!" : "Thêm mới thành công!"
+      );
       setAddModalOpen(false);
       form.resetFields();
       setCurrentPhoneNumber(null);
       await fetchListPhone();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      if (error.response && error.response.data) {
-        toast.error(`Error: ${error.response.data.message}`);
+    } catch (error) {
+      setLoading(false);
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const responseError = error as {
+          response: { data?: { message?: string } };
+        };
+
+        if (responseError.response && responseError.response.data) {
+          toast.error(`Error: ${responseError.response.data.message}`);
+        } else {
+          toast.error("Thêm mới số điện thoại lỗi.");
+        }
       } else {
         console.error("Error:", error);
         toast.error("Thêm mới số điện thoại lỗi.");
@@ -107,6 +125,7 @@ const PhoneNumber: React.FC = () => {
   };
 
   const handleEditPhoneNumber = (phone: PhoneNumberModal) => {
+    setCurrentTelegram(phone);
     setCurrentPhoneNumber(phone);
     form.setFieldsValue({
       number: phone.number,
@@ -306,7 +325,7 @@ const PhoneNumber: React.FC = () => {
               onClick={() => setAddModalOpen(false)}
               className="w-[189px] h-[42px]"
             >
-              Close
+              Đóng
             </Button>
             <div className="w-5" />
             <Button

@@ -79,13 +79,17 @@ const Telegram = () => {
       await form.validateFields();
       const formData = form.getFieldsValue();
       setLoading(true);
-      await addTelegram({
+      const response = await addTelegram({
         id: formData.id,
         name: formData.name,
         chatId: formData.chatId,
         notes: formData.notes,
       });
-
+      if (response && response.success === false) {
+        toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
+        setLoading(false);
+        return;
+      }
       setAddModalOpen(false);
       form.resetFields();
       setCurrentTelegram(null);
@@ -95,8 +99,22 @@ const Telegram = () => {
       await fetchTelegram();
       setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error("Lỗi:", error);
-      toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const responseError = error as {
+          response: { data?: { message?: string } };
+        };
+
+        if (responseError.response && responseError.response.data) {
+          const { message } = responseError.response.data;
+          toast.error(message || "Có lỗi xảy ra, vui lòng thử lại!");
+        } else {
+          toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }
+      } else {
+        toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+      }
     }
   };
 

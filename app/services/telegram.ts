@@ -15,7 +15,7 @@ export const getListTelegram = async (
       globalTerm: globalTerm || undefined,
     });
     const res = await apiClient.get(`/group-chat-api/find`, {
-      params
+      params,
     });
     return res.data;
   } catch (error) {
@@ -26,8 +26,12 @@ export const getListTelegram = async (
 
 export const addTelegram = async (tele: dataTelegramModal) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(`/group-chat-api/add-or-update`, tele, {
       timeout: 30000,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.data;
   } catch (error) {

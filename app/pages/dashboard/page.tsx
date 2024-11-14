@@ -13,6 +13,7 @@ import {
 import BaseModal from "@/app/component/config/BaseModal";
 import "./style.css";
 import { fetchBankAccounts } from "@/app/services/bankAccount";
+import { getListTelegram } from "@/app/services/telegram";
 
 interface DataType {
   id: number;
@@ -60,7 +61,8 @@ interface TransactionData {
 
 interface filterProducts {
   Name: string;
-  Value: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Value: any;
 }
 
 const Dashboard = () => {
@@ -69,7 +71,7 @@ const Dashboard = () => {
   //   transactionType: "",
   //   accountGroup: "",
   // });
-  const { RangePicker } = DatePicker;
+  // const { RangePicker } = DatePicker;
   const [dataStatistics, setDataStatistics] = useState<DataType[]>([]);
   const [dataTransaction, setDataTransaction] =
     useState<TransactionData | null>(null);
@@ -81,22 +83,46 @@ const Dashboard = () => {
     setValues(localStorage.getItem("value"));
   }, []);
 
-  const fetchListStatistics = async (bankAccount?: string) => {
+  const fetchListStatistics = async (
+    bankAccount?: string,
+    groupChat?: number,
+    transType?: string,
+    // date?: string
+    startDate?: string,
+    endDate?: string
+  ) => {
     const arrFilter: filterProducts[] = [];
     const bank: filterProducts = {
       Name: "bankAccountId",
       Value: bankAccount!,
     };
+    const chat: filterProducts = {
+      Name: "groupChatId",
+      Value: groupChat!,
+    };
+    const type: filterProducts = {
+      Name: "transType",
+      Value: transType!,
+    };
+    const start: filterProducts = {
+      Name: "startDate",
+      Value: startDate!,
+    };
+    const end: filterProducts = {
+      Name: "endDate",
+      Value: endDate!,
+    };
     const obj: filterProducts = {
       Name: keys!,
       Value: values!,
     };
-    arrFilter.push(bank, obj);
-    console.log(bankAccount, "bankAccount");
+
+    arrFilter.push(bank, obj, chat, type, start, end);
+    // console.log(bankAccount, "bankAccount");
     setLoading(true);
     try {
       const response = await getListStatistics(1, 20, arrFilter);
-      // console.log(response);
+      console.log(response);
 
       const formattedData =
         response?.data?.source?.map((x: DataType) => ({
@@ -221,37 +247,33 @@ const Dashboard = () => {
 
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
-  const [bankFilter, setBankFilter] = useState();
 
-  // const fetchBankData = async (bankAccount?: string) => {
-  //   const arr: filterProducts[] = [];
-  //   const groupChatFilter: filterProducts = {
-  //     Name: "bankAccountId",
-  //     Value: bankAccount!,
-  //   };
-  //   const obj: filterProducts = {
-  //     Name: keys!,
-  //     Value: values!,
-  //   };
-  //   arr.push(obj, groupChatFilter);
-  //   try {
-  //     const bankData = await getBank(pageIndex, pageSize, arr);
-  //     const formattedBanks =
-  //       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //       bankData?.data?.source?.map((bank: any) => ({
-  //         value: bank.id,
-  //         label: bank.code || "Không xác định",
-  //       })) || [];
-  //     setBanks(formattedBanks);
-  //   } catch (error) {
-  //     console.error("Error fetching banks:", error);
-  //   }
-  // };
+  const [bankFilter, setBankFilter] = useState();
+  const [chatFilter, setChatFilter] = useState();
 
   const [bankAccountFilter, setBankAccountFilter] = useState<
     Array<{ value: string; label: string }>
   >([]);
+  const [groupChatFilter, setGroupChatFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  // const [transTypeFilter, setTransTypeFilter] = useState<
+  //   Array<{ value: string; label: string }>
+  // >([]);
+  const [transTypeFilter, setTransTypeFilter] = useState();
+  // const [date, setDate] = useState();
+  const [startDate, setStartDate] = useState();
+  const [endDate, setEndDate] = useState();
 
+  const options = [
+    { value: "3", label: "Tiền vào" },
+    { value: "2", label: "Tiền ra" },
+    { value: "1", label: "Cả hai" },
+  ];
+  const optionCompany = [
+    { value: "1", label: "Tài khoản công ty" },
+    { value: "2", label: "Tài khoản marketing" },
+  ];
   const fetchBankData = async (bankAccount?: string) => {
     const arr: filterProducts[] = [];
     const groupChatFilter: filterProducts = {
@@ -281,7 +303,7 @@ const Dashboard = () => {
           value: x.id,
           label: x.fullName + "-" + x.accountNumber || "Không xác định",
         }));
-        console.log(fetchBankAccountAPI, "fetchBankAccountAPI");
+        // console.log(fetchBankAccountAPI, "fetchBankAccountAPI");
 
         setBankAccountFilter(res);
       } else {
@@ -292,60 +314,75 @@ const Dashboard = () => {
     }
   };
 
-  // const fetchBankData = async (groupChat?: string) => {
-  //   const arr: filterProducts[] = [];
-  //   const groupChatFilter: filterProducts = {
-  //     Name: "groupChatId",
-  //     Value: groupChat!,
-  //   };
-  //   const obj: filterProducts = {
-  //     Name: keys!,
-  //     Value: values!,
-  //   };
-  //   arr.push(obj, groupChatFilter);
-  //   try {
-  //     const fetchBankAccountAPI = await getListTelegram(
-  //       pageIndex,
-  //       pageSize,
-  //       undefined,
-  //       arr
-  //     );
+  const fetchListTelegram = async (groupChat?: string) => {
+    const arr: filterProducts[] = [];
+    const groupChatFilter: filterProducts = {
+      Name: "groupChatId",
+      Value: groupChat!,
+    };
+    const obj: filterProducts = {
+      Name: keys!,
+      Value: values!,
+    };
+    arr.push(obj, groupChatFilter);
+    try {
+      const fetchBankAccountAPI = await getListTelegram(
+        pageIndex,
+        pageSize,
+        undefined,
+        arr
+      );
 
-  //     if (
-  //       fetchBankAccountAPI &&
-  //       fetchBankAccountAPI.data &&
-  //       fetchBankAccountAPI.data.source
-  //     ) {
-  //       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //       const res = fetchBankAccountAPI.data.source.map((x: any) => ({
-  //         value: x.id,
-  //         label: x.fullName + "-" + x.accountNumber || "Không xác định",
-  //       }));
-  //       console.log(fetchBankAccountAPI, "fetchBankAccountAPI");
+      if (
+        fetchBankAccountAPI &&
+        fetchBankAccountAPI.data &&
+        fetchBankAccountAPI.data.source
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res = fetchBankAccountAPI.data.source.map((x: any) => ({
+          value: x.id,
+          label: x.name || "Không xác định",
+        }));
+        // console.log(fetchBankAccountAPI, "fetchBankAccountAPI");
 
-  //       setBankAccountFilter(res);
-  //     } else {
-  //       setBankAccountFilter([]);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching bank accounts:", error);
-  //   }
-  // };
+        setGroupChatFilter(res);
+      } else {
+        setGroupChatFilter([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  };
 
   const [filterParams, setFilterParams] = useState<{
     bankAccountId?: string;
+    groupChatId?: number;
+    transType?: string;
+    startDate?: string;
+    endDate?: string;
   }>({});
 
-  const handleSelectChange = (bankAccount?: string) => {
+  const handleSelectChange = (
+    bankAccount?: string,
+    groupChat?: number,
+    transType?: string,
+    startDate?: string,
+    endDate?: string
+  ) => {
     setFilterParams((prevParams) => ({
       ...prevParams,
       bankAccountId: bankAccount,
+      groupChatId: groupChat,
+      transType: transType,
+      startDate: startDate,
+      endDate: endDate,
     }));
   };
 
   useEffect(() => {
     const fetchData = async () => {
       await fetchBankData();
+      await fetchListTelegram();
     };
 
     fetchData();
@@ -353,7 +390,7 @@ const Dashboard = () => {
 
   const [checkFilter, setCheckFilter] = useState(false);
   useEffect(() => {
-    fetchListStatistics(bankFilter);
+    fetchListStatistics(bankFilter, chatFilter);
   }, [checkFilter]);
 
   return (
@@ -380,26 +417,105 @@ const Dashboard = () => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
                 setBankFilter(value);
-                console.log(value, "value");
+                // console.log(value, "value");
 
                 if (!value) {
-                  handleSelectChange(value);
+                  handleSelectChange(value, chatFilter, transTypeFilter);
                   setCheckFilter(!checkFilter);
                 } else {
-                  fetchListStatistics(value);
+                  fetchListStatistics(value, chatFilter, transTypeFilter);
                 }
               }}
             />
-            {/* {options.map((option) => (
-              <Select
-                key={option.value}
-                options={options.filter((opt) => opt.key === option.key)}
-                placeholder={option.label}
-                onChange={(value) => handleChange(option.key, value)}
-                style={{ width: 245 }}
-              />
-            ))} */}
-            <RangePicker />
+            <Select
+              options={groupChatFilter}
+              placeholder="Nhóm chat telegram"
+              style={{ width: 245 }}
+              allowClear
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={(value: any) => {
+                setChatFilter(value);
+                // console.log(value, "value");
+
+                if (!value) {
+                  handleSelectChange(bankFilter, value, transTypeFilter);
+                  setCheckFilter(!checkFilter);
+                } else {
+                  fetchListStatistics(bankFilter, value, transTypeFilter);
+                }
+              }}
+            />
+            <Select
+              options={options}
+              placeholder="Loại giao dịch"
+              style={{ width: 245 }}
+              allowClear
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={(value: any) => {
+                console.log(value, "value");
+                setTransTypeFilter(value);
+                if (!value) {
+                  handleSelectChange(bankFilter, chatFilter, value);
+                  setCheckFilter(!checkFilter);
+                } else {
+                  fetchListStatistics(bankFilter, chatFilter, value);
+                }
+              }}
+            />
+            <Select
+              options={optionCompany}
+              placeholder="Loại công ty"
+              style={{ width: 245 }}
+              allowClear
+            />
+            <DatePicker 
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={(value: any) => {
+                setStartDate(value);
+                if (!value) {
+                  handleSelectChange(
+                    bankFilter,
+                    chatFilter,
+                    transTypeFilter,
+                    value,
+                    endDate
+                  );
+                  setCheckFilter(!checkFilter);
+                } else {
+                  fetchListStatistics(
+                    bankFilter,
+                    chatFilter,
+                    transTypeFilter,
+                    value,
+                    endDate
+                  );
+                }
+              }}
+            />
+            <DatePicker 
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={(value: any) => {
+                setEndDate(value);
+                if (!value) {
+                  handleSelectChange(
+                    bankFilter,
+                    chatFilter,
+                    transTypeFilter,
+                    startDate,
+                    value
+                  );
+                  setCheckFilter(!checkFilter);
+                } else {
+                  fetchListStatistics(
+                    bankFilter,
+                    chatFilter,
+                    transTypeFilter,
+                    startDate,
+                    value
+                  );
+                }
+              }}
+            />
           </Space>
         </div>
         <div className="mt-5 mx-[35px]">

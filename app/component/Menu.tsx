@@ -106,7 +106,7 @@ const fetchRoleData = async (accessToken: string) => {
     );
 
     const res = await response.json();
-    console.log(res, "response");
+    // console.log(res, "response");
 
     localStorage.setItem("key", res.data.key);
     localStorage.setItem("value", res.data.value);
@@ -203,7 +203,7 @@ const SideMenu = () => {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("useEffect is running");
+    // console.log("useEffect is running");
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       fetchRoleData(accessToken).then((data) => {

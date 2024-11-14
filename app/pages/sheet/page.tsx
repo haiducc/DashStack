@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 import DeleteModal from "@/app/component/config/modalDelete";
 
 export interface dataSheetModal {
-  id: number;
+  id?: number;
   name: string;
   linkUrl: string;
   notes: string;
@@ -84,7 +84,7 @@ const Sheet = () => {
         toast.success("Cập nhật thành công!");
       } else {
         await addSheet({
-          id: Date.now(),
+          // id: Date.now(),
           name: formData.name,
           linkUrl: formData.linkUrl,
           notes: formData.notes,
@@ -116,14 +116,18 @@ const Sheet = () => {
   };
 
   const handleDeleteSheet = async (x: dataSheetModal) => {
+    if (!x.id) {
+      toast.error("ID không hợp lệ!");
+      return;
+    }
     setLoading(true);
     try {
       await deleteSheet(x.id);
       await fetchSheet();
-      toast.success("Xóa thành công!"); // Thông báo xóa thành công
+      toast.success("Xóa thành công!");
     } catch (error) {
       console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-      toast.error("Có lỗi khi xóa, vui lòng thử lại!"); // Thông báo lỗi khi xóa
+      toast.error("Có lỗi khi xóa, vui lòng thử lại!");
     } finally {
       setLoading(false);
     }

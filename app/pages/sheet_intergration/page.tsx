@@ -21,7 +21,7 @@ export interface ListSheetIntegration {
   fullName: string;
   linkUrl: string;
   transType: string;
-  bankAccountId: number;
+  bankAccountId?: number;
   sheetId: number;
 }
 
@@ -80,7 +80,7 @@ const SheetIntergration = () => {
       const formattedData =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         response?.data?.source?.map((item: any) => ({
-          id: item.id?.toString() || Date.now().toString(), // id
+          id: item.id, // id
           code: item.bank.code, // Mã ngân hàng
           accountNumber: item.bankAccount.accountNumber, // stk
           fullName: item.bankAccount.fullName, // tên chủ tk
@@ -139,7 +139,7 @@ const SheetIntergration = () => {
       setLoading(true);
       if (currentSheet) {
         const response = await addSheetIntergration({
-          id: formData.id?.toString() || Date.now().toString(), // id
+          id: formData.id, // id
           code: formData.code, // Mã ngân hàng
           accountNumber: formData.accountNumber, // stk
           fullName: formData.fullName, // tên chủ tk
@@ -157,7 +157,7 @@ const SheetIntergration = () => {
           fullName: formData.fullName, // tên chủ tk
           linkUrl: formData.linkUrl, // link url // đổi tên thử thành sheetId
           transType: formData.transType, // status loại giao dịch
-          bankAccountId: formData.bankAccountId, // hình như không nhầm thì là lưu stk vào trường có tên là bankAccountId
+          bankAccountId: bankAccountIdSelect, // hình như không nhầm thì là lưu stk vào trường có tên là bankAccountId
           sheetId: formData.sheetId, // id của sheet
         });
         console.log("Dữ liệu đã được thêm mới:", response);
@@ -178,7 +178,7 @@ const SheetIntergration = () => {
     console.log("data edit", record);
     setCurrentSheet(record);
     form.setFieldsValue({
-      id: record.id?.toString() || Date.now().toString(), // id
+      id: record.id, // id
       code: record.code, // Mã ngân hàng
       accountNumber: record.accountNumber, // stk
       fullName: record.fullName, // tên chủ tk
@@ -379,6 +379,8 @@ const SheetIntergration = () => {
     fetchSheetIntegration();
   }, [keys]);
 
+  const [bankAccountIdSelect, setBankAccountIdSelect] = useState();
+
   return (
     <>
       <Header />
@@ -477,20 +479,19 @@ const SheetIntergration = () => {
               placeholder="Chọn ngân hàng"
               onFocus={genBankData}
               options={banks}
+              onChange={(value) => setBankAccountIdSelect(value)}
             />
           </Form.Item>
-          <Form.Item
-            hidden
-            label="Tài khoản ngân hàng"
+          {/* <Form.Item
+            label="Tài khoản ngân hàng 2"
             name="accountNumber"
-            rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
           >
             <Select
-              placeholder="Chọn ngân hàng"
+              placeholder="Chọn ngân hàng 2"
               onFocus={genBankData}
               options={banks}
             />
-          </Form.Item>
+          </Form.Item> */}
           <Form.Item
             label="Chọn nhóm trang tính"
             name="sheetId"

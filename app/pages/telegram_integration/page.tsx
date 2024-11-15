@@ -11,7 +11,7 @@ import {
 } from "@/app/services/telegram_intergration_list";
 import BaseModal from "@/app/component/config/BaseModal";
 import { fetchBankAccounts } from "@/app/services/bankAccount";
-import { getListTelegram } from "@/app/services/telegram";
+import { getListTelegram, getTransType } from "@/app/services/telegram";
 import DeleteModal from "@/app/component/config/modalDelete";
 
 export interface ListTelegramIntegration {
@@ -124,6 +124,7 @@ const TelegramIntegration = () => {
           value: bank.id,
           label: `${bank.accountNumber} - ${bank.bank.code} - ${bank.fullName}`,
         })) || [];
+
       setBanks(formattedBanks);
     } catch (error) {
       console.error("Error fetching banks:", error);
@@ -143,6 +144,27 @@ const TelegramIntegration = () => {
           groupChatId: tele.id,
         })) || [];
       setTelegram(formattedTelegram);
+    } catch (error) {
+      console.error("Error fetching:", error);
+    }
+  };
+
+  const [tranType, setTransType] = useState();
+
+  const genTransTypes = async (x?: ListTelegramIntegration) => {
+    try {
+      const dataTransType = await getTransType(
+        x!.bankAccountId,
+        x!.groupChatId,
+        x!.id
+      );
+      const res =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (await dataTransType?.data?.map((tele: any) => ({
+          value: tele.value,
+          label: tele.text,
+        }))) || [];
+      setTransType(res);
     } catch (error) {
       console.error("Error fetching:", error);
     }
@@ -500,9 +522,9 @@ const TelegramIntegration = () => {
           <Form.Item hidden label="id" name="id">
             <Input hidden />
           </Form.Item>
-          {/* <Form.Item label="bankAccountId" name="bankAccountId">
+          <Form.Item label="bankAccountId" name="bankAccountId">
             <Input />
-          </Form.Item> */}
+          </Form.Item>
           <Form.Item
             label="Tài khoản ngân hàng"
             name="accountFullName"
@@ -564,12 +586,10 @@ const TelegramIntegration = () => {
             ]}
           >
             <Select
-              options={[
-                { value: "1", label: "Cả 2" },
-                { value: "2", label: "Tiền ra" },
-                { value: "3", label: "Tiền vào" },
-              ]}
               placeholder="Chọn loại giao dịch"
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onFocus={(value: any) => genTransTypes(value)}
+              options={tranType}
             />
           </Form.Item>
           <div className="flex justify-end">

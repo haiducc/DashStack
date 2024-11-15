@@ -32,7 +32,6 @@ interface filterGroupAccount {
 //   key: string;
 //   Value: number;
 // }
-
 const accountTypeOptions = [
   { value: "1", label: "Tài khoản công ty" },
   { value: "2", label: "Tài khoản marketing" },
@@ -44,6 +43,11 @@ const Account = () => {
   const [currentAccount, setCurrentAccount] = useState<BankAccounts | null>(
     null
   );
+  const [selectedAccountType, setSelectedAccountType] = useState(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleAccountTypeChange = (value: any) => {
+    setSelectedAccountType(value);
+  };
   const [dataAccount, setDataAccount] = useState<BankAccounts[]>([]);
   const [banks, setBanks] = useState([]);
   const [phoneNumber, setPhoneNumber] = useState([]);
@@ -319,7 +323,7 @@ const Account = () => {
         await fetchAccounts();
         toast.success("Thêm mới thành công!");
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setLoading(false);
       setAddModalOpen(false);
@@ -965,6 +969,7 @@ const Account = () => {
             <Select
               options={accountTypeOptions}
               placeholder="Chọn loại tài khoản"
+              onChange={handleAccountTypeChange}
             />
           </Form.Item>
           <div className="flex justify-between">
@@ -990,7 +995,7 @@ const Account = () => {
               label="Chọn chi nhánh"
               name="groupBranchId"
               // name="groupBranchId"
-              rules={[{ required: true, message: "Vui lòng chọn chi nhánh!" }]}
+              // rules={[{ required: true, message: "Vui lòng chọn chi nhánh!" }]}
             >
               <Select
                 placeholder="Chọn chi nhánh"
@@ -1005,18 +1010,20 @@ const Account = () => {
             </Form.Item>
           </div>
           <div className="flex justify-between">
-            <Form.Item
-              className="w-[45%]"
-              label="Chọn đội nhóm"
-              name="groupTeamId"
-              rules={[{ required: true, message: "Vui lòng chọn đội nhóm!" }]}
-            >
-              <Select
-                placeholder="Chọn đội nhóm"
-                onFocus={getGroupTeams}
-                options={groupTeam}
-              />
-            </Form.Item>
+            {selectedAccountType === "2" && (
+              <Form.Item
+                className="w-[45%]"
+                label="Chọn đội nhóm"
+                name="groupTeamId"
+                // rules={[{ required: true, message: "Vui lòng chọn đội nhóm!" }]}
+              >
+                <Select
+                  placeholder="Chọn đội nhóm"
+                  onFocus={getGroupTeams}
+                  options={groupTeam}
+                />
+              </Form.Item>
+            )}
             <Form.Item
               className="w-[45%]"
               label="Chọn ngân hàng"
@@ -1056,16 +1063,15 @@ const Account = () => {
             <Form.Item label="Lấy giao dịch từ" name="transactionSource">
               <Radio.Group
                 onChange={(e) => handleValueChange(e.target.value)}
-                value={value}
+                defaultValue={"1"} // Đặt defaultValue ở đây
               >
-                <Space direction="vertical" defaultValue={1}>
-                  <Radio value={"1"} defaultChecked>
-                    Giao dịch từ SMS
-                  </Radio>
+                <Space direction="vertical">
+                  <Radio value={"1"}>Giao dịch từ SMS</Radio>
                   <Radio value={"2"}>Giao dịch từ Email</Radio>
                 </Space>
               </Radio.Group>
             </Form.Item>
+
             {value === "1" && (
               <Form.Item
                 className="w-[45%]"

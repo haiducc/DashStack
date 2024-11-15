@@ -100,7 +100,7 @@ const Transaction = () => {
           transType: item.transType, // Giao dịch
           purposeDescription: item.purposeDescription, // Mục đích
           reason: item.reason, // lý do
-          balanceBeforeTrans: item.balanceBeforeTrans, // Số dư
+          balanceBeforeTrans: item.balanceBeforeTrans, // Số dư trc giao dịch
           currentBalance: item.currentBalance, // số dư hiện tại
           notes: item.notes, // ghi chú
           bankAccountId: item.bankAccountId, // thêm trường id tài khoản
@@ -147,24 +147,28 @@ const Transaction = () => {
     const formData = form.getFieldsValue();
     setLoading(true);
     console.log(formData, "formData");
-
     try {
       if (currentTransaction) {
         const response = await addTransaction({
           id: currentTransaction.id,
-          bankName: "",
-          bankAccountId: 0,
-          fullName: "",
-          transDateString: "",
-          transType: "",
-          purposeDescription: "",
-          reason: "",
-          balanceBeforeTrans: 0,
-          currentBalance: 0,
-          notes: "",
+          bankName: formData.bankName,
+          bankAccountId: formData.bankAccountId,
+          fullName: formData.fullName,
+          transDateString: formData.transDateString,
+          transType: formData.transType,
+          purposeDescription: formData.purposeDescription,
+          reason: formData.reason,
+          balanceBeforeTrans: formData.balanceBeforeTrans,
+          currentBalance: formData.currentBalance,
+          notes: formData.notes,
         });
+        if (response && response.success === false) {
+          toast.error(response.message || "Cập nhật giao dịch lỗi.");
+          setLoading(false);
+          return;
+        }
         console.log("Dữ liệu đã được cập nhật:", response);
-        toast.success("Cập nhật giao dịch thành công!"); // Thông báo cập nhật thành công
+        toast.success("Cập nhật giao dịch thành công!");
       } else {
         const response = await addTransaction({
           id: formData.id,
@@ -179,8 +183,13 @@ const Transaction = () => {
           currentBalance: formData.currentBalance,
           notes: formData.notes,
         });
+        if (response && response.success === false) {
+          toast.error(response.message || "Thêm mới giao dịch lỗi.");
+          setLoading(false);
+          return;
+        }
         console.log("Dữ liệu đã được thêm mới:", response);
-        toast.success("Thêm mới giao dịch thành công!"); // Thông báo thêm mới thành công
+        toast.success("Thêm mới giao dịch thành công!");
       }
 
       setAddModalOpen(false);
@@ -191,19 +200,37 @@ const Transaction = () => {
       console.error("Lỗi:", error);
 
       if (error instanceof AxiosError && error.response) {
-        // Lỗi từ BE
         if (error.response.status === 400) {
-          const message = error.response.data.message || "Có lỗi xảy ra."; // Lấy message từ phản hồi
-          toast.error(message); // Hiển thị thông báo lỗi từ BE
+          const message = error.response.data.message || "Có lỗi xảy ra.";
+          toast.error(message);
         } else {
-          toast.error("Đã xảy ra lỗi, vui lòng thử lại."); // Thông báo lỗi cho các trạng thái khác
+          toast.error("Đã xảy ra lỗi, vui lòng thử lại.");
         }
       } else {
-        toast.error("Đã xảy ra lỗi không xác định."); // Thông báo lỗi chung nếu không phải là AxiosError
+        toast.error("Đã xảy ra lỗi không xác định.");
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEdit = (record: TransactionModal) => {
+    console.log("data edit", record);
+    setCurrentTransaction(record);
+    form.setFieldsValue({
+      id: record.id,
+      bankName: record.bankName,
+      bankAccountId: record.bankAccountId,
+      fullName: record.fullName,
+      transDateString: record.transDateString,
+      transType: record.transType,
+      purposeDescription: record.purposeDescription,
+      reason: record.reason,
+      balanceBeforeTrans: record.balanceBeforeTrans,
+      currentBalance: record.currentBalance,
+      notes: record.notes,
+    });
+    setAddModalOpen(true);
   };
 
   const handleDelete = async (x: TransactionModal) => {
@@ -292,21 +319,21 @@ const Transaction = () => {
       dataIndex: "balanceBeforeTrans",
       key: "balanceBeforeTrans",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (balance: any) => {
-        const formattedBalance = Math.abs(balance).toLocaleString("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        });
-        return balance ? `- ${formattedBalance}` : "0";
-      },
+      // render: (balance: any) => {
+      //   const formattedBalance = Math.abs(balance).toLocaleString("vi-VN", {
+      //     style: "currency",
+      //     currency: "VND",
+      //   });
+      //   return`- ${formattedBalance}`
+      // },
     },
     {
       title: "Số dư hiện tại",
       dataIndex: "currentBalance",
       key: "currentBalance",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (balance: any) =>
-        balance.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
+      // render: (balance: any) =>
+      //   balance.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
     },
     { title: "Ghi chú", dataIndex: "notes", key: "notes" },
     {
@@ -315,10 +342,7 @@ const Transaction = () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       render: (record: TransactionModal) => (
         <Space size="middle">
-          <Button
-            //   onClick={() => handleEdit(record)}
-            icon={<EditOutlined />}
-          >
+          <Button onClick={() => handleEdit(record)} icon={<EditOutlined />}>
             Chỉnh sửa
           </Button>
           <Button
@@ -515,11 +539,11 @@ const Transaction = () => {
               <InputNumber
                 className="w-full"
                 placeholder="Nhập số dư trước giao dịch"
-                formatter={(value) =>
-                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                }
+                // formatter={(value) =>
+                //   `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                // }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                parser={(value: any) => value.replace(/\s?VND|(,*)/g, "")}
+                // parser={(value: any) => value.replace(/\s?VND|(,*)/g, "")}
               />
             </Form.Item>
           </div>

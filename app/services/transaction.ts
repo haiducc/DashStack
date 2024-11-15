@@ -38,7 +38,9 @@ export const getTransaction = async (
 
 export const addTransaction = async (trans: TransactionModal) => {
   try {
-    const res = await apiClient.post(`/transaction-api/manual/update`, trans);
+    const res = await apiClient.post(`/transaction-api/manual/update`, trans, {
+      timeout: 30000,
+    });
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);

@@ -47,3 +47,28 @@ export const deleteSheetIntergration = async (id: number) => {
     throw error;
   }
 };
+
+
+export const getTransTypeSheet = async (
+  bankAccountId: number,
+  sheetId: number,
+  id?: number
+) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    const res = await apiClient.get(`/sheet-api/map/get-trans-type`, {
+      params: {
+        bankAccountId,
+        sheetId,
+        id,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi gọi API:", error);
+    throw error;
+  }
+};

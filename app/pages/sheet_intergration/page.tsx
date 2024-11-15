@@ -8,6 +8,7 @@ import {
   addSheetIntergration,
   deleteSheetIntergration,
   getListSheetIntergration,
+  getTransTypeSheet,
 } from "@/app/services/sheet_intergration";
 import BaseModal from "@/app/component/config/BaseModal";
 import { fetchBankAccounts } from "@/app/services/bankAccount";
@@ -21,7 +22,8 @@ export interface ListSheetIntegration {
   fullName: string;
   linkUrl: string;
   transType: string;
-  bankAccountId?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  bankAccountId?: any;
   sheetId: number;
 }
 
@@ -85,6 +87,7 @@ const SheetIntergration = () => {
           accountNumber: item.bankAccount.accountNumber, // stk
           fullName: item.bankAccount.fullName, // tên chủ tk
           linkUrl: item.sheetDetail.linkUrl, // link url
+          name: item.sheetDetail.name, // Tên sheet
           transType: item.transType, // status loại giao dịch
           bankAccountId: item.bankAccount.id,
           sheetId: item.sheetDetail.id, // id của sheet
@@ -127,6 +130,27 @@ const SheetIntergration = () => {
           label: sheet.name,
         })) || [];
       setSheet(formattedTelegram);
+    } catch (error) {
+      console.error("Error fetching:", error);
+    }
+  };
+
+  const [tranType, setTransType] = useState();
+
+  const genTransTypes = async (x?: ListSheetIntegration) => {
+    try {
+      const dataTransType = await getTransTypeSheet(
+        x!.bankAccountId,
+        x!.sheetId,
+        x!.id
+      );
+      const res =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (await dataTransType?.data?.map((tele: any) => ({
+          value: tele.value,
+          label: tele.text,
+        }))) || [];
+      setTransType(res);
     } catch (error) {
       console.error("Error fetching:", error);
     }
@@ -273,7 +297,13 @@ const SheetIntergration = () => {
     { title: "Ngân hàng", dataIndex: "code", key: "code" },
     { title: "Số tài khoản", dataIndex: "accountNumber", key: "accountNumber" },
     { title: "Tên chủ tài khoản", dataIndex: "fullName", key: "fullName" },
-    { title: "Tên trang tính", dataIndex: "linkUrl", key: "linkUrl" },
+    {
+      title: "Tên trang tính",
+      dataIndex: "linkUrl",
+      key: "linkUrl",
+      hidden: true,
+    },
+    { title: "Tên trang tính", dataIndex: "name", key: "name" },
     {
       title: "Loại giao dịch",
       dataIndex: "transType",
@@ -513,12 +543,10 @@ const SheetIntergration = () => {
             ]}
           >
             <Select
-              options={[
-                { value: "1", label: "Cả 2" },
-                { value: "2", label: "Tiền ra" },
-                { value: "3", label: "Tiền vào" },
-              ]}
               placeholder="Chọn loại giao dịch"
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onFocus={(value: any) => genTransTypes(value)}
+              options={tranType}
             />
           </Form.Item>
           <div className="flex justify-end">

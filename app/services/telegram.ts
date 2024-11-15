@@ -9,6 +9,7 @@ export const getListTelegram = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -16,6 +17,9 @@ export const getListTelegram = async (
     });
     const res = await apiClient.get(`/group-chat-api/find`, {
       params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.data;
   } catch (error) {
@@ -42,9 +46,37 @@ export const addTelegram = async (tele: dataTelegramModal) => {
 
 export const deleteTelegram = async (id: number) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/group-chat-api/delete`, {
       params: {
         id: id,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi gọi API:", error);
+    throw error;
+  }
+};
+
+export const getTransType = async (
+  bankAccountId: number,
+  groupId: number,
+  id?: number
+) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    const res = await apiClient.get(`/group-chat-api/map/get-trans-type`, {
+      params: {
+        bankAccountId,
+        groupId,
+        id,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     });
     return res.data;

@@ -6,7 +6,6 @@ import Header from "@/app/component/Header";
 import {
   Button,
   DatePicker,
-  DatePickerProps,
   Form,
   Input,
   InputNumber,
@@ -21,11 +20,11 @@ import {
   getTransaction,
 } from "@/app/services/transaction";
 import BaseModal from "@/app/component/config/BaseModal";
-import { RangePickerProps } from "antd/es/date-picker";
 import { fetchBankAccounts, getBank } from "@/app/services/bankAccount";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import DeleteModal from "@/app/component/config/modalDelete";
+import { Dayjs } from "dayjs";
 
 export interface TransactionModal {
   id: number;
@@ -357,11 +356,8 @@ const Transaction = () => {
     },
   ];
 
-  const onOk = (
-    value: DatePickerProps["value"] | RangePickerProps["value"]
-  ) => {
-    console.log("onOk: ", value);
-  };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
 
   return (
     <>
@@ -388,22 +384,7 @@ const Transaction = () => {
               //   handleSearch(e.currentTarget.value);
               // }}
             />
-            {/* <Space direction="horizontal" size="middle">
-              {["Nhóm telegram", "Loại giao dịch", "Tên ngân hàng"].map(
-                (placeholder, index) => (
-                  <Select
-                    allowClear
-                    key={index}
-                    // options={accountGroup}
-                    style={{ width: 245 }}
-                    placeholder={placeholder}
-                    // onChange={handleFilterChange}
-                  />
-                )
-              )}
-            </Space> */}
           </div>
-
           <Button
             className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
             onClick={() => {
@@ -509,7 +490,7 @@ const Transaction = () => {
             </Form.Item>
           </div>
           <div className="flex justify-between items-center">
-            <div className="w-[50%] pb-8">
+            {/* <div className="w-[50%] pb-8">
               <div className="p-2">Ngày giao dịch</div>
               <Space direction="vertical" size="large" className="w-full">
                 <DatePicker
@@ -524,7 +505,32 @@ const Transaction = () => {
                   onOk={onOk}
                 />
               </Space>
-            </div>
+            </div> */}
+            <Form.Item
+              className="w-[45%]"
+              label="Ngày giao dịch"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng chọn ngày giao dịch!",
+                },
+              ]}
+            >
+              <Space direction="vertical" size="large" className="w-full">
+                <DatePicker
+                  className="w-full"
+                  showTime
+                  required
+                  onChange={(value: Dayjs | null) => {
+                    setSelectedDate(value);
+                    console.log(
+                      "Selected Time: ",
+                      value?.format("YYYY-MM-DD HH:mm:ss")
+                    );
+                  }}
+                />
+              </Space>
+            </Form.Item>
             <Form.Item
               className="w-[45%]"
               label="Số dư trước giao dịch"

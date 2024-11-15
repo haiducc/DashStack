@@ -58,7 +58,7 @@ const Account = () => {
   const [pageSize] = useState(20);
   const [grandparentId, setGrandparentId] = useState<number>(0);
   const [, setParentId] = useState<number>(0);
-  const [value, setValue] = useState("1");
+  const [value, setValue] = useState(null);
   const [globalTerm, setGlobalTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [, setIsEditMode] = useState(false);
@@ -1063,7 +1063,8 @@ const Account = () => {
             <Form.Item label="Lấy giao dịch từ" name="transactionSource">
               <Radio.Group
                 onChange={(e) => handleValueChange(e.target.value)}
-                defaultValue={"1"} // Đặt defaultValue ở đây
+                // defaultValue={"1"}
+                value={value}
               >
                 <Space direction="vertical">
                   <Radio value={"1"}>Giao dịch từ SMS</Radio>
@@ -1071,15 +1072,11 @@ const Account = () => {
                 </Space>
               </Radio.Group>
             </Form.Item>
-
             {value === "1" && (
               <Form.Item
                 className="w-[45%]"
                 label="Nhập số điện thoại"
                 name="phoneId"
-                rules={[
-                  { required: true, message: "Vui lòng nhập số điện thoại!" },
-                ]}
               >
                 <Select
                   options={phoneNumber}

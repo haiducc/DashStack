@@ -106,7 +106,6 @@ const fetchRoleData = async (accessToken: string) => {
     );
 
     const res = await response.json();
-    // console.log(res, "response");
 
     localStorage.setItem("key", res.data.key);
     localStorage.setItem("value", res.data.value);

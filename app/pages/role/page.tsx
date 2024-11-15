@@ -122,7 +122,6 @@ const Role = () => {
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
     setLoading(true);
-
     try {
       if (currentRole) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

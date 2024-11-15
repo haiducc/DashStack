@@ -7,6 +7,7 @@ import imglt from "../../../public/img/imglt.png";
 import Image from "next/image";
 import { apiClient } from "@/app/services/base_api";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 // export interface GetLoginResponseProps {
 //   token: string;
@@ -34,33 +35,18 @@ function Login() {
       const data = response.data;
       console.log("Phản hồi API:", data);
 
-      if (data) {
-        // console.log(40, data.token)
+      if (data && data.success) {
         localStorage.setItem("accessToken", data.data.token);
-        // const userResponse = await fetch(
-        //   "https://apiweb.bankings.vnrsoftware.vn/account/find-role-by-account",
-        //   {
-        //     method: "GET",
-        //     headers: {
-        //       "x-access-token": `${data.accessToken}`,
-        //     },
-        //   }
-        // );
-
-        // if (!userResponse.ok) {
-        //   throw new Error("Không thể lấy thông tin vai trò người dùng");
-        // }
-        // console.log("Đang điều hướng...");
         router.push("/");
       } else {
-        alert("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+        const message = data.message || "Đã xảy ra lỗi. Vui lòng thử lại sau.";
+        toast.error(message);
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      alert(
-        "Đăng nhập thất bại: " +
-          (error.response?.data?.message || error.message)
-      );
+      // Kiểm tra xem lỗi có phản hồi từ backend hay không, nếu có thì hiển thị thông báo đó
+      const errorMessage = error.response?.data?.message || error.message;
+      toast.error("Đăng nhập thất bại: " + errorMessage); // Hiển thị thông báo lỗi
       console.error("Đã xảy ra lỗi:", error);
     }
   };

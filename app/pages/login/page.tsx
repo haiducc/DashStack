@@ -23,8 +23,6 @@ function Login() {
 
   const handleLogin = async () => {
     try {
-      console.log(1);
-
       const response = await apiClient.post(
         "/account/login",
         JSON.stringify({

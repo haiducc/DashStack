@@ -1,6 +1,11 @@
-import React from "react";
+import React from 'react';
 
-const GrBranch = () => {
-  return <div>Danh sách chi nhánh</div>;
+const GroupBranchPage = () => {
+  return (
+    <div>
+      {/* Nội dung trang của bạn ở đây */}
+    </div>
+  );
 };
-export default GrBranch();
+
+export default GroupBranchPage;

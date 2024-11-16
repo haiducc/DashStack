@@ -25,7 +25,7 @@ interface filterRole {
   Value: string;
 }
 
-const System = () => {
+const GroupSystemPage = () => {
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -234,7 +234,7 @@ const System = () => {
       <Header />
       <div className="px-[30px]">
         <div className="text-[32px] font-bold py-5">
-          Danh sách nhóm telegram
+          Danh sách hệ thống
         </div>
         <div className="flex justify-between items-center mb-7">
           <Input
@@ -345,4 +345,4 @@ const System = () => {
   );
 };
 
-export default System;
+export default GroupSystemPage;

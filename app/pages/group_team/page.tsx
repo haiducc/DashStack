@@ -1,6 +1,11 @@
-import React from "react";
+import React from 'react';
 
-const Team = () => {
-  return <div>Danh sách đội nhóm</div>;
+const GroupTeamPage = () => {
+  return (
+    <div>
+      {/* Nội dung trang của bạn ở đây */}
+    </div>
+  );
 };
-export default Team();
+
+export default GroupTeamPage;

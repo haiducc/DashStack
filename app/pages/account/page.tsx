@@ -79,32 +79,65 @@ const Account = () => {
     branch?: string,
     team?: string
   ) => {
-    // console.log(globalTerm, searchTerms, system, branch, team);
-
     const arrBankAccount: filterGroupAccount[] = [];
-    const bankAccount: filterGroupAccount = {
-      Name: "groupAccountId",
-      Value: searchTerms!,
-    };
-    const groupSystem: filterGroupAccount = {
+  const addedParams = new Set(); // Sử dụng Set để theo dõi tham số đã thêm vào
+
+  // Kiểm tra và thêm các tham số từ searchTerms nếu chưa có trong addedParams
+  if (Array.isArray(searchTerms)) {
+    searchTerms.forEach((term) => {
+      if (term.Value && !addedParams.has(term.Name)) {  // Kiểm tra xem đã thêm tham số này chưa
+        arrBankAccount.push({
+          Name: term.Name,
+          Value: term.Value,
+        });
+        addedParams.add(term.Name);  // Đánh dấu tham số đã được thêm vào
+      }
+    });
+  } else if (searchTerms) {  // Trường hợp searchTerms là một giá trị string đơn
+    if (!addedParams.has('groupAccountId')) {
+      arrBankAccount.push({
+        Name: "groupAccountId",
+        Value: searchTerms,
+      });
+      addedParams.add('groupAccountId');
+    }
+  }
+
+  // Chỉ thêm groupSystemId nếu system có giá trị và chưa thêm vào
+  if (system && !addedParams.has('groupSystemId')) {
+    arrBankAccount.push({
       Name: "groupSystemId",
-      Value: system!,
-    };
-    const groupBranch: filterGroupAccount = {
+      Value: system,
+    });
+    addedParams.add('groupSystemId');
+  }
+
+  // Chỉ thêm groupBranchId nếu branch có giá trị và chưa thêm vào
+  if (branch && !addedParams.has('groupBranchId')) {
+    arrBankAccount.push({
       Name: "groupBranchId",
-      Value: branch!,
-    };
-    const groupTeam: filterGroupAccount = {
+      Value: branch,
+    });
+    addedParams.add('groupBranchId');
+  }
+
+  // Chỉ thêm groupTeamId nếu team có giá trị và chưa thêm vào
+  if (team && !addedParams.has('groupTeamId')) {
+    arrBankAccount.push({
       Name: "groupTeamId",
-      Value: team!,
-    };
+      Value: team,
+    });
+    addedParams.add('groupTeamId');
+  }
 
-    const obj: filterGroupAccount = {
-      Name: keys!,
-      Value: values!,
-    };
-
-    arrBankAccount.push(bankAccount, groupSystem, groupBranch, groupTeam, obj);
+  // Nếu keys và values đã được xác định, thêm chúng vào arrBankAccount
+  if (keys && values && !addedParams.has(keys)) {
+    arrBankAccount.push({
+      Name: keys,
+      Value: values,
+    });
+    addedParams.add(keys);
+  }
 
     setLoading(true);
     try {
@@ -1067,12 +1100,12 @@ const Account = () => {
                 value={value}
               >
                 <Space direction="vertical">
-                  <Radio value={"1"}>Giao dịch từ SMS</Radio>
-                  <Radio value={"2"}>Giao dịch từ Email</Radio>
+                  <Radio value={"2"}>Giao dịch từ SMS</Radio>
+                  <Radio value={"1"}>Giao dịch từ Email</Radio>
                 </Space>
               </Radio.Group>
             </Form.Item>
-            {value === "1" && (
+            {value === "2" && (
               <Form.Item
                 className="w-[45%]"
                 label="Nhập số điện thoại"

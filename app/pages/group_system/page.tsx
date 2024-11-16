@@ -238,7 +238,7 @@ const GroupSystemPage = () => {
         </div>
         <div className="flex justify-between items-center mb-7">
           <Input
-            placeholder="Tìm kiếm tên nhóm tài khoản ..."
+            placeholder="Tìm kiếm hệ thống ..."
             style={{
               width: 253,
               borderRadius: 10,
@@ -281,8 +281,8 @@ const GroupSystemPage = () => {
         }}
         title={
           currentTelegram
-            ? "Chỉnh sửa nhóm tài khoản"
-            : "Thêm mới nhóm tài khoản"
+            ? "Chỉnh sửa hệ thống"
+            : "Thêm mới hệ thống"
         }
       >
         <Form
@@ -294,13 +294,13 @@ const GroupSystemPage = () => {
             <Input hidden />
           </Form.Item>
           <Form.Item
-            label="Tên nhóm telegram"
+            label="Tên hệ thống"
             name="name"
             rules={[
-              { required: true, message: "Vui lòng nhập tên nhóm telegram!" },
+              { required: true, message: "Vui lòng nhập tên hệ thống!" },
             ]}
           >
-            <Input placeholder="Tên nhóm telegram" />
+            <Input placeholder="Tên nhóm hệ thống" />
           </Form.Item>
           <Form.Item
             label="ID nhóm telegram"

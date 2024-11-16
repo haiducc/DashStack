@@ -228,16 +228,18 @@ const SideMenu = () => {
         console.log(roleData, "Role data");
 
         // Kiểm tra quyền truy cập
-        if (roleData.data.isAdmin || roleData.data.value === 1) {
-          // Điều hướng nếu có quyền
-          if (menuItem.path) {
-            router.push(menuItem.path);
-          }
+        if (menuItem.path) {
+          router.push(menuItem.path);
         }
+        // if (roleData.data.isAdmin || roleData.data.value === 1) {
+        //   // Điều hướng nếu có quyền
+        // } else {
+        //   toast.error("Bạn không có quyền truy cập vào trang này.");
+        // }
       } else {
         toast.error("Không thể xác minh quyền của bạn.");
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("Lỗi khi kiểm tra quyền truy cập.");
     }

@@ -1,6 +1,6 @@
 import React from "react";
 
-const Branch = () => {
+const GrBranch = () => {
   return <div>Danh sách chi nhánh</div>;
 };
-export default Branch();
+export default GrBranch();

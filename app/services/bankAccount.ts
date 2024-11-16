@@ -12,12 +12,13 @@ export const fetchBankAccounts = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> => {
   try {
-    const params = buildSearchParams(searchTerms, {
+    const params = await buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
       globalTerm: globalTerm || undefined,
     });
     const response = await apiClient.get(`/bank-account-api/find`, { params });
+    // console.log(params);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {

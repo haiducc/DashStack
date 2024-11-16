@@ -171,12 +171,17 @@ const TelegramIntegration = () => {
   };
 
   const handleAddConfirm = async () => {
+    if (loading) return; // Nếu đang loading thì không làm gì cả
+
     try {
       await form.validateFields();
+      setLoading(true); // Chỉ định `loading` true ngay khi bắt đầu xử lý
+
       const formData = form.getFieldsValue();
-      setLoading(true);
+      let response;
+
       if (currentTelegram) {
-        const response = await addTelegramIntergration({
+        response = await addTelegramIntergration({
           bankAccountId: formData.bankAccountId,
           id: currentTelegram.id,
           groupChatId: formData.groupChatId,
@@ -192,10 +197,10 @@ const TelegramIntegration = () => {
         console.log("Dữ liệu đã được cập nhật:", response);
       } else {
         // Thêm mới bản ghi
-        const response = await addTelegramIntergration({
+        response = await addTelegramIntergration({
           bankAccountId: bankAccountIdSelect,
-          id: formData.id, // id của bản ghi
-          groupChatId: formData.groupChatId, // id nhóm chat trên Telegram
+          id: formData.id,
+          groupChatId: formData.groupChatId,
           transType: formData.transType,
           accountNumber: formData.accountNumber,
           chatName: "",
@@ -208,14 +213,14 @@ const TelegramIntegration = () => {
         console.log("Dữ liệu đã được thêm mới:", response);
       }
 
-      setAddModalOpen(false);
+      setAddModalOpen(false); // Đóng popup sau khi thành công
       form.resetFields();
       setCurrentTelegram(null);
       fetchListTelegramIntegration();
     } catch (error) {
       console.error("Lỗi:", error);
     } finally {
-      setLoading(false);
+      setLoading(false); // Đặt lại `loading` về `false` khi hoàn tất
     }
   };
 
@@ -603,6 +608,8 @@ const TelegramIntegration = () => {
             <Button
               type="primary"
               onClick={handleAddConfirm}
+              loading={loading}
+              disabled={loading}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
             >
               {currentTelegram ? "Cập nhật" : "Thêm mới"}

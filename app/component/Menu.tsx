@@ -23,6 +23,27 @@ const items: MenuItem[] = [
     path: "/pages/dashboard",
   },
   {
+    key: "system_configuration",
+    label: "Cấu hình hệ thống",
+    items: [
+      {
+        key: "group_system",
+        label: "Danh sách hệ thống",
+        path: "/pages/group_system",
+      },
+      {
+        key: "group_branch",
+        label: "Danh sách chi nhánh",
+        path: "/pages/group_branch",
+      },
+      {
+        key: "group_team",
+        label: "Danh sách đội nhóm",
+        path: "/pages/group_team",
+      },
+    ],
+  },
+  {
     key: "account",
     label: "Cấu hình tài khoản",
     items: [
@@ -32,14 +53,14 @@ const items: MenuItem[] = [
         path: "/pages/account_group",
       },
       {
-        key: "list_account",
-        label: "Danh sách tài khoản",
-        path: "/pages/account",
-      },
-      {
         key: "phone",
         label: "Danh sách số điện thoại",
         path: "/pages/phone_number",
+      },
+      {
+        key: "list_account",
+        label: "Danh sách tài khoản",
+        path: "/pages/account",
       },
     ],
   },
@@ -82,7 +103,7 @@ const items: MenuItem[] = [
   },
   {
     key: "role",
-    label: "Nhóm quyền tài khoản",
+    label: "Quyền tài khoản",
     path: "/pages/role",
   },
   {
@@ -239,7 +260,7 @@ const SideMenu = () => {
       } else {
         toast.error("Không thể xác minh quyền của bạn.");
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("Lỗi khi kiểm tra quyền truy cập.");
     }

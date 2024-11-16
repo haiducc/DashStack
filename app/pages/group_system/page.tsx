@@ -4,20 +4,15 @@ import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Header from "@/app/component/Header";
 import { Button, Form, Input, Space, Spin, Table } from "antd";
-import {
-  addTelegram,
-  deleteTelegram,
-  getListTelegram,
-} from "@/app/services/telegram";
 import BaseModal from "@/app/component/config/BaseModal";
 import { toast } from "react-toastify"; // Import toast
 import DeleteModal from "@/app/component/config/modalDelete";
+import { addGroupSystem, deleteGroupSystem, getGroupSystem } from "@/app/services/groupSystem";
 
-export interface dataTelegramModal {
+export interface dataSystemModal {
   id: number;
   name: string;
-  chatId: string;
-  notes: string;
+  note: string;
 }
 
 interface filterRole {
@@ -29,9 +24,10 @@ const GroupSystemPage = () => {
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [currentTelegram, setCurrentTelegram] =
-    useState<dataTelegramModal | null>(null);
-  const [dataTelegram, setDataTelegram] = useState<dataTelegramModal[]>([]);
+  const [currentSystem, setCurrentSystem] = useState<dataSystemModal | null>(
+    null
+  );
+  const [dataSystem, setDataSystem] = useState<dataSystemModal[]>([]);
   const [, setGlobalTerm] = useState("");
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
@@ -43,7 +39,7 @@ const GroupSystemPage = () => {
     setValues(localStorage.getItem("value"));
   }, []);
 
-  const fetchTelegram = async (globalTerm?: string) => {
+  const fetchGroupSystem = async (globalTerm?: string) => {
     const arrRole: filterRole[] = [];
     const obj: filterRole = {
       Name: keys!,
@@ -51,27 +47,26 @@ const GroupSystemPage = () => {
     };
     arrRole.push(obj);
     try {
-      const response = await getListTelegram(
+      const response = await getGroupSystem(
         pageIndex,
         pageSize,
         globalTerm,
         arrRole
       );
       const formattedData =
-        response?.data?.source?.map((x: dataTelegramModal) => ({
-          id: x.id?.toString() || Date.now().toString(),
+        response?.data?.source?.map((x: dataSystemModal) => ({
+          id: x.id,
           name: x.name,
-          chatId: x.chatId,
-          notes: x.notes,
+          note: x.note,
         })) || [];
-      setDataTelegram(formattedData);
+      setDataSystem(formattedData);
     } catch (error) {
       console.error("Error fetching:", error);
     }
   };
 
   useEffect(() => {
-    fetchTelegram();
+    fetchGroupSystem();
   }, [keys]);
 
   const handleAddConfirm = async () => {
@@ -79,11 +74,10 @@ const GroupSystemPage = () => {
       await form.validateFields();
       const formData = form.getFieldsValue();
       setLoading(true);
-      const response = await addTelegram({
+      const response = await addGroupSystem({
         id: formData.id,
         name: formData.name,
-        chatId: formData.chatId,
-        notes: formData.notes,
+        note: formData.note
       });
       if (response && response.success === false) {
         toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
@@ -92,11 +86,11 @@ const GroupSystemPage = () => {
       }
       setAddModalOpen(false);
       form.resetFields();
-      setCurrentTelegram(null);
+      setCurrentSystem(null);
       toast.success(
-        currentTelegram ? "Cập nhật thành công!" : "Thêm mới thành công!"
+        currentSystem ? "Cập nhật thành công!" : "Thêm mới thành công!"
       );
-      await fetchTelegram();
+      await fetchGroupSystem();
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -118,25 +112,24 @@ const GroupSystemPage = () => {
     }
   };
 
-  const handleEditTele = (x: dataTelegramModal) => {
-    setCurrentTelegram(x);
+  const handleEditTele = (x: dataSystemModal) => {
+    setCurrentSystem(x);
     form.setFieldsValue({
       id: x.id,
       name: x.name,
-      chatId: x.chatId,
-      notes: x.notes,
+      note: x.note,
     });
     setAddModalOpen(true);
   };
 
-  const handleDeleteTele = async (x: dataTelegramModal) => {
+  const handleDeleteTele = async (x: dataSystemModal) => {
     setLoading(true);
     try {
-      await deleteTelegram(x.id);
-      toast.success("Xóa nhóm telegram thành công!");
-      await fetchTelegram();
+      await deleteGroupSystem(x.id);
+      toast.success("Xóa nhóm hệ thống thành công!");
+      await fetchGroupSystem();
     } catch (error) {
-      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+      console.error("Lỗi khi xóa:", error);
       toast.error("Có lỗi xảy ra khi xóa!");
     } finally {
       setLoading(false);
@@ -147,27 +140,25 @@ const GroupSystemPage = () => {
     setGlobalTerm(value);
     try {
       if (value.trim() === "") {
-        const data = await getListTelegram(1, 20);
+        const data = await getGroupSystem(1, 20);
         const formattedData =
-          data?.data?.source?.map((x: dataTelegramModal) => ({
+          data?.data?.source?.map((x: dataSystemModal) => ({
             id: x.id,
             name: x.name,
-            chatId: x.chatId,
-            notes: x.notes,
+            note: x.note,
           })) || [];
 
-        setDataTelegram(formattedData);
+        setDataSystem(formattedData);
       } else {
-        const data = await getListTelegram(1, 20, value);
+        const data = await getGroupSystem(1, 20, value);
         const formattedData =
-          data?.data?.source?.map((x: dataTelegramModal) => ({
+          data?.data?.source?.map((x: dataSystemModal) => ({
             id: x.id,
             name: x.name,
-            chatId: x.chatId,
-            notes: x.notes,
+            note: x.note,
           })) || [];
 
-        setDataTelegram(formattedData);
+        setDataSystem(formattedData);
       }
     } catch (error) {
       console.error("Lỗi khi tìm kiếm tài khoản ngân hàng:", error);
@@ -177,9 +168,9 @@ const GroupSystemPage = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAccountGroup, setSelectedAccountGroup] =
-    useState<dataTelegramModal | null>(null);
+    useState<dataSystemModal | null>(null);
 
-  const handleDeleteClick = (tele: dataTelegramModal) => {
+  const handleDeleteClick = (tele: dataSystemModal) => {
     setSelectedAccountGroup(tele);
     setIsDeleteModalOpen(true);
   };
@@ -198,13 +189,12 @@ const GroupSystemPage = () => {
 
   const columns = [
     { title: "id", dataIndex: "id", key: "id", hidden: true },
-    { title: "Tên nhóm telegram", dataIndex: "name", key: "name" },
-    { title: "Id nhóm telegram", dataIndex: "chatId", key: "chatId" },
-    { title: "Ghi chú", dataIndex: "notes", key: "notes" },
+    { title: "Tên hệ thống", dataIndex: "name", key: "name" },
+    { title: "Ghi chú", dataIndex: "note", key: "note" },
     {
       title: "Chức năng",
       key: "action",
-      render: (record: dataTelegramModal) => (
+      render: (record: dataSystemModal) => (
         <Space size="middle">
           <Button
             icon={<EditOutlined />}
@@ -226,16 +216,14 @@ const GroupSystemPage = () => {
 
   const [checkFilter, setCheckFilter] = useState(false);
   useEffect(() => {
-    fetchTelegram();
+    fetchGroupSystem();
   }, [checkFilter]);
 
   return (
     <>
       <Header />
       <div className="px-[30px]">
-        <div className="text-[32px] font-bold py-5">
-          Danh sách hệ thống
-        </div>
+        <div className="text-[32px] font-bold py-5">Danh sách hệ thống</div>
         <div className="flex justify-between items-center mb-7">
           <Input
             placeholder="Tìm kiếm hệ thống ..."
@@ -259,7 +247,7 @@ const GroupSystemPage = () => {
           <Button
             className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
             onClick={() => {
-              setCurrentTelegram(null);
+              setCurrentSystem(null);
               form.resetFields();
               setAddModalOpen(true);
             }}
@@ -270,7 +258,7 @@ const GroupSystemPage = () => {
         {loading ? (
           <Spin spinning={loading} fullscreen />
         ) : (
-          <Table columns={columns} dataSource={dataTelegram} />
+          <Table columns={columns} dataSource={dataSystem} />
         )}
       </div>
       <BaseModal
@@ -279,11 +267,7 @@ const GroupSystemPage = () => {
           setAddModalOpen(false);
           form.resetFields();
         }}
-        title={
-          currentTelegram
-            ? "Chỉnh sửa hệ thống"
-            : "Thêm mới hệ thống"
-        }
+        title={currentSystem ? "Chỉnh sửa hệ thống" : "Thêm mới hệ thống"}
       >
         <Form
           form={form}
@@ -296,25 +280,11 @@ const GroupSystemPage = () => {
           <Form.Item
             label="Tên hệ thống"
             name="name"
-            rules={[
-              { required: true, message: "Vui lòng nhập tên hệ thống!" },
-            ]}
+            rules={[{ required: true, message: "Vui lòng nhập tên hệ thống!" }]}
           >
             <Input placeholder="Tên nhóm hệ thống" />
           </Form.Item>
-          <Form.Item
-            label="ID nhóm telegram"
-            name="chatId"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng nhập tên ID nhóm telegram!",
-              },
-            ]}
-          >
-            <Input placeholder="Nhập ID nhóm telegram" />
-          </Form.Item>
-          <Form.Item label="Ghi chú" name="notes">
+          <Form.Item label="Ghi chú" name="note">
             <Input.TextArea rows={4} placeholder="Nhập ghi chú" />
           </Form.Item>
           <div className="flex justify-end">
@@ -330,7 +300,7 @@ const GroupSystemPage = () => {
               onClick={handleAddConfirm}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
             >
-              {currentTelegram ? "Cập nhật" : "Thêm mới"}
+              {currentSystem ? "Cập nhật" : "Thêm mới"}
             </Button>
           </div>
         </Form>

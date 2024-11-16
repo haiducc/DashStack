@@ -39,7 +39,7 @@ export interface TransactionModal {
   currentBalance: number;
   notes: string;
   transDate?: string;
-  bankId: number;
+  bankId?: number;
   feeIncurred: number;
   transAmount: number;
   // bankAccountId: number;
@@ -131,23 +131,33 @@ const Transaction = () => {
       const formattedBanks =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bankData?.data?.source?.map((bank: any) => ({
-          value: bank.code,
+          value: bank.id,
           label: bank.fullName,
           bankId: bank.id,
         })) || [];
       setBanks(formattedBanks);
+      console.log(formattedBanks, "formattedBanks");
     } catch (error) {
       console.error("Error fetching banks:", error);
     }
   };
 
-  const genBankAccountData = async () => {
+  const genBankAccountData = async (bankId?: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const arr: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj: any = {
+      Name: "bankId",
+      Value: bankId,
+    };
+    await arr.push(obj);
     try {
-      const bankData = await fetchBankAccounts(1, 50);
+      const bankData = await fetchBankAccounts(1, 50, undefined, arr);
+      // console.log(bankData, "bankData");
       const formattedBanks =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bankData?.data?.source?.map((bank: any) => ({
-          value: bank.code,
+          value: bank.id,
           label: `${bank.accountNumber} - ${bank.fullName}`,
         })) || [];
       setBankAccount(formattedBanks);
@@ -488,6 +498,8 @@ const Transaction = () => {
                 options={banks}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={async (value: any) => {
+                  // console.log(value);
+                  genBankAccountData(value);
                   const selectedGroup = await banks.find(
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (item: any) => item.value === value
@@ -520,7 +532,11 @@ const Transaction = () => {
             >
               <Select
                 placeholder="Chọn tài khoản ngân hàng"
-                onFocus={genBankAccountData}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onFocus={() => {
+                  const formData = form.getFieldsValue();
+                  genBankAccountData(formData.bankId);
+                }}
                 options={bankAccount}
                 onChange={(value) => {
                   console.log(value);

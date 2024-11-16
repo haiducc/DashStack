@@ -144,44 +144,43 @@ const Role = () => {
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
     setLoading(true);
+
     try {
-      if (currentRole) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const response = await addRole({
-          id: currentRole.id,
-          userName: formData.userName,
-          email: formData.email,
-          fullName: formData.fullName,
-          role: formData.role,
-          isAdmin: formData.IsAdmin,
-          groupSystemId: formData.groupSystemId,
-          groupBranchId: formData.groupBranchId,
-          groupTeamId: formData.groupTeamId,
-          password: formData.password,
-        });
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const response = await addRole({
-          id: formData.id,
-          userName: formData.userName,
-          email: formData.email,
-          fullName: formData.fullName,
-          role: formData.role,
-          isAdmin: formData.IsAdmin,
-          groupSystemId: formData.groupSystemId,
-          groupBranchId: formData.groupBranchId,
-          groupTeamId: formData.groupTeamId,
-          password: formData.password,
-        });
+      const roleData = {
+        id: currentRole ? currentRole.id : formData.id,
+        userName: formData.userName,
+        email: formData.email,
+        fullName: formData.fullName,
+        role: formData.role,
+        isAdmin: formData.isAdmin,
+        groupSystemId: formData.groupSystemId,
+        groupBranchId: formData.groupBranchId,
+        groupTeamId: formData.groupTeamId,
+        password: formData.password,
+      };
+
+      // Gửi dữ liệu vai trò tới máy chủ và lưu phản hồi
+      const response = await addRole(roleData);
+
+      // Kiểm tra phản hồi từ máy chủ
+      if (response && response.success === false) {
+        throw new Error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
       }
 
       setAddModalOpen(false);
       form.resetFields();
       setCurrentRole(null);
-      setLoading(false);
       await fetchListRole();
-    } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error:any) {
       console.error("Lỗi:", error);
+
+      if (error && typeof error === "object" && "message" in error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+      }
+    } finally {
       setLoading(false);
     }
   };

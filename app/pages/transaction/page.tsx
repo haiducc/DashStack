@@ -131,7 +131,7 @@ const Transaction = () => {
       const formattedBanks =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bankData?.data?.source?.map((bank: any) => ({
-          value: bank.id,
+          value: bank.code,
           label: bank.fullName,
           bankId: bank.id,
         })) || [];
@@ -323,7 +323,7 @@ const Transaction = () => {
       title: "Ngày giao dịch",
       dataIndex: "transDate",
       key: "transDate",
-      // hidden: true,
+      hidden: true,
     },
     {
       title: "transAmount",
@@ -499,12 +499,12 @@ const Transaction = () => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={async (value: any) => {
                   // console.log(value);
-                  genBankAccountData(value);
                   const selectedGroup = await banks.find(
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (item: any) => item.value === value
                   );
                   if (selectedGroup) {
+                    genBankAccountData(selectedGroup.bankId);
                     form.setFieldsValue({
                       bankId: selectedGroup.bankId,
                     });

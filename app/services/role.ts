@@ -24,9 +24,14 @@ export const getRole = async (
   }
 };
 
-export const addRole = async (phoneData: dataRole) => {
+export const addRole = async (x: dataRole) => {
   try {
-    const res = await apiClient.post(`/account/add-or-update`, phoneData);
+    const token = localStorage.getItem("accessToken");
+    const res = await apiClient.post(`/account/add-or-update`, x, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);

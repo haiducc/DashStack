@@ -24,7 +24,7 @@ import { fetchBankAccounts, getBank } from "@/app/services/bankAccount";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import DeleteModal from "@/app/component/config/modalDelete";
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 export interface TransactionModal {
   id: number;
@@ -38,6 +38,10 @@ export interface TransactionModal {
   balanceBeforeTrans: number;
   currentBalance: number;
   notes: string;
+  transDate?: string;
+  bankId: number;
+  feeIncurred: number;
+  transAmount: number;
   // bankAccountId: number;
 }
 
@@ -57,13 +61,16 @@ const Transaction = () => {
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [currentTransaction, setCurrentTransaction] =
     useState<TransactionModal | null>(null);
-  const [banks, setBanks] = useState([]);
+  const [banks, setBanks] = useState<Array<TransactionModal>>([]);
   const [bankAccount, setBankAccount] = useState([]);
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
 
   const [keys, setKeys] = useState<string | null>(null);
   const [values, setValues] = useState<string | null>(null);
+  // const initialDate = dataTransaction?.transDate
+  //   ? dayjs(dataTransaction.transDate)
+  //   : null;
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
     setValues(localStorage.getItem("value"));
@@ -91,7 +98,7 @@ const Transaction = () => {
       const formattedData =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         response?.data?.source?.map((item: any) => ({
-          id: item.id?.toString() || Date.now().toString(), // id
+          id: item.id, // id
           bankName: item.bankName, // Mã ngân hàng
           bankAccount: item.bankAccount, // stk
           fullName: item.fullName, // tên chủ tk
@@ -103,6 +110,12 @@ const Transaction = () => {
           currentBalance: item.currentBalance, // số dư hiện tại
           notes: item.notes, // ghi chú
           bankAccountId: item.bankAccountId, // thêm trường id tài khoản
+          feeIncurred: item.feeIncurred,
+          transAmount: item.transAmount,
+          transDate: item.transDate
+            ? dayjs(item.transDate).format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+            : null,
+          // transDate: item.transDate,
         })) || [];
       setDataTransaction(formattedData);
     } catch (error) {
@@ -119,7 +132,8 @@ const Transaction = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bankData?.data?.source?.map((bank: any) => ({
           value: bank.code,
-          label: bank.fullName || bank.code || "Không xác định",
+          label: bank.fullName,
+          bankId: bank.id,
         })) || [];
       setBanks(formattedBanks);
     } catch (error) {
@@ -133,7 +147,7 @@ const Transaction = () => {
       const formattedBanks =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bankData?.data?.source?.map((bank: any) => ({
-          value: bank.id,
+          value: bank.code,
           label: `${bank.accountNumber} - ${bank.fullName}`,
         })) || [];
       setBankAccount(formattedBanks);
@@ -145,7 +159,7 @@ const Transaction = () => {
   const handleAddConfirm = async () => {
     const formData = form.getFieldsValue();
     setLoading(true);
-    console.log(formData, "formData");
+    // console.log(formData, "formData");
     try {
       if (currentTransaction) {
         const response = await addTransaction({
@@ -160,6 +174,13 @@ const Transaction = () => {
           balanceBeforeTrans: formData.balanceBeforeTrans,
           currentBalance: formData.currentBalance,
           notes: formData.notes,
+          transAmount: formData.transAmount,
+          // transDate: selectedDate,
+          transDate: selectedDate
+            ? dayjs(selectedDate).format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+            : undefined,
+          bankId: selectBankId,
+          feeIncurred: formData.feeIncurred,
         });
         if (response && response.success === false) {
           toast.error(response.message || "Cập nhật giao dịch lỗi.");
@@ -181,6 +202,10 @@ const Transaction = () => {
           balanceBeforeTrans: formData.balanceBeforeTrans,
           currentBalance: formData.currentBalance,
           notes: formData.notes,
+          transAmount: formData.transAmount,
+          transDate: selectedDate,
+          bankId: selectBankId,
+          feeIncurred: formData.feeIncurred,
         });
         if (response && response.success === false) {
           toast.error(response.message || "Thêm mới giao dịch lỗi.");
@@ -195,6 +220,7 @@ const Transaction = () => {
       form.resetFields();
       setCurrentTransaction(null);
       fetchTransaction();
+      setSelectBankId(0);
     } catch (error) {
       console.error("Lỗi:", error);
 
@@ -228,6 +254,9 @@ const Transaction = () => {
       balanceBeforeTrans: record.balanceBeforeTrans,
       currentBalance: record.currentBalance,
       notes: record.notes,
+      transAmount: record.transAmount,
+      transDate: selectedDate,
+      feeIncurred: record.feeIncurred,
     });
     setAddModalOpen(true);
   };
@@ -274,19 +303,37 @@ const Transaction = () => {
   }, [keys]);
 
   const columns = [
-    // {
-    //   title: "bankAccountId",
-    //   dataIndex: "bankAccountId",
-    //   key: "bankAccountId",
-    // },
-    { title: "ID", dataIndex: "id", key: "id" },
-    // {
-    //   title: "bankAccountId",
-    //   dataIndex: "bankAccountId",
-    //   key: "bankAccountId",
-    // },
-    { title: "Ngân hàng", dataIndex: "bankName", key: "bankName" },
-    { title: "Số tài khoản", dataIndex: "bankAccountId", key: "bankAccountId" },
+    { title: "ID", dataIndex: "id", key: "id", hidden: true },
+    {
+      title: "Ngân hàng",
+      dataIndex: "bankName",
+      key: "bankName",
+    },
+    {
+      title: "Ngày giao dịch",
+      dataIndex: "transDate",
+      key: "transDate",
+      // hidden: true,
+    },
+    {
+      title: "transAmount",
+      dataIndex: "transAmount",
+      key: "transAmount",
+      hidden: true,
+    },
+    {
+      title: "Chi phí phát sinh",
+      dataIndex: "feeIncurred",
+      key: "feeIncurred",
+      // hidden: true,
+    },
+    {
+      title: "Số tài khoản",
+      dataIndex: "bankAccountId",
+      key: "bankAccountId",
+      hidden: true,
+    },
+    { title: "Số tài khoản", dataIndex: "bankAccount", key: "bankAccount" },
     { title: "Tên chủ tài khoản", dataIndex: "fullName", key: "fullName" },
     {
       title: "Ngày giao dịch",
@@ -318,21 +365,21 @@ const Transaction = () => {
       dataIndex: "balanceBeforeTrans",
       key: "balanceBeforeTrans",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // render: (balance: any) => {
-      //   const formattedBalance = Math.abs(balance).toLocaleString("vi-VN", {
-      //     style: "currency",
-      //     currency: "VND",
-      //   });
-      //   return`- ${formattedBalance}`
-      // },
+      render: (balance: any) => {
+        const formattedBalance = Math.abs(balance).toLocaleString("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        });
+        return balance ? `-${formattedBalance}` : "0";
+      },
     },
     {
       title: "Số dư hiện tại",
       dataIndex: "currentBalance",
       key: "currentBalance",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // render: (balance: any) =>
-      //   balance.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
+      render: (balance: any) =>
+        balance.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
     },
     { title: "Ghi chú", dataIndex: "notes", key: "notes" },
     {
@@ -356,8 +403,8 @@ const Transaction = () => {
     },
   ];
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectBankId, setSelectBankId] = useState(0);
 
   return (
     <>
@@ -418,13 +465,16 @@ const Transaction = () => {
           form={form}
           layout="vertical"
           className="flex flex-col gap-1 w-full"
+          // initialValues={{
+          //   ...initialData,
+          //   transDate: initialData.transDate
+          //     ? dayjs(initialData.transDate)
+          //     : null,
+          // }}
         >
           <Form.Item hidden label="id" name="id">
             <Input hidden />
           </Form.Item>
-          {/* <Form.Item hidden label="bankAccountId" name="bankAccountId">
-            <Input hidden />
-          </Form.Item> */}
           <div className="flex justify-between">
             <Form.Item
               className="w-[45%]"
@@ -434,6 +484,30 @@ const Transaction = () => {
             >
               <Select
                 placeholder="Chọn ngân hàng"
+                onFocus={fetchBankData}
+                options={banks}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={async (value: any) => {
+                  const selectedGroup = await banks.find(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (item: any) => item.value === value
+                  );
+                  if (selectedGroup) {
+                    form.setFieldsValue({
+                      bankId: selectedGroup.bankId,
+                    });
+                  }
+                }}
+              />
+            </Form.Item>
+            <Form.Item
+              hidden
+              className="w-[45%]"
+              label="Id Ngân hàng 2"
+              name="bankId"
+            >
+              <Select
+                placeholder="Chọn ngân hàng 2"
                 onFocus={fetchBankData}
                 options={banks}
               />
@@ -448,6 +522,9 @@ const Transaction = () => {
                 placeholder="Chọn tài khoản ngân hàng"
                 onFocus={genBankAccountData}
                 options={bankAccount}
+                onChange={(value) => {
+                  console.log(value);
+                }}
               />
             </Form.Item>
           </div>
@@ -490,25 +567,10 @@ const Transaction = () => {
             </Form.Item>
           </div>
           <div className="flex justify-between items-center">
-            {/* <div className="w-[50%] pb-8">
-              <div className="p-2">Ngày giao dịch</div>
-              <Space direction="vertical" size="large" className="w-full">
-                <DatePicker
-                  placeholder="Ngày giao dịch"
-                  className="w-[90%]"
-                  showTime
-                  required
-                  onChange={(value, dateString) => {
-                    console.log("Selected Time: ", value);
-                    console.log("Formatted Selected Time: ", dateString);
-                  }}
-                  onOk={onOk}
-                />
-              </Space>
-            </div> */}
             <Form.Item
               className="w-[45%]"
               label="Ngày giao dịch"
+              name="transDate"
               rules={[
                 {
                   required: true,
@@ -521,16 +583,25 @@ const Transaction = () => {
                   className="w-full"
                   showTime
                   required
-                  onChange={(value: Dayjs | null) => {
-                    setSelectedDate(value);
-                    console.log(
-                      "Selected Time: ",
-                      value?.format("YYYY-MM-DD HH:mm:ss")
+                  onChange={async (value: Dayjs | null) => {
+                    const formattedDate = await value?.format(
+                      "YYYY-MM-DDTHH:mm:ss.SSSZ"
                     );
+                    setSelectedDate(formattedDate!);
+                    // console.log("Selected Time: ", formattedDate);
                   }}
                 />
               </Space>
             </Form.Item>
+            {/* <Form.Item
+              className="w-[45%]"
+              label="Ngày giao dịch 2"
+              name="transDateString"
+            >
+              <InputNumber
+                className="w-full"
+              />
+            </Form.Item> */}
             <Form.Item
               className="w-[45%]"
               label="Số dư trước giao dịch"
@@ -545,11 +616,11 @@ const Transaction = () => {
               <InputNumber
                 className="w-full"
                 placeholder="Nhập số dư trước giao dịch"
-                // formatter={(value) =>
-                //   `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                // }
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                // parser={(value: any) => value.replace(/\s?VND|(,*)/g, "")}
+                parser={(value: any) => value.replace(/\s?VND|(,*)/g, "")}
               />
             </Form.Item>
           </div>
@@ -557,7 +628,7 @@ const Transaction = () => {
             <Form.Item
               className="w-[45%]"
               label="Số tiền giao dịch"
-              name="transactionAmount"
+              name="transAmount"
               rules={[
                 {
                   required: true,
@@ -601,7 +672,7 @@ const Transaction = () => {
             <Form.Item
               className="w-[45%]"
               label="Nhập chi phí phát sinh"
-              name="incurredCost"
+              name="feeIncurred"
               rules={[
                 {
                   required: true,

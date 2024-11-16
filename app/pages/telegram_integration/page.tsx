@@ -522,7 +522,7 @@ const TelegramIntegration = () => {
           <Form.Item hidden label="id" name="id">
             <Input hidden />
           </Form.Item>
-          <Form.Item label="bankAccountId" name="bankAccountId">
+          <Form.Item hidden label="bankAccountId" name="bankAccountId">
             <Input />
           </Form.Item>
           <Form.Item

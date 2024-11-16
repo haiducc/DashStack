@@ -2,7 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import Header from "@/app/component/Header";
-import { Button, Form, Input, Select, Space, Spin, Table } from "antd";
+import {
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  Select,
+  Space,
+  Spin,
+  Table,
+} from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import BaseModal from "@/app/component/config/BaseModal";
 import { addRole, deleteRole, getRole } from "@/app/services/role";
@@ -17,6 +26,12 @@ export interface dataRole {
   userName: string;
   email: string;
   fullName: string;
+  role: string;
+  password: string;
+  isAdmin?: boolean;
+  groupSystemId?: number;
+  groupBranchId?: number;
+  groupTeamId?: number;
 }
 
 interface filterRole {
@@ -41,6 +56,7 @@ const Role = () => {
   const [parentId, setParentId] = useState<number>(0);
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
+  const [role, setRole] = useState(false);
 
   const [keys, setKeys] = useState<string | null>(null);
   const [values, setValues] = useState<string | null>(null);
@@ -59,13 +75,19 @@ const Role = () => {
     // setLoading(true);
     try {
       const response = await getRole(pageIndex, pageSize, globalTerm, arrRole);
-      // console.log(response, "Role");
+      console.log(response, "Role");
       const formattedData =
         response?.data?.source?.map((x: dataRole) => ({
-          id: x.id?.toString() || Date.now().toString(),
+          id: x.id,
           userName: x.userName,
+          role: x.role,
+          email: x.email,
           fullName: x.fullName,
-          // thêm 1 trường vai trò nữa, tạm thời chưa có trên API
+          isAdmin: x.isAdmin,
+          groupSystemId: x.groupSystemId,
+          groupBranchId: x.groupBranchId,
+          groupTeamId: x.groupTeamId,
+          password: x.password,
         })) || [];
       setDataRole(formattedData);
     } catch (error) {
@@ -127,17 +149,29 @@ const Role = () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const response = await addRole({
           id: currentRole.id,
-          userName: "",
-          email: "",
-          fullName: "",
+          userName: formData.userName,
+          email: formData.email,
+          fullName: formData.fullName,
+          role: formData.role,
+          isAdmin: formData.IsAdmin,
+          groupSystemId: formData.groupSystemId,
+          groupBranchId: formData.groupBranchId,
+          groupTeamId: formData.groupTeamId,
+          password: formData.password,
         });
       } else {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const response = await addRole({
           id: formData.id,
-          userName: "",
-          email: "",
-          fullName: "",
+          userName: formData.userName,
+          email: formData.email,
+          fullName: formData.fullName,
+          role: formData.role,
+          isAdmin: formData.IsAdmin,
+          groupSystemId: formData.groupSystemId,
+          groupBranchId: formData.groupBranchId,
+          groupTeamId: formData.groupTeamId,
+          password: formData.password,
         });
       }
 
@@ -153,6 +187,23 @@ const Role = () => {
   };
 
   // sửa
+  const handleEdit = (record: dataRole) => {
+    console.log("data edit", record);
+    setCurrentRole(record);
+    form.setFieldsValue({
+      id: record.id,
+      userName: record.userName,
+      email: record.email,
+      fullName: record.fullName,
+      role: record.role,
+      isAdmin: record.isAdmin,
+      groupSystemId: record.groupSystemId,
+      groupBranchId: record.groupBranchId,
+      groupTeamId: record.groupTeamId,
+      password: record.password,
+    });
+    setAddModalOpen(true);
+  };
 
   const handleDeleteRole = async (role: dataRole) => {
     setLoading(true);
@@ -163,7 +214,7 @@ const Role = () => {
       console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
     } finally {
       setLoading(false);
-      toast.success("Xóa tài khoản thành công");
+      toast.success("Xóa nhóm quyền thành công");
     }
   };
 
@@ -227,17 +278,32 @@ const Role = () => {
     { title: "id", dataIndex: "id", key: "id" },
     { title: "Email đăng nhập", dataIndex: "userName", key: "userName" },
     { title: "Họ và tên", dataIndex: "fullName", key: "fullName" },
-    { title: "Vai trò", dataIndex: "", key: "" },
+    { title: "Vai trò", dataIndex: "role", key: "role" },
+    {
+      title: "Hệ thống",
+      dataIndex: "groupSystemId",
+      key: "groupSystemId",
+      hidden: true,
+    },
+    {
+      title: "Chi nhánh",
+      dataIndex: "groupBranchId",
+      key: "groupBranchId",
+      hidden: true,
+    },
+    {
+      title: "Đội nhóm",
+      dataIndex: "groupTeamId",
+      key: "groupTeamId",
+      hidden: true,
+    },
     {
       title: "Chức năng",
       key: "action",
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       render: (record: dataRole) => (
         <Space size="middle">
-          <Button
-            icon={<EditOutlined />}
-            // onClick={() => handleEditTele(record)}
-          >
+          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>
             Chỉnh sửa
           </Button>
           <Button
@@ -255,7 +321,7 @@ const Role = () => {
     <>
       <Header />
       <div className="px-[30px]">
-        <div className="text-[32px] font-bold py-5">Danh sách nhóm quyền</div>
+        <div className="text-[32px] font-bold py-5">Danh sách quyền</div>
         <div className="flex justify-between items-center mb-7">
           <Input
             placeholder="Tìm kiếm tên nhóm tài khoản ..."
@@ -296,11 +362,7 @@ const Role = () => {
           setAddModalOpen(false);
           form.resetFields();
         }}
-        title={
-          currentRole
-            ? "Chỉnh sửa vai trò hệ thống"
-            : "Thêm mới vai trò hệ thống"
-        }
+        title={currentRole ? "Chỉnh sửa quyền" : "Thêm mới quyền"}
       >
         <Form
           form={form}
@@ -310,61 +372,62 @@ const Role = () => {
           <Form.Item hidden label="id" name="id">
             <Input hidden />
           </Form.Item>
-          <Form.Item
-            label="Chọn vai trò"
-            name=""
-            rules={[{ required: true, message: "Vui lòng chọn vai trò!" }]}
-          >
-            <Input placeholder="Chọn vai trò" />
-          </Form.Item>
-          <Form.Item
-            label="Hệ thống"
-            name="groupSystemId"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng chọn hệ thống!",
-              },
-            ]}
-          >
-            <Select
-              placeholder="Chọn hệ thống"
-              onFocus={getGroupSystems}
-              options={groupSystem}
-              onChange={(value) => {
-                setSystemId(value);
-                getBranchSystems();
+
+          <Form.Item label="Vai trò" name="isAdmin" valuePropName="checked">
+            <Checkbox
+              onChange={(e) => {
+                setRole(e.target.checked);
               }}
-              value={systemId}
-            />
+              checked={role}
+            >
+              Admin
+            </Checkbox>
           </Form.Item>
+
+          {!role && (
+            <>
+              <Form.Item label="Hệ thống" name="groupSystemId">
+                <Select
+                  placeholder="Chọn hệ thống"
+                  onFocus={getGroupSystems}
+                  options={groupSystem}
+                  onChange={(value) => {
+                    setSystemId(value);
+                    getBranchSystems();
+                  }}
+                  value={systemId}
+                />
+              </Form.Item>
+              <Form.Item label="Chọn chi nhánh" name="groupBranchId">
+                <Select
+                  placeholder="Chọn chi nhánh"
+                  onFocus={getBranchSystems}
+                  options={branchSystem}
+                  onChange={(value) => {
+                    setParentId(value);
+                    getGroupTeams();
+                  }}
+                  value={parentId}
+                />
+              </Form.Item>
+              <Form.Item label="Chọn đội nhóm" name="groupTeamId">
+                <Select
+                  placeholder="Chọn đội nhóm"
+                  onFocus={getGroupTeams}
+                  options={groupTeam}
+                />
+              </Form.Item>
+            </>
+          )}
+
           <Form.Item
-            label="Chọn chi nhánh"
-            name="groupBranchId"
-            rules={[{ required: true, message: "Vui lòng chọn chi nhánh!" }]}
+            label="Họ và tên"
+            name="fullName"
+            rules={[{ required: true, message: "Vui lòng nhập họ và tên!" }]}
           >
-            <Select
-              placeholder="Chọn chi nhánh"
-              onFocus={getBranchSystems}
-              options={branchSystem}
-              onChange={(value) => {
-                setParentId(value);
-                getGroupTeams();
-              }}
-              value={systemId}
-            />
+            <Input placeholder="Họ và tên" />
           </Form.Item>
-          <Form.Item
-            label="Chọn đội nhóm"
-            name="groupTeamId"
-            rules={[{ required: true, message: "Vui lòng chọn đội nhóm!" }]}
-          >
-            <Select
-              placeholder="Chọn đội nhóm"
-              onFocus={getGroupTeams}
-              options={groupTeam}
-            />
-          </Form.Item>
+
           <Form.Item
             label="Email đăng nhập"
             name="userName"
@@ -372,6 +435,7 @@ const Role = () => {
           >
             <Input placeholder="Email đăng nhập" />
           </Form.Item>
+
           <Form.Item
             label="Mật khẩu"
             name="password"

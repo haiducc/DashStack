@@ -356,10 +356,12 @@ const Transaction = () => {
       key: "transType",
       render: (transType: string) => (
         <>
-          {transType === "2" ? (
+          {transType == "2" ? (
             <div className="font-semibold text-[#D40606]">Tiền ra</div>
-          ) : (
+          ) : transType == "3" ? (
             <div className="font-semibold text-[#01AF36]">Tiền vào</div>
+          ) : (
+            <div className="font-semibold">Không xác định</div>
           )}
         </>
       ),
@@ -380,7 +382,7 @@ const Transaction = () => {
           style: "currency",
           currency: "VND",
         });
-        return balance ? `-${formattedBalance}` : "0";
+        return balance ? `${formattedBalance}` : "0";
       },
     },
     {
@@ -559,6 +561,9 @@ const Transaction = () => {
                   { value: "3", label: "Tiền vào" },
                 ]}
                 placeholder="Chọn loại giao dịch"
+                onChange={(value) => {
+                  console.log(value);
+                }}
               />
             </Form.Item>
             <Form.Item
@@ -609,15 +614,6 @@ const Transaction = () => {
                 />
               </Space>
             </Form.Item>
-            {/* <Form.Item
-              className="w-[45%]"
-              label="Ngày giao dịch 2"
-              name="transDateString"
-            >
-              <InputNumber
-                className="w-full"
-              />
-            </Form.Item> */}
             <Form.Item
               className="w-[45%]"
               label="Số dư trước giao dịch"
@@ -708,12 +704,12 @@ const Transaction = () => {
             </Form.Item>
             <Form.Item
               className="w-[45%]"
-              label="Chọn lý do"
+              label="Nhập lý do"
               name="reason"
               rules={[
                 {
                   required: true,
-                  message: "Vui lòng chọn lý do!",
+                  message: "Vui lòng Nhập lý do!",
                 },
               ]}
             >

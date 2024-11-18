@@ -69,6 +69,7 @@ const Account = () => {
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
     setValues(localStorage.getItem("value"));
+    handleDataDefault();
   }, []);
 
   // API để lấy ra dsach tài khoản
@@ -80,65 +81,57 @@ const Account = () => {
     team?: string
   ) => {
     const arrBankAccount: filterGroupAccount[] = [];
-  const addedParams = new Set(); // Sử dụng Set để theo dõi tham số đã thêm vào
-
-  // Kiểm tra và thêm các tham số từ searchTerms nếu chưa có trong addedParams
-  if (Array.isArray(searchTerms)) {
-    searchTerms.forEach((term) => {
-      if (term.Value && !addedParams.has(term.Name)) {  // Kiểm tra xem đã thêm tham số này chưa
-        arrBankAccount.push({
-          Name: term.Name,
-          Value: term.Value,
-        });
-        addedParams.add(term.Name);  // Đánh dấu tham số đã được thêm vào
-      }
-    });
-  } else if (searchTerms) {  // Trường hợp searchTerms là một giá trị string đơn
-    if (!addedParams.has('groupAccountId')) {
-      arrBankAccount.push({
-        Name: "groupAccountId",
-        Value: searchTerms,
+    const addedParams = new Set();
+    if (Array.isArray(searchTerms)) {
+      searchTerms.forEach((term) => {
+        if (term.Value && !addedParams.has(term.Name)) {
+          arrBankAccount.push({
+            Name: term.Name,
+            Value: term.Value,
+          });
+          addedParams.add(term.Name);
+        }
       });
-      addedParams.add('groupAccountId');
+    } else if (searchTerms) {
+      if (!addedParams.has("groupAccountId")) {
+        // console.log(96);
+
+        arrBankAccount.push({
+          Name: "groupAccountId",
+          Value: searchTerms,
+        });
+        addedParams.add("groupAccountId");
+      }
     }
-  }
-
-  // Chỉ thêm groupSystemId nếu system có giá trị và chưa thêm vào
-  if (system && !addedParams.has('groupSystemId')) {
+    if (system && !addedParams.has("groupSystemId")) {
+      arrBankAccount.push({
+        Name: "groupSystemId",
+        Value: system,
+      });
+      addedParams.add("groupSystemId");
+    }
+    if (branch && !addedParams.has("groupBranchId")) {
+      arrBankAccount.push({
+        Name: "groupBranchId",
+        Value: branch,
+      });
+      addedParams.add("groupBranchId");
+    }
+    if (team && !addedParams.has("groupTeamId")) {
+      arrBankAccount.push({
+        Name: "groupTeamId",
+        Value: team,
+      });
+      addedParams.add("groupTeamId");
+    }
+    // if (keys && values && !addedParams.has(keys)) {
+    // console.log(keys, values, !addedParams.has(keys));
     arrBankAccount.push({
-      Name: "groupSystemId",
-      Value: system,
-    });
-    addedParams.add('groupSystemId');
-  }
-
-  // Chỉ thêm groupBranchId nếu branch có giá trị và chưa thêm vào
-  if (branch && !addedParams.has('groupBranchId')) {
-    arrBankAccount.push({
-      Name: "groupBranchId",
-      Value: branch,
-    });
-    addedParams.add('groupBranchId');
-  }
-
-  // Chỉ thêm groupTeamId nếu team có giá trị và chưa thêm vào
-  if (team && !addedParams.has('groupTeamId')) {
-    arrBankAccount.push({
-      Name: "groupTeamId",
-      Value: team,
-    });
-    addedParams.add('groupTeamId');
-  }
-
-  // Nếu keys và values đã được xác định, thêm chúng vào arrBankAccount
-  if (keys && values && !addedParams.has(keys)) {
-    arrBankAccount.push({
-      Name: keys,
-      Value: values,
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
     });
     addedParams.add(keys);
-  }
-
+    // }
     setLoading(true);
     try {
       const response = await fetchBankAccounts(
@@ -184,9 +177,9 @@ const Account = () => {
     }
   };
 
-  useEffect(() => {
-    fetchAccounts();
-  }, [keys]);
+  // useEffect(() => {
+  //   fetchAccounts();
+  // }, [keys]);
 
   const fetchBankData = async () => {
     try {
@@ -524,9 +517,9 @@ const Account = () => {
     }
   };
   // fetch để gọi ra danh sách theo value search
-  useEffect(() => {
-    fetchAccounts();
-  }, []);
+  // useEffect(() => {
+  //   fetchAccounts();
+  // }, []);
 
   const [accountGroupFilter, setAccountGroupFilter] = useState<
     Array<{ value: string; label: string }>
@@ -597,26 +590,46 @@ const Account = () => {
     groupBranch?: string,
     groupTeam?: string
   ) => {
-    setFilterParams((prevParams) => ({
-      ...prevParams,
-      groupAccountId: groupAccount,
-      groupSystemId: groupSystem,
-      groupBranchId: groupBranch,
-      groupTeamId: groupTeam,
-    }));
+    setFilterParams((prevParams) => {
+      if (
+        prevParams.groupAccountId !== groupAccount ||
+        prevParams.groupSystemId !== groupSystem ||
+        prevParams.groupBranchId !== groupBranch ||
+        prevParams.groupTeamId !== groupTeam
+      ) {
+        return {
+          ...prevParams,
+          groupAccountId: groupAccount,
+          groupSystemId: groupSystem,
+          groupBranchId: groupBranch,
+          groupTeamId: groupTeam,
+        };
+      }
+      return prevParams;
+    });
+  };
+
+  const handleDataDefault = async () => {
+    const arrData = [];
+    arrData.push({
+      label: localStorage.getItem("key")!,
+      value: localStorage.getItem("value")!,
+    });
+    console.log(arrData);
+    // console.log(1);
+
+    setSystemFilter(arrData);
   };
 
   const handleFilterSystem = async (groupSystemId?: string) => {
     const arrAccountGroup: filterGroupAccount[] = [];
-    const system: filterGroupAccount = {
-      Name: "groupSystemId",
-      Value: groupSystemId!,
-    };
-    const obj: filterGroupAccount = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrAccountGroup.push(obj, system);
+    arrAccountGroup.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    if (groupSystemId) {
+      arrAccountGroup.push({ Name: "groupSystemId", Value: groupSystemId });
+    }
     try {
       const fetchBankAccountAPI = await getGroupSystem(
         pageIndex,
@@ -624,7 +637,6 @@ const Account = () => {
         globalTerm,
         arrAccountGroup
       );
-      // console.log("fetchBankAccountAPI", fetchBankAccountAPI);
 
       if (
         fetchBankAccountAPI &&
@@ -732,11 +744,8 @@ const Account = () => {
   };
 
   useEffect(() => {
-    // const { groupAccountId } = filterParams;
-
     const fetchData = async () => {
       await handleFilter();
-      // await fetchAccounts(groupAccountId);
       await handleFilterSystem();
       await handleFilterBranch();
       await handleFilterTeam();
@@ -801,6 +810,7 @@ const Account = () => {
 
   const [checkFilter, setCheckFilter] = useState(false);
   useEffect(() => {
+    // console.log(1);
     fetchAccounts(
       globalTerm,
       groupAccountFilter,
@@ -868,33 +878,35 @@ const Account = () => {
             </Space>
             <div className="w-2" />
             <Space direction="horizontal" size="middle">
-              <Select
-                options={systemFilter}
-                placeholder="Hệ thống"
-                style={{ width: 245 }}
-                allowClear
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onChange={(value: any) => {
-                  setGroupSystemFilter(value);
-                  if (!value) {
-                    handleSelectChange(
-                      groupAccountFilter,
-                      value,
-                      groupBranchFilter,
-                      groupTeamFilter
-                    );
-                    setCheckFilter(!checkFilter);
-                  } else {
-                    fetchAccounts(
-                      globalTerm,
-                      groupAccountFilter,
-                      value,
-                      groupBranchFilter,
-                      groupTeamFilter
-                    );
-                  }
-                }}
-              />
+              {systemFilter && (
+                <Select
+                  options={systemFilter}
+                  placeholder="Hệ thống"
+                  style={{ width: 245 }}
+                  allowClear
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  onChange={(value: any) => {
+                    setGroupSystemFilter(value);
+                    if (!value) {
+                      handleSelectChange(
+                        groupAccountFilter,
+                        value,
+                        groupBranchFilter,
+                        groupTeamFilter
+                      );
+                      setCheckFilter(!checkFilter);
+                    } else {
+                      fetchAccounts(
+                        globalTerm,
+                        groupAccountFilter,
+                        value,
+                        groupBranchFilter,
+                        groupTeamFilter
+                      );
+                    }
+                  }}
+                />
+              )}
             </Space>
             <div className="w-2" />
             <Space direction="horizontal" size="middle">
@@ -914,6 +926,7 @@ const Account = () => {
                       groupTeamFilter
                     );
                     setCheckFilter(!checkFilter);
+                    // setCheckFilter((prev) => !prev);
                   } else {
                     fetchAccounts(
                       globalTerm,

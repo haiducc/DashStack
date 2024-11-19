@@ -43,7 +43,7 @@ const Account = () => {
   const [currentAccount, setCurrentAccount] = useState<BankAccounts | null>(
     null
   );
-  const [selectedAccountType, setSelectedAccountType] = useState(null);
+  const [selectedAccountType, setSelectedAccountType] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleAccountTypeChange = (value: any) => {
     setSelectedAccountType(value);
@@ -53,10 +53,10 @@ const Account = () => {
   const [phoneNumber, setPhoneNumber] = useState([]);
   const [groupSystem, setGroupSystem] = useState([]);
   const [branchSystem, setBranchSystem] = useState([]);
-  const [groupTeam, setGroupTeam] = useState([]);
+  const [groupTeam, setGroupTeam] = useState<Array<BankAccounts>>([]);
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
-  const [value, setValue] = useState(null);
+  const [value, setValue] = useState("");
   const [globalTerm, setGlobalTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [, setIsEditMode] = useState(false);
@@ -242,18 +242,18 @@ const Account = () => {
   };
 
   const getListAccountGroup = async () => {
-    const arrAccountGroup: filterGroupAccount[] = [];
-    const obj: filterGroupAccount = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrAccountGroup.push(obj);
+    // const arrAccountGroup: filterGroupAccount[] = [];
+    // const obj: filterGroupAccount = {
+    //   Name: keys!,
+    //   Value: values!,
+    // };
+    // arrAccountGroup.push(obj);
     try {
       const accountGroup = await getAccountGroup(
         pageIndex,
         pageSize,
-        globalTerm,
-        arrAccountGroup
+        globalTerm
+        // arrAccountGroup
       );
       console.log("accountGroup", accountGroup);
 
@@ -346,8 +346,6 @@ const Account = () => {
   };
 
   const handleAddConfirm = async () => {
-    console.log(Number(groupSystemId), "formData");
-
     try {
       // await form.validateFields();
       const formData = await form.getFieldsValue();
@@ -363,10 +361,10 @@ const Account = () => {
         typeAccount: formData.typeAccount,
         notes: formData.notes,
         transactionSource: formData.transactionSource,
-        groupSystemId: Number(groupSystemId),
-        groupBranchId: Number(groupBranchId),
-        groupTeamId: Number(groupTeamId),
-        bankId: formData.bankId,
+        groupSystemId: Number(saveGroupSystem),
+        groupBranchId: Number(saveGroupBranch),
+        groupTeamId: Number(saveGroupTeam),
+        bankId: Number(saveBank),
         groupSystem: formData.groupSystem,
         groupBranch: formData.groupBranch,
         groupTeam: formData.groupTeam,
@@ -395,6 +393,10 @@ const Account = () => {
           code: number;
           errors?: string[];
         };
+        if (responseData.code === 500) {
+          const errorMessage = responseData.message;
+          toast.error(errorMessage);
+        }
         if (responseData.code === 400) {
           const errorMessage = responseData.message || "Thêm mới lỗi";
           toast.error(errorMessage);
@@ -416,10 +418,30 @@ const Account = () => {
   };
 
   const handleEditAccount = (account: BankAccounts) => {
+
     setIsEditMode(true);
     setCurrentAccount(account);
-    // console.log("data edit", account);
-    // console.log(account.bank?.fullName, "account.bank?.fullName");
+    const type = account.typeAccount;
+    const phone = account.transactionSource;
+    setSelectedAccountType(type!);
+    setValue(phone!);
+
+    const initGroupSystemId = account.id
+      ? account.groupSystemId.toString()
+      : defaultGroupSystemId;
+    setSaveGroupSystem(initGroupSystemId!);
+
+    const initGroupBranchId = account.id
+      ? account.groupBranchId.toString()
+      : defaultGroupBranchId;
+    setSaveGroupBranch(initGroupBranchId!);
+
+    console.log(443, account.id, account.groupBranchId.toString(), account.groupTeamId.toString())
+
+    const initGroupTeamId = account.id
+      ? account.groupTeamId.toString()
+      : defaultGroupTeamId;
+    setSaveGroupTeam(initGroupTeamId!);
 
     form.setFieldsValue({
       id: account.id,
@@ -848,7 +870,11 @@ const Account = () => {
   ];
 
   const [checkFilter, setCheckFilter] = useState(false);
-  // const [checkDataFilter, setCheckDataFilter] = useState()
+  const [saveGroupSystem, setSaveGroupSystem] = useState("");
+  const [saveGroupBranch, setSaveGroupBranch] = useState("");
+  const [saveGroupTeam, setSaveGroupTeam] = useState("");
+  const [saveBank, setSaveBank] = useState("");
+  // const [typeAccountValue, setTypeAccountValue] = useState()
 
   useEffect(() => {
     // console.log(1);
@@ -922,10 +948,14 @@ const Account = () => {
               {groupSystemName && (
                 <Select
                   disabled={defaultGroupSystemId ? true : false}
-                  defaultValue={groupSystemId?.trim() ? {
-                    value: groupSystemId,
-                    label: groupSystemName,
-                  } : undefined}
+                  defaultValue={
+                    groupSystemId?.trim()
+                      ? {
+                          value: groupSystemId,
+                          label: groupSystemName,
+                        }
+                      : undefined
+                  }
                   onFocus={() => handleFilterSystem()}
                   options={systemFilter}
                   placeholder="Hệ thống"
@@ -960,10 +990,14 @@ const Account = () => {
               {groupBranchName && (
                 <Select
                   disabled={defaultGroupBranchId ? true : false}
-                  defaultValue={groupBranchId?.trim() ? {
-                    value: groupBranchId,
-                    label: groupBranchName,
-                  } : undefined}
+                  defaultValue={
+                    groupBranchId?.trim()
+                      ? {
+                          value: groupBranchId,
+                          label: groupBranchName,
+                        }
+                      : undefined
+                  }
                   onFocus={() => handleFilterBranch()}
                   options={branchFilter}
                   placeholder="Chi nhánh"
@@ -1003,10 +1037,14 @@ const Account = () => {
                   //   value: groupTeamId,
                   //   label: groupTeamName ? groupTeamName : "",
                   // }}
-                  defaultValue={groupTeamId?.trim() ? {
-                    value: groupTeamId,
-                    label: groupTeamName,
-                  } : undefined}
+                  defaultValue={
+                    groupTeamId?.trim()
+                      ? {
+                          value: groupTeamId,
+                          label: groupTeamName,
+                        }
+                      : undefined
+                  }
                   onFocus={() => handleFilterTeam()}
                   options={TeamFilter}
                   placeholder="Đội nhóm"
@@ -1082,84 +1120,156 @@ const Account = () => {
             <Select
               options={accountTypeOptions}
               placeholder="Chọn loại tài khoản"
-              onChange={handleAccountTypeChange}
+              onChange={(e) => {
+                console.log(e);
+                handleAccountTypeChange(e);
+              }}
             />
           </Form.Item>
           <div className="flex justify-between">
             <Form.Item
               className="w-[45%]"
               label="Chọn hệ thống"
-              name="groupSystemId"
+              name="groupSystemName"
               rules={[{ required: true, message: "Vui lòng chọn hệ thống!" }]}
             >
               <Select
                 disabled={defaultGroupSystemId ? true : false}
-                defaultValue={{
-                  value: groupSystemId,
-                  label: groupSystemName,
-                }}
+                defaultValue={
+                  form.getFieldsValue().groupSystemId?.toString().trim()
+                    ? {
+                        value: form.getFieldsValue().groupSystemId,
+                        label: form.getFieldsValue().groupSystemName,
+                      }
+                    : undefined
+                }
                 onFocus={() => getGroupSystems()}
                 placeholder="Chọn hệ thống"
                 options={groupSystem}
                 onChange={(e) => {
+                  console.log(e);
                   const id = Number(e).toString();
                   getBranchSystems();
-                  console.log(groupSystem, "groupSystem");
-                  setGroupSystemId(id);
+                  setSaveGroupSystem(id);
                 }}
               />
             </Form.Item>
             <Form.Item
+              hidden
+              className="w-[45%]"
+              label="Chọn hệ thống"
+              name="groupSystemId"
+            >
+              <Select />
+            </Form.Item>
+            <Form.Item
               className="w-[45%]"
               label="Chọn chi nhánh"
-              name="groupBranchId"
-              // name="groupBranchId"
-              // rules={[{ required: true, message: "Vui lòng chọn chi nhánh!" }]}
+              name="groupBranchName"
             >
               <Select
                 disabled={defaultGroupBranchId ? true : false}
-                defaultValue={{
-                  value: groupBranchId,
-                  label: groupBranchName,
-                }}
+                defaultValue={
+                  form.getFieldsValue().groupBranchId?.toString().trim()
+                    ? {
+                        value: form.getFieldsValue().groupBranchId,
+                        label: form.getFieldsValue().groupBranchName,
+                      }
+                    : undefined
+                }
                 onFocus={() => getBranchSystems()}
                 placeholder="Chọn chi nhánh"
                 options={branchSystem}
                 onChange={(e) => {
                   const id = Number(e).toString();
-                  setGroupBranchId(id);
+                  // setGroupBranchId(id);
                   // setParentId(value);
                   getGroupTeams();
+                  setSaveGroupBranch(id);
                 }}
-                // value={grandparentId}
               />
+            </Form.Item>
+            <Form.Item
+              hidden
+              className="w-[45%]"
+              label="Chọn chi nhánh"
+              name="groupBranchId"
+            >
+              <Select />
             </Form.Item>
           </div>
           <div className="flex justify-between">
             {selectedAccountType === "2" && (
-              <Form.Item
-                className="w-[45%]"
-                label="Chọn đội nhóm"
-                name="groupTeamId"
-                // rules={[{ required: true, message: "Vui lòng chọn đội nhóm!" }]}
-              >
-                <Select
-                  disabled={defaultGroupTeamId ? true : false}
-                  defaultValue={{
-                    value: groupTeamId,
-                    label: groupTeamName ? groupTeamName : "",
-                  }}
-                  onFocus={() => getGroupTeams()}
-                  placeholder="Chọn đội nhóm"
-                  // onFocus={getGroupTeams}
-                  options={groupTeam}
-                  onChange={(e) => {
-                    setGroupTeamId(e.value);
-                  }}
-                />
-              </Form.Item>
+              <>
+                <Form.Item
+                  className="w-[45%]"
+                  label="Chọn đội nhóm"
+                  name="groupTeamName"
+                >
+                  <Select
+                    disabled={defaultGroupTeamId ? true : false}
+                    defaultValue={
+                      form.getFieldsValue().groupTeamId?.toString().trim()
+                        ? {
+                            value: form.getFieldsValue().groupTeamId,
+                            label: form.getFieldsValue().groupTeamName,
+                          }
+                        : undefined
+                    }
+                    onFocus={() => getGroupTeams()}
+                    placeholder="Chọn đội nhóm"
+                    // onFocus={getGroupTeams}
+                    options={groupTeam}
+                    onChange={async (e) => {
+                      // console.log(e);
+                      const id = Number(e).toString();
+                      setSaveGroupTeam(id);
+                    }}
+                  />
+                </Form.Item>
+                <Form.Item
+                  hidden
+                  className="w-[45%]"
+                  label="Chọn đội nhóm"
+                  name="groupTeamId"
+                >
+                  <Select />
+                </Form.Item>
+              </>
             )}
             <Form.Item
+              className="w-[45%]"
+              label="Chọn ngân hàng"
+              name="bankName"
+            >
+              <Select
+                defaultValue={
+                  form.getFieldsValue().bankId?.toString().trim()
+                    ? {
+                        value: form.getFieldsValue().bankId,
+                        label: form.getFieldsValue().bankName,
+                      }
+                    : undefined
+                }
+                onFocus={() => fetchBankData()}
+                placeholder="Chọn ngân hàng"
+                options={banks}
+                onChange={async (e) => {
+                  // console.log(e);
+                  const id = Number(e).toString();
+                  setSaveBank(id);
+                }}
+              />
+            </Form.Item>
+            <Form.Item
+              hidden
+              className="w-[45%]"
+              label="Chọn ngân hàng hidden"
+              name="bankId"
+            >
+              <Select />
+            </Form.Item>
+            {/* <Form.Item
               className="w-[45%]"
               label="Chọn ngân hàng"
               name="bankId"
@@ -1170,7 +1280,15 @@ const Account = () => {
                 onFocus={fetchBankData}
                 options={banks}
               />
-            </Form.Item>
+            </Form.Item> */}
+            {/* <Form.Item
+              className="w-[45%]"
+              label="Chọn ngân hàng"
+              name="bankName"
+              rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
+            >
+              <Select />
+            </Form.Item> */}
           </div>
           <div className="flex justify-between">
             <Form.Item
@@ -1233,6 +1351,9 @@ const Account = () => {
               placeholder="Chọn nhóm tài khoản"
               mode="multiple"
               onFocus={getListAccountGroup}
+              onChange={(e) => {
+                console.log(e);
+              }}
             />
           </Form.Item>
           <Form.Item label="Ghi chú" name="notes">

@@ -559,8 +559,6 @@ const TelegramIntegration = () => {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (item: any) => item.value === value
                 );
-                // console.log(selectedGroup,"selectedGroup");
-
                 if (selectedGroup) {
                   form.setFieldsValue({
                     groupChatId: selectedGroup.groupChatId,

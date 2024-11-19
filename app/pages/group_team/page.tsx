@@ -41,6 +41,7 @@ const GroupTeamPage = () => {
   const [pageSize] = useState(20);
 
   const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
   const [groupSystem, setGroupSystem] = useState([]);
   const [systemId, setSystemId] = useState<number>(0);
@@ -54,11 +55,12 @@ const GroupTeamPage = () => {
 
   const fetchGroupSystem = async (globalTerm?: string) => {
     const arrRole: filterRole[] = [];
-    const obj: filterRole = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrRole.push(obj);
+    const addedParams = new Set<string>();
+    arrRole.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const response = await getGroupTeam(
         pageIndex,
@@ -381,7 +383,7 @@ const GroupTeamPage = () => {
               onFocus={getGroupSystems}
               options={groupSystem}
               onChange={(value) => {
-                getBranchSystems(value)
+                getBranchSystems(value);
                 // console.log(value);
                 setSystemId(value);
                 // getBranchSystems();

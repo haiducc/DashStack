@@ -63,15 +63,21 @@ const TelegramIntegration = () => {
     groupChat?: string
   ) => {
     const arrTeleAccount: filterTeleIntergration[] = [];
-    const bankAccount: filterTeleIntergration = {
-      Name: "groupChatId",
-      Value: groupChat!,
-    };
-    const obj: filterTeleIntergration = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrTeleAccount.push(bankAccount, obj);
+    const addedParams = new Set<string>();
+
+    if (groupChat && !addedParams.has("bankAccountId")) {
+      arrTeleAccount.push({
+        Name: "groupChatId",
+        Value: groupChat,
+      });
+      addedParams.add("groupChatId");
+    }
+
+    arrTeleAccount.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
 
     console.log(groupChat, "groupChat");
 

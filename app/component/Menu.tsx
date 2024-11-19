@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Menu as AntMenu } from "antd";
 import Image from "next/image";
 import Logo from "../../public/img/logo.png";
@@ -150,85 +150,9 @@ const fetchRoleData = async (accessToken: string) => {
   }
 };
 
-// const SideMenu = () => {
-//   const router = useRouter();
-
-//   const onClick = async (e: { key: string }) => {
-//     const clickedItem = items
-//       .flatMap((item) =>
-//         item.items ? [{ ...item, children: undefined }, ...item.items] : item
-//       )
-//       .find((item) => item.key === e.key);
-
-//     if (clickedItem && clickedItem.path) {
-//       const accessToken = await localStorage.getItem("accessToken");
-//       // console.log(localStorage.getItem("accessToken"), "accessToken");
-
-//       if (accessToken) {
-//         const roleData = await fetchRoleData(accessToken);
-//         console.log("accessToken", accessToken);
-
-//         if (roleData) {
-//           if (roleData.roles) {
-//             router.push(clickedItem.path);
-//           } else {
-//             toast.error("Bạn không có quyền truy cập vào trang này.");
-//           }
-//         } else {
-//           toast.error("Không thể xác minh quyền của bạn.");
-//         }
-//       } else {
-//         toast.error("Vui lòng đăng nhập.");
-//         router.push("/pages/login");
-//       }
-//     }
-//   };
-
-//   return (
-//     <div style={{ width: 256, backgroundColor: "#4B5CB8" }}>
-//       <Image
-//         alt="Logo"
-//         src={Logo}
-//         style={{
-//           width: "70%",
-//           height: "auto",
-//           marginBottom: "20px",
-//           margin: "auto",
-//           padding: "20px 0",
-//         }}
-//       />
-//       <AntMenu
-//         onClick={onClick}
-//         style={{
-//           backgroundColor: "#4B5CB8",
-//           borderRight: 0,
-//           color: "#fff",
-//         }}
-//         mode="inline"
-//       >
-//         {items.map(({ key, label, icon, items }) => {
-//           if (items && items.length > 0) {
-//             return (
-//               <AntMenu.SubMenu key={key} icon={icon} title={label}>
-//                 {items.map((child) => (
-//                   <AntMenu.Item key={child.key}>{child.label}</AntMenu.Item>
-//                 ))}
-//               </AntMenu.SubMenu>
-//             );
-//           }
-//           return (
-//             <AntMenu.Item key={key} icon={icon}>
-//               {label}
-//             </AntMenu.Item>
-//           );
-//         })}
-//       </AntMenu>
-//     </div>
-//   );
-// };
-
 const SideMenu = () => {
   const router = useRouter();
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   useEffect(() => {
     // console.log("useEffect is running");
@@ -274,6 +198,15 @@ const SideMenu = () => {
     }
   };
 
+  const onOpenChange = (keys: string[]) => {
+    const latestOpenKey = keys.find((key) => !openKeys.includes(key));
+    if (latestOpenKey) {
+      setOpenKeys([latestOpenKey]); // Chỉ giữ lại menu cha mới nhất
+    } else {
+      setOpenKeys([]); // Đóng tất cả menu nếu nhấn lại
+    }
+  };
+
   const renderMenuItems = (items: MenuItem[]) =>
     items.map((item) =>
       item.items ? (
@@ -296,7 +229,12 @@ const SideMenu = () => {
       <div className="logo-container">
         <Image src={Logo} alt="Logo" width={100} height={40} />
       </div>
-      <AntMenu mode="inline" theme="dark">
+      <AntMenu
+        mode="inline"
+        theme="dark"
+        openKeys={openKeys}
+        onOpenChange={onOpenChange}
+      >
         {renderMenuItems(items)}
       </AntMenu>
     </div>

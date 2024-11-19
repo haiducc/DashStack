@@ -7,7 +7,11 @@ import { Button, Form, Input, Space, Spin, Table } from "antd";
 import BaseModal from "@/app/component/config/BaseModal";
 import { toast } from "react-toastify"; // Import toast
 import DeleteModal from "@/app/component/config/modalDelete";
-import { addGroupSystem, deleteGroupSystem, getGroupSystem } from "@/app/services/groupSystem";
+import {
+  addGroupSystem,
+  deleteGroupSystem,
+  getGroupSystem,
+} from "@/app/services/groupSystem";
 
 export interface dataSystemModal {
   id: number;
@@ -33,6 +37,7 @@ const GroupSystemPage = () => {
   const [pageSize] = useState(20);
 
   const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
@@ -41,11 +46,12 @@ const GroupSystemPage = () => {
 
   const fetchGroupSystem = async (globalTerm?: string) => {
     const arrRole: filterRole[] = [];
-    const obj: filterRole = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrRole.push(obj);
+    const addedParams = new Set<string>();
+    arrRole.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const response = await getGroupSystem(
         pageIndex,
@@ -77,7 +83,7 @@ const GroupSystemPage = () => {
       const response = await addGroupSystem({
         id: formData.id,
         name: formData.name,
-        note: formData.note
+        note: formData.note,
       });
       if (response && response.success === false) {
         toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");

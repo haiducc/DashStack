@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Select, Space, DatePicker, Table } from "antd";
+import { DatePicker, Select, Space, Table } from "antd";
 import type { TableProps } from "antd/es/table";
 import Header from "@/app/component/Header";
 import BarChart from "../products/BarChart";
@@ -68,6 +68,7 @@ interface filterProducts {
 
 const Dashboard = () => {
   const router = useRouter();
+  const { RangePicker } = DatePicker;
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -90,39 +91,40 @@ const Dashboard = () => {
   const fetchListStatistics = async (
     bankAccount?: string,
     groupChat?: number,
-    transType?: string,
+    transType?: string
     // date?: string
-    startDate?: string,
-    endDate?: string
+    // startDate?: string,
+    // endDate?: string
   ) => {
     const arrFilter: filterProducts[] = [];
-    const bank: filterProducts = {
-      Name: "bankAccountId",
-      Value: bankAccount!,
-    };
-    const chat: filterProducts = {
-      Name: "groupChatId",
-      Value: groupChat!,
-    };
-    const type: filterProducts = {
-      Name: "transType",
-      Value: transType!,
-    };
-    const start: filterProducts = {
-      Name: "startDate",
-      Value: startDate!,
-    };
-    const end: filterProducts = {
-      Name: "endDate",
-      Value: endDate!,
-    };
-    const obj: filterProducts = {
-      Name: keys!,
-      Value: values!,
-    };
+    const addedParams = new Set<string>();
 
-    arrFilter.push(bank, obj, chat, type, start, end);
-    // console.log(bankAccount, "bankAccount");
+    if (bankAccount && !addedParams.has("bankAccountId")) {
+      arrFilter.push({
+        Name: "bankAccountId",
+        Value: bankAccount,
+      });
+      addedParams.add("bankAccountId");
+    }
+    if (groupChat && !addedParams.has("groupChatId")) {
+      arrFilter.push({
+        Name: "groupChatId",
+        Value: groupChat.toString(),
+      });
+      addedParams.add("groupChatId");
+    }
+    if (transType && !addedParams.has("transType")) {
+      arrFilter.push({
+        Name: "transType",
+        Value: transType,
+      });
+      addedParams.add("transType");
+    }
+    arrFilter.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     setLoading(true);
     try {
       const response = await getListStatistics(1, 20, arrFilter);
@@ -266,8 +268,8 @@ const Dashboard = () => {
   // >([]);
   const [transTypeFilter, setTransTypeFilter] = useState();
   // const [date, setDate] = useState();
-  const [startDate, setStartDate] = useState();
-  const [endDate, setEndDate] = useState();
+  // const [startDate, setStartDate] = useState();
+  // const [endDate, setEndDate] = useState();
 
   const options = [
     { value: "3", label: "Tiền vào" },
@@ -403,7 +405,7 @@ const Dashboard = () => {
         <Header />
         <div className="dashboard mt-7">
           <div style={{ display: "flex", gap: "20px" }}>
-            <div style={{ flex: 3 }}>
+            <div style={{ flex: 2 }}>
               <BarChart />
             </div>
             <div style={{ flex: 1 }}>
@@ -416,7 +418,7 @@ const Dashboard = () => {
             <Select
               options={bankAccountFilter}
               placeholder="Tài khoản ngân hàng"
-              style={{ width: 245 }}
+              style={{ width: 300 }}
               allowClear
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
@@ -472,7 +474,8 @@ const Dashboard = () => {
               style={{ width: 245 }}
               allowClear
             />
-            <DatePicker
+            <RangePicker />
+            {/* <DatePicker
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
                 setStartDate(value);
@@ -491,12 +494,12 @@ const Dashboard = () => {
                     chatFilter,
                     transTypeFilter,
                     value,
-                    endDate
+                    // endDate
                   );
                 }
               }}
-            />
-            <DatePicker
+            /> */}
+            {/* <DatePicker
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
                 setEndDate(value);
@@ -515,11 +518,11 @@ const Dashboard = () => {
                     chatFilter,
                     transTypeFilter,
                     startDate,
-                    value
+                    // value
                   );
                 }
               }}
-            />
+            /> */}
           </Space>
         </div>
         <div className="mt-5 mx-[35px]">

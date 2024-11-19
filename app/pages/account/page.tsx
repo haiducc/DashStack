@@ -370,7 +370,11 @@ const Account = () => {
   };
 
   const handleAddConfirm = async () => {
-    // console.log(373, Number(saveBank));
+    console.log(373, Number(saveBank));
+    console.log(374, Number(saveGroupSystem));
+    console.log(375, Number(saveGroupBranch));
+    console.log(376, Number(saveGroupTeam));
+
     try {
       // await form.validateFields();
       const formData = await form.getFieldsValue();
@@ -450,26 +454,25 @@ const Account = () => {
     setSelectedAccountType(type!);
     setValue(phone!);
 
-    const initGroupSystemId = account.id
+    const initGroupSystemId = account.groupSystemId
       ? account.groupSystemId.toString()
       : defaultGroupSystemId;
     setSaveGroupSystem(initGroupSystemId!);
 
-    const initGroupBranchId = account.id
+    const initGroupBranchId = account.groupBranchId
       ? account.groupBranchId.toString()
       : defaultGroupBranchId;
     setSaveGroupBranch(initGroupBranchId!);
 
-    console.log(443, account.bankId);
-
-    const initGroupTeamId = account.id
+    const initGroupTeamId = account.groupTeamId
       ? account.groupTeamId.toString()
       : defaultGroupTeamId;
     setSaveGroupTeam(initGroupTeamId!);
 
-    const initBankId = account.bankId?.toString()
+    const initBankId = account.bankId?.toString();
     setSaveBank(initBankId!);
 
+    // console.log();
 
     form.setFieldsValue({
       id: account.id,
@@ -883,6 +886,7 @@ const Account = () => {
             icon={<EditOutlined />}
             onClick={() => {
               handleEditAccount(record);
+              defaultModalAdd();
             }}
           >
             Chỉnh sửa
@@ -1397,7 +1401,10 @@ const Account = () => {
           <Form.Item>
             <Button
               type="primary"
-              onClick={handleAddConfirm}
+              onClick={() => {
+                handleAddConfirm();
+                defaultModalAdd()
+              }}
               className="w-full h-[40px] bg-[#4B5CB8] hover:bg-[#3A4A9D]"
             >
               {currentAccount ? "Cập nhật" : "Thêm mới"}

@@ -124,14 +124,8 @@ const Settings = () => {
           <Form.Item
             label="Tên thuộc tính"
             name="name"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng nhập tên thuộc tính!",
-              },
-            ]}
           >
-            <Input placeholder="Tên thuộc tính" />
+            <Input disabled placeholder="Tên thuộc tính" />
           </Form.Item>
           <Form.Item
             label="Giá trị"
@@ -146,7 +140,7 @@ const Settings = () => {
             <Input placeholder="Vui lòng nhập giá trị" />
           </Form.Item>
           <Form.Item label="Ghi chú" name="description">
-            <Input.TextArea rows={4} placeholder="Nhập ghi chú" />
+            <Input.TextArea disabled rows={4} placeholder="Nhập ghi chú" />
           </Form.Item>
           <div className="flex justify-end">
             <Button

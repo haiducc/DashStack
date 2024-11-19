@@ -50,6 +50,7 @@ const SheetIntergration = () => {
   // const keys = localStorage.getItem("key");
   // const values = localStorage.getItem("value");
   const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
@@ -61,15 +62,21 @@ const SheetIntergration = () => {
     sheetId?: string
   ) => {
     const arrSheet: filterSheetIntergration[] = [];
-    const Sheet: filterSheetIntergration = {
-      Name: "sheetId",
-      Value: sheetId!,
-    };
-    const obj: filterSheetIntergration = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrSheet.push(Sheet, obj);
+    const addedParams = new Set<string>();
+
+    if (sheetId && !addedParams.has("bankAccountId")) {
+      arrSheet.push({
+        Name: "sheetId",
+        Value: sheetId,
+      });
+      addedParams.add("sheetId");
+    }
+
+    arrSheet.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     setLoading(true);
     try {
       const response = await getListSheetIntergration(

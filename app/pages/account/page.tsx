@@ -66,7 +66,6 @@ const Account = () => {
   const [values, setValues] = useState<string | null>(null);
 
   const [groupSystemName, setGroupSystemName] = useState<string | null>(null);
-
   const [groupBranchName, setGroupBranchName] = useState<string | null>(null);
   const [groupTeamName, setGroupTeamName] = useState<string | null>(null);
 
@@ -84,6 +83,16 @@ const Account = () => {
     null
   );
 
+  const [defaultGroupSystemName, setDefaultGroupSystemName] = useState<
+    string | null
+  >(null);
+  const [defaultGroupBranchName, setDefaultGroupBranchName] = useState<
+    string | null
+  >(null);
+  const [defaultGroupTeamName, setDefaultGroupTeamName] = useState<
+    string | null
+  >(null);
+
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
     setValues(localStorage.getItem("value"));
@@ -91,6 +100,10 @@ const Account = () => {
     setGroupSystemName(localStorage.getItem("groupSystemName"));
     setGroupBranchName(localStorage.getItem("groupBranchName"));
     setGroupTeamName(localStorage.getItem("groupTeamName"));
+
+    setDefaultGroupSystemName(localStorage.getItem("groupSystemName"));
+    setDefaultGroupBranchName(localStorage.getItem("groupBranchName"));
+    setDefaultGroupTeamName(localStorage.getItem("groupTeamName"));
 
     setGroupSystemId(localStorage.getItem("groupSystemId"));
     setGroupBranchId(localStorage.getItem("groupBranchId"));
@@ -345,7 +358,19 @@ const Account = () => {
     }
   };
 
+  const defaultModalAdd = () => {
+    form.setFieldsValue({
+      groupSystemId: defaultGroupSystemId,
+      groupBranchId: defaultGroupBranchId,
+      groupTeamId: defaultGroupTeamId,
+      groupSystemName: defaultGroupSystemName,
+      groupBranchName: defaultGroupBranchName,
+      groupTeamName: defaultGroupTeamName,
+    });
+  };
+
   const handleAddConfirm = async () => {
+    // console.log(373, Number(saveBank));
     try {
       // await form.validateFields();
       const formData = await form.getFieldsValue();
@@ -418,7 +443,6 @@ const Account = () => {
   };
 
   const handleEditAccount = (account: BankAccounts) => {
-
     setIsEditMode(true);
     setCurrentAccount(account);
     const type = account.typeAccount;
@@ -436,12 +460,16 @@ const Account = () => {
       : defaultGroupBranchId;
     setSaveGroupBranch(initGroupBranchId!);
 
-    console.log(443, account.id, account.groupBranchId.toString(), account.groupTeamId.toString())
+    console.log(443, account.bankId);
 
     const initGroupTeamId = account.id
       ? account.groupTeamId.toString()
       : defaultGroupTeamId;
     setSaveGroupTeam(initGroupTeamId!);
+
+    const initBankId = account.bankId?.toString()
+    setSaveBank(initBankId!);
+
 
     form.setFieldsValue({
       id: account.id,
@@ -853,7 +881,9 @@ const Account = () => {
         <Space size="middle">
           <Button
             icon={<EditOutlined />}
-            onClick={() => handleEditAccount(record)}
+            onClick={() => {
+              handleEditAccount(record);
+            }}
           >
             Chỉnh sửa
           </Button>
@@ -1081,6 +1111,7 @@ const Account = () => {
               setCurrentAccount(null);
               form.resetFields();
               setAddModalOpen(true);
+              defaultModalAdd();
             }}
           >
             Thêm mới
@@ -1121,7 +1152,7 @@ const Account = () => {
               options={accountTypeOptions}
               placeholder="Chọn loại tài khoản"
               onChange={(e) => {
-                console.log(e);
+                // console.log(e);
                 handleAccountTypeChange(e);
               }}
             />
@@ -1148,9 +1179,10 @@ const Account = () => {
                 options={groupSystem}
                 onChange={(e) => {
                   console.log(e);
+
                   const id = Number(e).toString();
-                  getBranchSystems();
                   setSaveGroupSystem(id);
+                  getBranchSystems();
                 }}
               />
             </Form.Item>
@@ -1255,7 +1287,7 @@ const Account = () => {
                 placeholder="Chọn ngân hàng"
                 options={banks}
                 onChange={async (e) => {
-                  // console.log(e);
+                  console.log(e);
                   const id = Number(e).toString();
                   setSaveBank(id);
                 }}

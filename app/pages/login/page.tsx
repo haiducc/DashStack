@@ -37,7 +37,7 @@ function Login() {
 
       if (data && data.success) {
         localStorage.setItem("accessToken", data.data.token);
-        router.push("/");
+        router.push("/pages/dashboard");
       } else {
         const message = data.message || "Đã xảy ra lỗi. Vui lòng thử lại sau.";
         toast.error(message);

@@ -56,8 +56,6 @@ const Account = () => {
   const [groupTeam, setGroupTeam] = useState([]);
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
-  const [grandparentId, setGrandparentId] = useState<number>(0);
-  const [, setParentId] = useState<number>(0);
   const [value, setValue] = useState(null);
   const [globalTerm, setGlobalTerm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -66,9 +64,42 @@ const Account = () => {
   //
   const [keys, setKeys] = useState<string | null>(null);
   const [values, setValues] = useState<string | null>(null);
+
+  const [groupSystemName, setGroupSystemName] = useState<string | null>(null);
+
+  const [groupBranchName, setGroupBranchName] = useState<string | null>(null);
+  const [groupTeamName, setGroupTeamName] = useState<string | null>(null);
+
+  const [groupSystemId, setGroupSystemId] = useState<string | null>(null);
+  const [groupBranchId, setGroupBranchId] = useState<string | null>(null);
+  const [groupTeamId, setGroupTeamId] = useState<string | null>(null);
+
+  const [defaultGroupSystemId, setDefaultGroupSystemId] = useState<
+    string | null
+  >(null);
+  const [defaultGroupBranchId, setDefaultGroupBranchId] = useState<
+    string | null
+  >(null);
+  const [defaultGroupTeamId, setDefaultGroupTeamId] = useState<string | null>(
+    null
+  );
+
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
     setValues(localStorage.getItem("value"));
+
+    setGroupSystemName(localStorage.getItem("groupSystemName"));
+    setGroupBranchName(localStorage.getItem("groupBranchName"));
+    setGroupTeamName(localStorage.getItem("groupTeamName"));
+
+    setGroupSystemId(localStorage.getItem("groupSystemId"));
+    setGroupBranchId(localStorage.getItem("groupBranchId"));
+    setGroupTeamId(localStorage.getItem("groupTeamId"));
+
+    setDefaultGroupSystemId(localStorage.getItem("groupSystemId"));
+    setDefaultGroupBranchId(localStorage.getItem("groupBranchId"));
+    setDefaultGroupTeamId(localStorage.getItem("groupTeamId"));
+
     handleDataDefault();
   }, []);
 
@@ -244,6 +275,7 @@ const Account = () => {
       Value: values!,
     };
     arrAccountGroup.push(obj);
+
     try {
       const getSystem = await getGroupSystem(
         pageIndex,
@@ -251,8 +283,6 @@ const Account = () => {
         globalTerm,
         arrAccountGroup
       );
-      // console.log("getSystem", getSystem);
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = getSystem?.data?.source?.map((x: any) => ({
         value: x.id,
@@ -266,9 +296,10 @@ const Account = () => {
 
   const getBranchSystems = async () => {
     const arrAccountGroup: filterGroupAccount[] = [];
+
     const obj: filterGroupAccount = {
-      Name: keys!,
-      Value: values!,
+      Name: "groupSystemId",
+      Value: groupSystemId!,
     };
     arrAccountGroup.push(obj);
     try {
@@ -285,15 +316,15 @@ const Account = () => {
       }));
       setBranchSystem(res);
     } catch (error) {
-      console.error("Lỗi khi gọi hàm getBranchSystem:", error);
+      console.error(error);
     }
   };
 
   const getGroupTeams = async () => {
     const arrAccountGroup: filterGroupAccount[] = [];
     const obj: filterGroupAccount = {
-      Name: keys!,
-      Value: values!,
+      Name: "groupBranchId",
+      Value: groupBranchId!,
     };
     arrAccountGroup.push(obj);
     try {
@@ -315,9 +346,11 @@ const Account = () => {
   };
 
   const handleAddConfirm = async () => {
+    console.log(Number(groupSystemId), "formData");
+
     try {
-      await form.validateFields();
-      const formData = form.getFieldsValue();
+      // await form.validateFields();
+      const formData = await form.getFieldsValue();
       setLoading(true);
       const res = await addBankAccounts({
         id: formData.id,
@@ -330,17 +363,17 @@ const Account = () => {
         typeAccount: formData.typeAccount,
         notes: formData.notes,
         transactionSource: formData.transactionSource,
-        groupSystemId: formData.groupSystemId,
-        groupBranchId: formData.groupBranchId,
-        groupTeamId: formData.groupTeamId,
+        groupSystemId: Number(groupSystemId),
+        groupBranchId: Number(groupBranchId),
+        groupTeamId: Number(groupTeamId),
         bankId: formData.bankId,
         groupSystem: formData.groupSystem,
         groupBranch: formData.groupBranch,
         groupTeam: formData.groupTeam,
         // bankName: formData.bank?.fullNamed
       });
-      // console.log(res, "res");
-      if (!res.success) {
+
+      if (!res) {
         toast.error(res.message || "Có lỗi xảy ra, vui lòng thử lại.");
       } else {
         setAddModalOpen(false);
@@ -612,13 +645,25 @@ const Account = () => {
   const handleDataDefault = async () => {
     const arrData = [];
     arrData.push({
-      label: localStorage.getItem("key")!,
-      value: localStorage.getItem("value")!,
+      label: localStorage.getItem("groupSystemName")!,
+      value: localStorage.getItem("groupSystemId")!,
     });
-    console.log(arrData);
-    // console.log(1);
+
+    const arrDataBranch = [];
+    arrDataBranch.push({
+      label: localStorage.getItem("groupBranchName")!,
+      value: localStorage.getItem("groupBranchId")!,
+    });
+
+    const arrDataTeam = [];
+    arrDataTeam.push({
+      label: localStorage.getItem("groupTeamName")!,
+      value: localStorage.getItem("groupTeamId")!,
+    });
 
     setSystemFilter(arrData);
+    setBranchFilter(arrDataBranch);
+    setTeamFilter(arrDataTeam);
   };
 
   const handleFilterSystem = async (groupSystemId?: string) => {
@@ -669,18 +714,12 @@ const Account = () => {
     };
     arr.push(obj, branch);
     try {
-      // const { groupBranchId } = filterParams;
-      // const searchParams = groupBranchId
-      //   ? [{ Name: "groupBranchId", Value: groupBranchId }]
-      //   : [];
       const fetchBankAccountAPI = await getBranchSystem(
         pageIndex,
         pageSize,
         globalTerm,
         arr //searchTerms
       );
-      // console.log("fetchBankAccountAPI", fetchBankAccountAPI);
-
       if (
         fetchBankAccountAPI &&
         fetchBankAccountAPI.data &&
@@ -703,6 +742,10 @@ const Account = () => {
   const handleFilterTeam = async (groupTeamId?: string) => {
     const arr: filterGroupAccount[] = [];
     const system: filterGroupAccount = {
+      Name: "groupSystemId",
+      Value: groupSystemId!,
+    };
+    const team: filterGroupAccount = {
       Name: "groupTeamId",
       Value: groupTeamId!,
     };
@@ -710,12 +753,8 @@ const Account = () => {
       Name: keys!,
       Value: values!,
     };
-    arr.push(obj, system);
+    arr.push(obj, team, system);
     try {
-      // const { groupTeamId } = filterParams;
-      // const searchParams = groupTeamId
-      //   ? [{ Name: "groupTeamId", Value: groupTeamId }]
-      //   : [];
       const fetchBankAccountAPI = await getGroupTeam(
         pageIndex,
         pageSize,
@@ -809,6 +848,8 @@ const Account = () => {
   ];
 
   const [checkFilter, setCheckFilter] = useState(false);
+  // const [checkDataFilter, setCheckDataFilter] = useState()
+
   useEffect(() => {
     // console.log(1);
     fetchAccounts(
@@ -878,8 +919,14 @@ const Account = () => {
             </Space>
             <div className="w-2" />
             <Space direction="horizontal" size="middle">
-              {systemFilter && (
+              {groupSystemName && (
                 <Select
+                  disabled={defaultGroupSystemId ? true : false}
+                  defaultValue={groupSystemId?.trim() ? {
+                    value: groupSystemId,
+                    label: groupSystemName,
+                  } : undefined}
+                  onFocus={() => handleFilterSystem()}
                   options={systemFilter}
                   placeholder="Hệ thống"
                   style={{ width: 245 }}
@@ -910,64 +957,84 @@ const Account = () => {
             </Space>
             <div className="w-2" />
             <Space direction="horizontal" size="middle">
-              <Select
-                options={branchFilter}
-                placeholder="Chi nhánh"
-                style={{ width: 245 }}
-                allowClear
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onChange={(value: any) => {
-                  setGroupBranchFilter(value);
-                  if (!value) {
-                    handleSelectChange(
-                      groupAccountFilter,
-                      groupSystemFilter,
-                      value,
-                      groupTeamFilter
-                    );
-                    setCheckFilter(!checkFilter);
-                    // setCheckFilter((prev) => !prev);
-                  } else {
-                    fetchAccounts(
-                      globalTerm,
-                      groupAccountFilter,
-                      groupSystemFilter,
-                      value,
-                      groupTeamFilter
-                    );
-                  }
-                }}
-              />
+              {groupBranchName && (
+                <Select
+                  disabled={defaultGroupBranchId ? true : false}
+                  defaultValue={groupBranchId?.trim() ? {
+                    value: groupBranchId,
+                    label: groupBranchName,
+                  } : undefined}
+                  onFocus={() => handleFilterBranch()}
+                  options={branchFilter}
+                  placeholder="Chi nhánh"
+                  style={{ width: 245 }}
+                  allowClear
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  onChange={(value: any) => {
+                    setGroupBranchFilter(value);
+                    if (!value) {
+                      handleSelectChange(
+                        groupAccountFilter,
+                        groupSystemFilter,
+                        value,
+                        groupTeamFilter
+                      );
+                      setCheckFilter(!checkFilter);
+                      // setCheckFilter((prev) => !prev);
+                    } else {
+                      fetchAccounts(
+                        globalTerm,
+                        groupAccountFilter,
+                        groupSystemFilter,
+                        value,
+                        groupTeamFilter
+                      );
+                    }
+                  }}
+                />
+              )}
             </Space>
             <div className="w-2" />
             <Space direction="horizontal" size="middle">
-              <Select
-                options={TeamFilter}
-                placeholder="Đội nhóm"
-                style={{ width: 245 }}
-                allowClear
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onChange={(value: any) => {
-                  setGroupTeamFilter(value);
-                  if (!value) {
-                    handleSelectChange(
-                      groupAccountFilter,
-                      groupSystemFilter,
-                      groupBranchFilter,
-                      value
-                    );
-                    setCheckFilter(!checkFilter);
-                  } else {
-                    fetchAccounts(
-                      globalTerm,
-                      groupAccountFilter,
-                      groupSystemFilter,
-                      groupBranchFilter,
-                      value
-                    );
-                  }
-                }}
-              />
+              {groupTeamName && (
+                <Select
+                  disabled={defaultGroupTeamId ? true : false}
+                  // defaultValue={{
+                  //   value: groupTeamId,
+                  //   label: groupTeamName ? groupTeamName : "",
+                  // }}
+                  defaultValue={groupTeamId?.trim() ? {
+                    value: groupTeamId,
+                    label: groupTeamName,
+                  } : undefined}
+                  onFocus={() => handleFilterTeam()}
+                  options={TeamFilter}
+                  placeholder="Đội nhóm"
+                  style={{ width: 245 }}
+                  allowClear
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  onChange={(value: any) => {
+                    setGroupTeamFilter(value);
+                    if (!value) {
+                      handleSelectChange(
+                        groupAccountFilter,
+                        groupSystemFilter,
+                        groupBranchFilter,
+                        value
+                      );
+                      setCheckFilter(!checkFilter);
+                    } else {
+                      fetchAccounts(
+                        globalTerm,
+                        groupAccountFilter,
+                        groupSystemFilter,
+                        groupBranchFilter,
+                        value
+                      );
+                    }
+                  }}
+                />
+              )}
             </Space>
           </div>
           <Button
@@ -1026,14 +1093,20 @@ const Account = () => {
               rules={[{ required: true, message: "Vui lòng chọn hệ thống!" }]}
             >
               <Select
-                placeholder="Chọn hệ thống"
-                onFocus={getGroupSystems}
-                options={groupSystem}
-                onChange={(value) => {
-                  setGrandparentId(value);
-                  getBranchSystems();
+                disabled={defaultGroupSystemId ? true : false}
+                defaultValue={{
+                  value: groupSystemId,
+                  label: groupSystemName,
                 }}
-                value={grandparentId}
+                onFocus={() => getGroupSystems()}
+                placeholder="Chọn hệ thống"
+                options={groupSystem}
+                onChange={(e) => {
+                  const id = Number(e).toString();
+                  getBranchSystems();
+                  console.log(groupSystem, "groupSystem");
+                  setGroupSystemId(id);
+                }}
               />
             </Form.Item>
             <Form.Item
@@ -1044,14 +1117,21 @@ const Account = () => {
               // rules={[{ required: true, message: "Vui lòng chọn chi nhánh!" }]}
             >
               <Select
+                disabled={defaultGroupBranchId ? true : false}
+                defaultValue={{
+                  value: groupBranchId,
+                  label: groupBranchName,
+                }}
+                onFocus={() => getBranchSystems()}
                 placeholder="Chọn chi nhánh"
-                onFocus={getBranchSystems}
                 options={branchSystem}
-                onChange={(value) => {
-                  setParentId(value);
+                onChange={(e) => {
+                  const id = Number(e).toString();
+                  setGroupBranchId(id);
+                  // setParentId(value);
                   getGroupTeams();
                 }}
-                value={grandparentId}
+                // value={grandparentId}
               />
             </Form.Item>
           </div>
@@ -1064,9 +1144,18 @@ const Account = () => {
                 // rules={[{ required: true, message: "Vui lòng chọn đội nhóm!" }]}
               >
                 <Select
+                  disabled={defaultGroupTeamId ? true : false}
+                  defaultValue={{
+                    value: groupTeamId,
+                    label: groupTeamName ? groupTeamName : "",
+                  }}
+                  onFocus={() => getGroupTeams()}
                   placeholder="Chọn đội nhóm"
-                  onFocus={getGroupTeams}
+                  // onFocus={getGroupTeams}
                   options={groupTeam}
+                  onChange={(e) => {
+                    setGroupTeamId(e.value);
+                  }}
                 />
               </Form.Item>
             )}

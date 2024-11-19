@@ -131,6 +131,14 @@ const fetchRoleData = async (accessToken: string) => {
     localStorage.setItem("key", res.data.key);
     localStorage.setItem("value", res.data.value);
 
+    localStorage.setItem("groupSystemId", res.data.groupSystemId || "");
+    localStorage.setItem("groupBranchId", res.data.groupBranchId || "");
+    localStorage.setItem("groupTeamId", res.data.groupTeamId || "");
+
+    localStorage.setItem("groupSystemName", res.data.groupSystemName || " ");
+    localStorage.setItem("groupBranchName", res.data.groupBranchName || " ");
+    localStorage.setItem("groupTeamName", res.data.groupTeamName || " ");
+
     if (!response.ok) {
       throw new Error("Failed to fetch role data");
     }

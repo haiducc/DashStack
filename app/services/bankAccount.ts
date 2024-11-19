@@ -35,11 +35,13 @@ export const fetchBankAccounts = async (
 
 // API thêm mới, cập nhật tài khoản ngân hàng
 export const addBankAccounts = async (accountData: BankAccounts) => {
+  // console.log(accountData, "accountData");
   try {
     const res = await apiClient.post(
       `/bank-account-api/add-or-update`,
       accountData
     );
+    console.log(res.data);
     return res.data;
   } catch (error) {
     console.error("Error adding or updating bank account:", error);

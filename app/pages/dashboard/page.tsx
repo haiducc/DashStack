@@ -14,6 +14,7 @@ import BaseModal from "@/app/component/config/BaseModal";
 import "./style.css";
 import { fetchBankAccounts } from "@/app/services/bankAccount";
 import { getListTelegram } from "@/app/services/telegram";
+import { useRouter } from "next/navigation";
 
 interface DataType {
   id: number;
@@ -66,12 +67,15 @@ interface filterProducts {
 }
 
 const Dashboard = () => {
-  // const [, setSelectedOptions] = useState({
-  //   accountType: "",
-  //   transactionType: "",
-  //   accountGroup: "",
-  // });
-  // const { RangePicker } = DatePicker;
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [dataStatistics, setDataStatistics] = useState<DataType[]>([]);
   const [dataTransaction, setDataTransaction] =
     useState<TransactionData | null>(null);
@@ -468,7 +472,7 @@ const Dashboard = () => {
               style={{ width: 245 }}
               allowClear
             />
-            <DatePicker 
+            <DatePicker
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
                 setStartDate(value);
@@ -492,7 +496,7 @@ const Dashboard = () => {
                 }
               }}
             />
-            <DatePicker 
+            <DatePicker
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
                 setEndDate(value);

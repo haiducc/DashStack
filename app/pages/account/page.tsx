@@ -886,7 +886,7 @@ const Account = () => {
             icon={<EditOutlined />}
             onClick={() => {
               handleEditAccount(record);
-              defaultModalAdd();
+              // defaultModalAdd();
             }}
           >
             Chỉnh sửa
@@ -1183,7 +1183,6 @@ const Account = () => {
                 options={groupSystem}
                 onChange={(e) => {
                   console.log(e);
-
                   const id = Number(e).toString();
                   setSaveGroupSystem(id);
                   getBranchSystems();
@@ -1217,6 +1216,8 @@ const Account = () => {
                 placeholder="Chọn chi nhánh"
                 options={branchSystem}
                 onChange={(e) => {
+                  console.log(e);
+                  
                   const id = Number(e).toString();
                   // setGroupBranchId(id);
                   // setParentId(value);
@@ -1257,7 +1258,7 @@ const Account = () => {
                     // onFocus={getGroupTeams}
                     options={groupTeam}
                     onChange={async (e) => {
-                      // console.log(e);
+                      console.log(e);
                       const id = Number(e).toString();
                       setSaveGroupTeam(id);
                     }}
@@ -1403,7 +1404,7 @@ const Account = () => {
               type="primary"
               onClick={() => {
                 handleAddConfirm();
-                defaultModalAdd()
+                // defaultModalAdd()
               }}
               className="w-full h-[40px] bg-[#4B5CB8] hover:bg-[#3A4A9D]"
             >

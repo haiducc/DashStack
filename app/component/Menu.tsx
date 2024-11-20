@@ -23,7 +23,7 @@ const items: MenuItem[] = [
     path: "/pages/dashboard",
   },
   {
-    key: "system_configuration",
+    key: "system_configuration", 
     label: "Cấu hình hệ thống",
     items: [
       {

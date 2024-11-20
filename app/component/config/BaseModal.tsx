@@ -12,6 +12,7 @@ export interface BaseModalProps {
   className?: string;
   centered?: boolean;
   offPadding?: boolean;
+  maskClosable?: boolean;
 }
 
 function BaseModal({
@@ -24,6 +25,7 @@ function BaseModal({
   className,
   centered,
   offPadding,
+  maskClosable = false,
 }: BaseModalProps) {
   const [keyModal, setKeyModal] = useState<number>(Date.now());
 
@@ -45,6 +47,7 @@ function BaseModal({
       open={open}
       onOk={onOk}
       width={width ?? 848}
+      maskClosable={maskClosable}
     >
       <div
         className={`${

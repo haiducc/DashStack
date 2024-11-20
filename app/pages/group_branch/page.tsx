@@ -13,6 +13,7 @@ import {
   getBranchSystem,
 } from "@/app/services/branchSystem";
 import { getGroupSystem } from "@/app/services/groupSystem";
+import { useRouter } from "next/navigation";
 
 export interface dataBranchModal {
   id: number;
@@ -28,6 +29,14 @@ interface filterRole {
 }
 
 const GroupBranchPage = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -315,6 +324,7 @@ const GroupBranchPage = () => {
           form.resetFields();
         }}
         title={currentBranch ? "Chỉnh sửa chi nhánh" : "Thêm mới chi nhánh"}
+        maskClosable={false}
       >
         <Form
           form={form}
@@ -343,6 +353,7 @@ const GroupBranchPage = () => {
                 // getBranchSystems();
               }}
               value={systemId}
+              allowClear
             />
           </Form.Item>
           <Form.Item label="Ghi chú" name="note">

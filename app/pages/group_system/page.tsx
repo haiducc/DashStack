@@ -12,6 +12,7 @@ import {
   deleteGroupSystem,
   getGroupSystem,
 } from "@/app/services/groupSystem";
+import { useRouter } from "next/navigation";
 
 export interface dataSystemModal {
   id: number;
@@ -25,6 +26,14 @@ interface filterRole {
 }
 
 const GroupSystemPage = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -274,6 +283,7 @@ const GroupSystemPage = () => {
           form.resetFields();
         }}
         title={currentSystem ? "Chỉnh sửa hệ thống" : "Thêm mới hệ thống"}
+        maskClosable={false}
       >
         <Form
           form={form}

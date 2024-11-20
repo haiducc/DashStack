@@ -14,6 +14,7 @@ import {
   getGroupTeam,
 } from "@/app/services/groupTeam";
 import { getBranchSystem } from "@/app/services/branchSystem";
+import { useRouter } from "next/navigation";
 
 export interface dataTeamModal {
   id: number;
@@ -31,6 +32,14 @@ interface filterRole {
 }
 
 const GroupTeamPage = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -361,6 +370,7 @@ const GroupTeamPage = () => {
           form.resetFields();
         }}
         title={currentTeam ? "Chỉnh sửa chi nhánh" : "Thêm mới chi nhánh"}
+        maskClosable={false}
       >
         <Form
           form={form}
@@ -389,6 +399,7 @@ const GroupTeamPage = () => {
                 // getBranchSystems();
               }}
               value={systemId}
+              allowClear
             />
           </Form.Item>
           <Form.Item label="Chọn chi nhánh" name="groupBranchId">
@@ -405,6 +416,7 @@ const GroupTeamPage = () => {
                 // getGroupTeams();
               }}
               value={parentId}
+              allowClear
             />
           </Form.Item>
           <Form.Item label="Ghi chú" name="note">

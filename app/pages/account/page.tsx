@@ -22,6 +22,7 @@ import { getGroupTeam } from "@/app/services/groupTeam";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import DeleteModal from "@/app/component/config/modalDelete";
+import { useRouter } from "next/navigation";
 
 interface filterGroupAccount {
   Name: string;
@@ -38,6 +39,14 @@ const accountTypeOptions = [
 ];
 
 const Account = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [currentAccount, setCurrentAccount] = useState<BankAccounts | null>(
@@ -232,7 +241,7 @@ const Account = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bankData?.data?.source?.map((bank: any) => ({
           value: bank.id,
-          label: bank.fullName || bank.code || "Không xác định",
+          label: bank.code + " - " + bank.fullName || "Không xác định",
         })) || [];
       setBanks(formattedBanks);
     } catch (error) {
@@ -359,6 +368,7 @@ const Account = () => {
   };
 
   const defaultModalAdd = () => {
+    // console.log(defaultGroupSystemName, "name");
     setSaveGroupSystem(defaultGroupSystemId!);
     setSaveGroupBranch(defaultGroupBranchId!);
     setSaveGroupTeam(defaultGroupTeamId!);
@@ -373,9 +383,11 @@ const Account = () => {
   };
 
   const handleAddConfirm = async () => {
-    // console.log(374, Number(saveGroupSystem));
-    // console.log(375, Number(saveGroupBranch));
-    // console.log(376, Number(saveGroupTeam));
+    // console.log(form.getFieldsValue(), "form.getFieldsValue");
+
+    console.log(374, Number(saveGroupSystem));
+    console.log(375, Number(saveGroupBranch));
+    console.log(376, Number(saveGroupTeam));
     try {
       // await form.validateFields();
       const formData = await form.getFieldsValue();
@@ -436,10 +448,10 @@ const Account = () => {
             });
           }
         } else {
-          toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+          toast.error("Thêm mới lỗi, vui lòng thử lại.");
         }
       } else {
-        toast.error("Lỗi kết nối, vui lòng thử lại.");
+        toast.error("Thêm mới lỗi, vui lòng thử lại.");
       }
       console.error("Lỗi khi thêm tài khoản ngân hàng:", error);
     } finally {
@@ -448,6 +460,9 @@ const Account = () => {
   };
 
   const handleEditAccount = (account: BankAccounts) => {
+    console.log(account, "edit account");
+    // console.log(374, account.groupSystem?.name);
+
     setIsEditMode(true);
     setCurrentAccount(account);
     const type = account.typeAccount;
@@ -473,8 +488,6 @@ const Account = () => {
     const initBankId = account.bankId?.toString();
     setSaveBank(initBankId!);
 
-    // console.log();
-
     form.setFieldsValue({
       id: account.id,
       bank: account.bank,
@@ -491,9 +504,15 @@ const Account = () => {
       groupTeamId: account.groupTeamId,
       bankId: account.bankId,
       //
-      groupSystemName: account.groupSystem?.name,
-      groupBranchName: account.groupBranch?.name,
-      groupTeamName: account.groupTeam?.name,
+      groupSystemName: account.groupSystem?.name.trim()
+        ? account.groupSystem?.name
+        : undefined,
+      groupBranchName: account.groupBranch?.name.trim()
+        ? account.groupBranch?.name
+        : undefined,
+      groupTeamName: account.groupTeam?.name.trim()
+        ? account.groupTeam.name
+        : undefined,
       bankName: account.bankName,
     });
     setAddModalOpen(true);
@@ -887,7 +906,7 @@ const Account = () => {
             icon={<EditOutlined />}
             onClick={() => {
               handleEditAccount(record);
-              defaultModalAdd();
+              // defaultModalAdd();
             }}
           >
             Chỉnh sửa
@@ -1137,6 +1156,7 @@ const Account = () => {
         }}
         title={currentAccount ? "Chỉnh sửa tài khoản" : "Thêm mới tài khoản"}
         offPadding
+        maskClosable={false}
       >
         <Form
           form={form}
@@ -1154,6 +1174,7 @@ const Account = () => {
             ]}
           >
             <Select
+              allowClear
               options={accountTypeOptions}
               placeholder="Chọn loại tài khoản"
               onChange={(e) => {
@@ -1167,9 +1188,15 @@ const Account = () => {
               className="w-[45%]"
               label="Chọn hệ thống"
               name="groupSystemName"
+              // name={
+              //   form.getFieldsValue().groupSystemId?.toString().trim()
+              //     ? "groupSystemName"
+              //     : undefined
+              // }
               rules={[{ required: true, message: "Vui lòng chọn hệ thống!" }]}
             >
               <Select
+                allowClear
                 disabled={defaultGroupSystemId ? true : false}
                 defaultValue={
                   form.getFieldsValue().groupSystemId?.toString().trim()
@@ -1183,7 +1210,6 @@ const Account = () => {
                 placeholder="Chọn hệ thống"
                 options={groupSystem}
                 onChange={(e) => {
-                  console.log(e);
                   const id = Number(e).toString();
                   setSaveGroupSystem(id);
                   getBranchSystems();
@@ -1204,6 +1230,7 @@ const Account = () => {
               name="groupBranchName"
             >
               <Select
+                allowClear
                 disabled={defaultGroupBranchId ? true : false}
                 defaultValue={
                   form.getFieldsValue().groupBranchId?.toString().trim()
@@ -1243,6 +1270,7 @@ const Account = () => {
                   name="groupTeamName"
                 >
                   <Select
+                    allowClear
                     disabled={defaultGroupTeamId ? true : false}
                     defaultValue={
                       form.getFieldsValue().groupTeamId?.toString().trim()
@@ -1254,10 +1282,13 @@ const Account = () => {
                     }
                     onFocus={() => getGroupTeams()}
                     placeholder="Chọn đội nhóm"
-                    // onFocus={getGroupTeams}
                     options={groupTeam}
                     onChange={async (e) => {
-                      // console.log(e);
+                      console.log(e);
+                      // console.log(
+                      //   form.getFieldsValue().groupTeamName,
+                      //   "groupTeamName"
+                      // );
                       const id = Number(e).toString();
                       setSaveGroupTeam(id);
                     }}
@@ -1279,6 +1310,7 @@ const Account = () => {
               name="bankName"
             >
               <Select
+                allowClear
                 defaultValue={
                   form.getFieldsValue().bankId?.toString().trim()
                     ? {
@@ -1363,6 +1395,7 @@ const Account = () => {
             ]}
           >
             <Select
+              allowClear
               options={accountGroup}
               placeholder="Chọn nhóm tài khoản"
               mode="multiple"

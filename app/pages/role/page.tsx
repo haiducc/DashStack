@@ -20,6 +20,7 @@ import { getBranchSystem } from "@/app/services/branchSystem";
 import { getGroupTeam } from "@/app/services/groupTeam";
 import { toast } from "react-toastify";
 import DeleteModal from "@/app/component/config/modalDelete";
+import { useRouter } from "next/navigation";
 
 export interface dataRole {
   id: number;
@@ -40,6 +41,14 @@ interface filterRole {
 }
 
 const Role = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

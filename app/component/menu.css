@@ -29,3 +29,17 @@
   :where(.css-apn68).ant-menu-dark.ant-menu-inline .ant-menu-sub.ant-menu-inline, :where(.css-apn68).ant-menu-dark>.ant-menu.ant-menu-inline .ant-menu-sub.ant-menu-inline {
     background: #4b5cb8 !important;
   }
+
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  

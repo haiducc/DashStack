@@ -6,6 +6,7 @@ import Header from "@/app/component/Header";
 import { Button, Form, Input, Space, Spin, Table } from "antd";
 import { editSettings, getSettings } from "@/app/services/settings";
 import BaseModal from "@/app/component/config/BaseModal";
+import { useRouter } from "next/navigation";
 
 export interface SettingsModal {
   id: number;
@@ -15,12 +16,22 @@ export interface SettingsModal {
 }
 
 const Settings = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [dataSettings, setDataSheetIntegration] = useState<SettingsModal[]>([]);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [editingRecord, setEditingRecord] = useState<SettingsModal | null>(null);
+  const [editingRecord, setEditingRecord] = useState<SettingsModal | null>(
+    null
+  );
 
   const genSettings = async () => {
     setLoading(true);
@@ -121,10 +132,7 @@ const Settings = () => {
           <Form.Item hidden label="id" name="id">
             <Input hidden />
           </Form.Item>
-          <Form.Item
-            label="Tên thuộc tính"
-            name="name"
-          >
+          <Form.Item label="Tên thuộc tính" name="name">
             <Input disabled placeholder="Tên thuộc tính" />
           </Form.Item>
           <Form.Item

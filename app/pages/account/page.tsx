@@ -369,6 +369,17 @@ const Account = () => {
     });
   };
 
+  // const defaultModalEdit = () => {
+  //   form.setFieldsValue({
+  //     groupSystemId: defaultGroupSystemId,
+  //     groupBranchId: defaultGroupBranchId,
+  //     // groupTeamId: defaultGroupTeamId,
+  //     groupSystemName: defaultGroupSystemName,
+  //     groupBranchName: defaultGroupBranchName,
+  //     // groupTeamName: defaultGroupTeamName,
+  //   });
+  // };
+
   const handleAddConfirm = async () => {
     console.log(373, Number(saveBank));
     console.log(374, Number(saveGroupSystem));

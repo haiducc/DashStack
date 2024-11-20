@@ -72,3 +72,18 @@ export const getTransactionById = async (id: number) => {
     throw error;
   }
 };
+
+export const resendSheet = async (transId: number, sheetMapId: number) => {
+  try {
+    const res = await apiClient.get(`/transaction-api/resend-sheet`, {
+      params: {
+        transId: transId,
+        sheetMapId: sheetMapId,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi gọi API:", error);
+    throw error;
+  }
+};

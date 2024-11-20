@@ -8,6 +8,7 @@ import { Button, Form, Input, Space, Spin, Table } from "antd";
 import { addSheet, deleteSheet, getListSheet } from "@/app/services/sheet";
 import { toast } from "react-toastify";
 import DeleteModal from "@/app/component/config/modalDelete";
+import { useRouter } from "next/navigation";
 
 export interface dataSheetModal {
   id?: number;
@@ -22,6 +23,14 @@ interface filterRole {
 }
 
 const Sheet = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isAddModalOpen, setAddModalOpen] = useState(false);

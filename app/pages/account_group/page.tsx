@@ -13,6 +13,7 @@ import {
 } from "@/app/services/accountGroup";
 import { toast } from "react-toastify";
 import DeleteModal from "@/app/component/config/modalDelete";
+import { useRouter } from "next/navigation";
 
 interface filterGroupAccount {
   Name: string;
@@ -20,6 +21,14 @@ interface filterGroupAccount {
 }
 
 const PhoneNumber: React.FC = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+  
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [currentAccount, setCurrentAccount] = useState<DataAccountGroup | null>(
@@ -81,7 +90,7 @@ const PhoneNumber: React.FC = () => {
       await form.validateFields();
       const formData = form.getFieldsValue();
       setLoading(true);
-      
+
       await addAccountGroup({
         id: formData.id,
         fullName: formData.fullName,
@@ -239,6 +248,7 @@ const PhoneNumber: React.FC = () => {
             ? "Chỉnh sửa nhóm tài khoản"
             : "Thêm mới nhóm tài khoản"
         }
+        maskClosable={false}
       >
         <Form
           form={form}

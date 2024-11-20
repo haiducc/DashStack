@@ -12,6 +12,7 @@ import {
 import BaseModal from "@/app/component/config/BaseModal";
 import { toast } from "react-toastify"; // Import toast
 import DeleteModal from "@/app/component/config/modalDelete";
+import { useRouter } from "next/navigation";
 
 export interface dataTelegramModal {
   id: number;
@@ -26,6 +27,14 @@ interface filterRole {
 }
 
 const Telegram = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);

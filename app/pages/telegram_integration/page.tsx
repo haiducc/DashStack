@@ -13,6 +13,7 @@ import BaseModal from "@/app/component/config/BaseModal";
 import { fetchBankAccounts } from "@/app/services/bankAccount";
 import { getListTelegram, getTransType } from "@/app/services/telegram";
 import DeleteModal from "@/app/component/config/modalDelete";
+import { useRouter } from "next/navigation";
 
 export interface ListTelegramIntegration {
   chatName: string;
@@ -37,6 +38,14 @@ interface filterTeleIntergration {
 }
 
 const TelegramIntegration = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [form] = Form.useForm();
   const [dataTelegramIntegration, setDataTelegramIntegration] = useState<
     ListTelegramIntegration[]

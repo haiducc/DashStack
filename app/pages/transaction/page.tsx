@@ -25,6 +25,7 @@ import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import DeleteModal from "@/app/component/config/modalDelete";
 import dayjs, { Dayjs } from "dayjs";
+import { useRouter } from "next/navigation";
 
 export interface TransactionModal {
   id: number;
@@ -51,6 +52,14 @@ interface filterRole {
 }
 
 const Transaction = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [dataTransaction, setDataTransaction] = useState<TransactionModal[]>(

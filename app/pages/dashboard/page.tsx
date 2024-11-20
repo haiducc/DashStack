@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { DatePicker, Select, Space, Table } from "antd";
+import { DatePicker, Select, Space, Spin, Table } from "antd";
 import type { TableProps } from "antd/es/table";
 import Header from "@/app/component/Header";
 import BarChart from "../products/BarChart";
@@ -9,12 +9,15 @@ import Statistics from "../products/Statistics";
 import {
   getListStatistics,
   getTransactionById,
+  resendSheet,
 } from "@/app/services/statistics";
 import BaseModal from "@/app/component/config/BaseModal";
 import "./style.css";
 import { fetchBankAccounts } from "@/app/services/bankAccount";
 import { getListTelegram } from "@/app/services/telegram";
 import { useRouter } from "next/navigation";
+import { SyncOutlined } from "@ant-design/icons";
+import { toast } from "react-toastify";
 
 interface DataType {
   id: number;
@@ -67,15 +70,15 @@ interface filterProducts {
 }
 
 const Dashboard = () => {
-  const router = useRouter();
-  const { RangePicker } = DatePicker;
-
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
       router.push("/pages/login");
     }
   }, []);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { RangePicker } = DatePicker;
 
   const [dataStatistics, setDataStatistics] = useState<DataType[]>([]);
   const [dataTransaction, setDataTransaction] =
@@ -88,11 +91,28 @@ const Dashboard = () => {
     setValues(localStorage.getItem("value"));
   }, []);
 
+  const formatDate = (inputDate: string | Date): string => {
+    const date = new Date(inputDate);
+
+    if (isNaN(date.getTime())) {
+      throw new Error("Invalid date format");
+    }
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  };
+
   const fetchListStatistics = async (
     bankAccount?: string,
     groupChat?: number,
-    transType?: string
-    // date?: string
+    transType?: string,
+    transDate?: string | Date[]
     // startDate?: string,
     // endDate?: string
   ) => {
@@ -120,6 +140,26 @@ const Dashboard = () => {
       });
       addedParams.add("transType");
     }
+    if (transDate) {
+      try {
+        let formattedDates: string | string[];
+        if (Array.isArray(transDate)) {
+          formattedDates = transDate.map((date) => formatDate(date));
+        } else {
+          formattedDates = formatDate(transDate);
+        }
+        arrFilter.push({
+          Name: "transDate",
+          Value: Array.isArray(formattedDates)
+            ? formattedDates.join(",")
+            : formattedDates,
+        });
+      } catch (error) {
+        console.error("Invalid transDate format:", transDate, error);
+        return;
+      }
+    }
+
     arrFilter.push({
       Name: localStorage.getItem("key")!,
       Value: localStorage.getItem("value")!,
@@ -225,21 +265,6 @@ const Dashboard = () => {
     },
   ];
 
-  // const options = [
-  //   // { key: "accountType", value: "company", label: "Tài khoản công ty" },
-  //   { key: "accountType", value: "bank", label: "Tài khoản ngân hàng" },
-  //   { key: "accountGroup", value: "telegram", label: "Nhóm chat Telegram" },
-  //   { key: "transactionType", value: "transaction", label: "Loại giao dịch" },
-  //   { key: "accountGroup", value: "accountGroup", label: "Nhóm tài khoản" },
-  // ];
-
-  // const handleChange = (key: string, value: string) => {
-  //   setSelectedOptions((prev) => ({
-  //     ...prev,
-  //     [key]: value,
-  //   }));
-  // };
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -263,11 +288,9 @@ const Dashboard = () => {
   const [groupChatFilter, setGroupChatFilter] = useState<
     Array<{ value: string; label: string }>
   >([]);
-  // const [transTypeFilter, setTransTypeFilter] = useState<
-  //   Array<{ value: string; label: string }>
-  // >([]);
   const [transTypeFilter, setTransTypeFilter] = useState();
   // const [date, setDate] = useState();
+  const [startDateFilter, setTranDateFilter] = useState();
   // const [startDate, setStartDate] = useState();
   // const [endDate, setEndDate] = useState();
 
@@ -276,10 +299,10 @@ const Dashboard = () => {
     { value: "2", label: "Tiền ra" },
     { value: "1", label: "Cả hai" },
   ];
-  const optionCompany = [
-    { value: "1", label: "Tài khoản công ty" },
-    { value: "2", label: "Tài khoản marketing" },
-  ];
+  // const optionCompany = [
+  //   { value: "1", label: "Tài khoản công ty" },
+  //   { value: "2", label: "Tài khoản marketing" },
+  // ];
   const fetchBankData = async (bankAccount?: string) => {
     const arr: filterProducts[] = [];
     const groupChatFilter: filterProducts = {
@@ -307,9 +330,9 @@ const Dashboard = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res = fetchBankAccountAPI.data.source.map((x: any) => ({
           value: x.id,
-          label: x.fullName + "-" + x.accountNumber || "Không xác định",
+          label: x.bank.code + "-" + x.fullName + "-" + x.accountNumber || "Không xác định",
         }));
-        // console.log(fetchBankAccountAPI, "fetchBankAccountAPI");
+        // console.log(fetchBankAccountAPI, "fetchBankAccountAPI123");
 
         setBankAccountFilter(res);
       } else {
@@ -364,25 +387,41 @@ const Dashboard = () => {
     bankAccountId?: string;
     groupChatId?: number;
     transType?: string;
-    startDate?: string;
-    endDate?: string;
+    tranDate?: string;
   }>({});
 
   const handleSelectChange = (
     bankAccount?: string,
     groupChat?: number,
     transType?: string,
-    startDate?: string,
-    endDate?: string
+    tranDate?: string
   ) => {
     setFilterParams((prevParams) => ({
       ...prevParams,
       bankAccountId: bankAccount,
       groupChatId: groupChat,
       transType: transType,
-      startDate: startDate,
-      endDate: endDate,
+      tranDate: tranDate,
     }));
+  };
+
+  const handleResendSheet = async (transId: number, sheetMapId: number) => {
+    setIsModalOpen(false);
+    setIsLoading(true);
+    try {
+      const response = await resendSheet(transId, sheetMapId);
+      if (response.status === 200) {
+        console.log("API response:", response);
+        toast.success("Reload thành công!");
+      } else {
+        throw new Error(`API error: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("API error:", error);
+      toast.error("Đã xảy ra lỗi khi gọi API.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -401,6 +440,11 @@ const Dashboard = () => {
 
   return (
     <>
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 z-50">
+          <Spin size="large" />
+        </div>
+      )}
       <div>
         <Header />
         <div className="dashboard mt-7">
@@ -413,12 +457,12 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        <div className="flex justify-center mt-7">
+        <div className="flex mx-[35px] mt-7">
           <Space direction="horizontal" size="middle">
             <Select
               options={bankAccountFilter}
               placeholder="Tài khoản ngân hàng"
-              style={{ width: 300 }}
+              style={{ width: 400 }}
               allowClear
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
@@ -426,10 +470,20 @@ const Dashboard = () => {
                 // console.log(value, "value");
 
                 if (!value) {
-                  handleSelectChange(value, chatFilter, transTypeFilter);
+                  handleSelectChange(
+                    value,
+                    chatFilter,
+                    transTypeFilter,
+                    startDateFilter
+                  );
                   setCheckFilter(!checkFilter);
                 } else {
-                  fetchListStatistics(value, chatFilter, transTypeFilter);
+                  fetchListStatistics(
+                    value,
+                    chatFilter,
+                    transTypeFilter,
+                    startDateFilter
+                  );
                 }
               }}
             />
@@ -444,10 +498,20 @@ const Dashboard = () => {
                 // console.log(value, "value");
 
                 if (!value) {
-                  handleSelectChange(bankFilter, value, transTypeFilter);
+                  handleSelectChange(
+                    bankFilter,
+                    value,
+                    transTypeFilter,
+                    startDateFilter
+                  );
                   setCheckFilter(!checkFilter);
                 } else {
-                  fetchListStatistics(bankFilter, value, transTypeFilter);
+                  fetchListStatistics(
+                    bankFilter,
+                    value,
+                    transTypeFilter,
+                    startDateFilter
+                  );
                 }
               }}
             />
@@ -461,20 +525,55 @@ const Dashboard = () => {
                 console.log(value, "value");
                 setTransTypeFilter(value);
                 if (!value) {
-                  handleSelectChange(bankFilter, chatFilter, value);
+                  handleSelectChange(
+                    bankFilter,
+                    chatFilter,
+                    value,
+                    startDateFilter
+                  );
                   setCheckFilter(!checkFilter);
                 } else {
-                  fetchListStatistics(bankFilter, chatFilter, value);
+                  fetchListStatistics(
+                    bankFilter,
+                    chatFilter,
+                    value,
+                    startDateFilter
+                  );
                 }
               }}
             />
-            <Select
+            {/* <Select
               options={optionCompany}
               placeholder="Loại công ty"
               style={{ width: 245 }}
               allowClear
+            /> */}
+            <RangePicker
+              id={{
+                start: "startInput",
+                end: "endInput",
+              }}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={(value: any) => {
+                setTranDateFilter(value);
+                if (!value) {
+                  handleSelectChange(
+                    bankFilter,
+                    chatFilter,
+                    transTypeFilter,
+                    value
+                  );
+                  setCheckFilter(!checkFilter);
+                } else {
+                  fetchListStatistics(
+                    bankFilter,
+                    chatFilter,
+                    transTypeFilter,
+                    value
+                  );
+                }
+              }}
             />
-            <RangePicker />
             {/* <DatePicker
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
@@ -573,10 +672,93 @@ const Dashboard = () => {
               {dataTransaction?.transaction?.logMessageDescription}
             </div>
           </div>
-          <div className="font-bold flex py-1">
+          <div className="font-bold flex py-1 pb-3">
             Ngày giao dịch:
             <div className="pl-2 font-normal">
               {dataTransaction?.transaction?.transDateString}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4">
+              <div className="text-xl text-[#495057]">Thông báo Telegram</div>
+              <div>
+                {dataTransaction?.logChatSqlRes?.map(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (x: any, index: number) => (
+                    <div
+                      key={index}
+                      className="pt-3 border-b border-solid border-gray-300"
+                    >
+                      <div>{x?.chatName}</div>
+                      <div className="bg-[#04a616] w-24 rounded-xl flex justify-center text-white my-1">
+                        {x?.logMessageDescription}
+                      </div>
+                      <div className="pb-3">
+                        {x?.modifiedDate &&
+                          new Date(x?.modifiedDate).toLocaleString("en-US", {
+                            month: "2-digit",
+                            day: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            hour12: true,
+                          })}
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="text-xl text-[#495057]">
+                Thông báo Google Sheet
+              </div>
+              <div>
+                {dataTransaction?.logSheetSqlRes?.map(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (x: any, index: number) => (
+                    <div
+                      key={index}
+                      className="pt-3 border-b border-solid border-gray-300"
+                    >
+                      <div>{x?.sheetName}</div>
+                      <div>
+                        {x?.logMessage === "2" ? (
+                          <div className="flex justify-between items-center">
+                            <div className="bg-[#ff0000] w-12 rounded-xl flex justify-center text-white my-1">
+                              {x?.logMessageDescription}
+                            </div>
+                            <SyncOutlined
+                              // spin={isLoading}
+                              onClick={() => {
+                                handleResendSheet(x.transactionId, x?.id);
+                              }}
+                              className="cursor-pointer"
+                            />
+                          </div>
+                        ) : (
+                          <div className="bg-[#04a616] w-24 rounded-xl flex justify-center text-white my-1">
+                            {x?.logMessageDescription}
+                          </div>
+                        )}
+                      </div>
+                      <div className="pb-3">
+                        {x?.modifiedDate &&
+                          new Date(x?.modifiedDate).toLocaleString("en-US", {
+                            month: "2-digit",
+                            day: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            hour12: true,
+                          })}
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
             </div>
           </div>
         </div>

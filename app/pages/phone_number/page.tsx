@@ -13,6 +13,7 @@ import {
 import { PhoneNumberModal } from "@/app/component/modal/modalPhoneNumber";
 import { toast } from "react-toastify";
 import DeleteModal from "@/app/component/config/modalDelete";
+import { useRouter } from "next/navigation";
 
 interface filterRole {
   Name: string;
@@ -20,6 +21,14 @@ interface filterRole {
 }
 
 const PhoneNumber: React.FC = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [currentPhoneNumber, setCurrentPhoneNumber] =
@@ -292,6 +301,7 @@ const PhoneNumber: React.FC = () => {
             ? "Chỉnh sửa số điện thoại"
             : "Thêm mới số điện thoại"
         }
+        maskClosable={false}
       >
         <Form
           form={form}

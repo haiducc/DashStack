@@ -14,6 +14,7 @@ import BaseModal from "@/app/component/config/BaseModal";
 import { fetchBankAccounts } from "@/app/services/bankAccount";
 import { getListSheet } from "@/app/services/sheet";
 import DeleteModal from "@/app/component/config/modalDelete";
+import { useRouter } from "next/navigation";
 
 export interface ListSheetIntegration {
   id: number;
@@ -33,6 +34,14 @@ interface filterSheetIntergration {
 }
 
 const SheetIntergration = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/pages/login");
+    }
+  }, []);
+  
   const [form] = Form.useForm();
   const [dataSheetIntegration, setDataSheetIntegration] = useState<
     ListSheetIntegration[]

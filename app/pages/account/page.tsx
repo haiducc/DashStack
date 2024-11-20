@@ -370,11 +370,10 @@ const Account = () => {
   };
 
   const handleAddConfirm = async () => {
-    console.log(373, Number(saveBank));
-    console.log(374, Number(saveGroupSystem));
-    console.log(375, Number(saveGroupBranch));
-    console.log(376, Number(saveGroupTeam));
-
+    // console.log(373, Number(saveBank));
+    // console.log(374, Number(saveGroupSystem));
+    // console.log(375, Number(saveGroupBranch));
+    // console.log(376, Number(saveGroupTeam));
     try {
       // await form.validateFields();
       const formData = await form.getFieldsValue();

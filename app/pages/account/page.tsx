@@ -359,6 +359,9 @@ const Account = () => {
   };
 
   const defaultModalAdd = () => {
+    setSaveGroupSystem(defaultGroupSystemId!);
+    setSaveGroupBranch(defaultGroupBranchId!);
+    setSaveGroupTeam(defaultGroupTeamId!);
     form.setFieldsValue({
       groupSystemId: defaultGroupSystemId,
       groupBranchId: defaultGroupBranchId,
@@ -369,23 +372,10 @@ const Account = () => {
     });
   };
 
-  // const defaultModalEdit = () => {
-  //   form.setFieldsValue({
-  //     groupSystemId: defaultGroupSystemId,
-  //     groupBranchId: defaultGroupBranchId,
-  //     // groupTeamId: defaultGroupTeamId,
-  //     groupSystemName: defaultGroupSystemName,
-  //     groupBranchName: defaultGroupBranchName,
-  //     // groupTeamName: defaultGroupTeamName,
-  //   });
-  // };
-
   const handleAddConfirm = async () => {
-    console.log(373, Number(saveBank));
-    console.log(374, Number(saveGroupSystem));
-    console.log(375, Number(saveGroupBranch));
-    console.log(376, Number(saveGroupTeam));
-
+    // console.log(374, Number(saveGroupSystem));
+    // console.log(375, Number(saveGroupBranch));
+    // console.log(376, Number(saveGroupTeam));
     try {
       // await form.validateFields();
       const formData = await form.getFieldsValue();
@@ -1194,7 +1184,6 @@ const Account = () => {
                 options={groupSystem}
                 onChange={(e) => {
                   console.log(e);
-
                   const id = Number(e).toString();
                   setSaveGroupSystem(id);
                   getBranchSystems();
@@ -1316,26 +1305,6 @@ const Account = () => {
             >
               <Select />
             </Form.Item>
-            {/* <Form.Item
-              className="w-[45%]"
-              label="Chọn ngân hàng"
-              name="bankId"
-              rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
-            >
-              <Select
-                placeholder="Chọn ngân hàng"
-                onFocus={fetchBankData}
-                options={banks}
-              />
-            </Form.Item> */}
-            {/* <Form.Item
-              className="w-[45%]"
-              label="Chọn ngân hàng"
-              name="bankName"
-              rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
-            >
-              <Select />
-            </Form.Item> */}
           </div>
           <div className="flex justify-between">
             <Form.Item
@@ -1414,7 +1383,7 @@ const Account = () => {
               type="primary"
               onClick={() => {
                 handleAddConfirm();
-                defaultModalAdd()
+                defaultModalAdd();
               }}
               className="w-full h-[40px] bg-[#4B5CB8] hover:bg-[#3A4A9D]"
             >

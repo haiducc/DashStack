@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Menu as AntMenu, Spin } from "antd";
+import { Menu as AntMenu } from "antd";
 import Image from "next/image";
 import Logo from "../../public/img/logo.png";
 import { useRouter } from "next/navigation";
@@ -153,15 +153,15 @@ const fetchRoleData = async (accessToken: string) => {
 const SideMenu = () => {
   const router = useRouter();
   const [openKeys, setOpenKeys] = useState<string[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  // const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     // console.log("useEffect is running");
-    setLoading(true);
+    // setLoading(true);
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       fetchRoleData(accessToken).then((data) => {
-        setLoading(false);
+        // setLoading(false);
         if (data) {
           console.log("Role data fetched:", data);
         }
@@ -179,9 +179,9 @@ const SideMenu = () => {
     }
 
     try {
-      setLoading(true);
+      // setLoading(true);
       const roleData = await fetchRoleData(accessToken);
-      setLoading(false);
+      // setLoading(false);
       if (roleData) {
         console.log(roleData, "Role data");
         if (menuItem.path) {
@@ -197,7 +197,7 @@ const SideMenu = () => {
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      setLoading(false);
+      // setLoading(false);
       toast.error("Lỗi khi kiểm tra quyền truy cập.");
     }
   };

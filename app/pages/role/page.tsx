@@ -68,6 +68,7 @@ const Role = () => {
   const [role, setRole] = useState(false);
 
   const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
@@ -76,11 +77,12 @@ const Role = () => {
 
   const fetchListRole = async (globalTerm?: string) => {
     const arrRole: filterRole[] = [];
-    const obj: filterRole = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrRole.push(obj);
+    const addedParams = new Set<string>();
+    arrRole.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     // setLoading(true);
     try {
       const response = await getRole(pageIndex, pageSize, globalTerm, arrRole);
@@ -180,8 +182,8 @@ const Role = () => {
       form.resetFields();
       setCurrentRole(null);
       await fetchListRole();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error:any) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("Lỗi:", error);
 
       if (error && typeof error === "object" && "message" in error) {
@@ -396,6 +398,7 @@ const Role = () => {
             <>
               <Form.Item label="Hệ thống" name="groupSystemId">
                 <Select
+                  allowClear
                   placeholder="Chọn hệ thống"
                   onFocus={getGroupSystems}
                   options={groupSystem}
@@ -408,6 +411,7 @@ const Role = () => {
               </Form.Item>
               <Form.Item label="Chọn chi nhánh" name="groupBranchId">
                 <Select
+                  allowClear
                   placeholder="Chọn chi nhánh"
                   onFocus={getBranchSystems}
                   options={branchSystem}
@@ -420,6 +424,7 @@ const Role = () => {
               </Form.Item>
               <Form.Item label="Chọn đội nhóm" name="groupTeamId">
                 <Select
+                  allowClear
                   placeholder="Chọn đội nhóm"
                   onFocus={getGroupTeams}
                   options={groupTeam}

@@ -76,6 +76,7 @@ const Transaction = () => {
   const [pageSize] = useState(20);
 
   const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
   // const initialDate = dataTransaction?.transDate
   //   ? dayjs(dataTransaction.transDate)
@@ -90,11 +91,12 @@ const Transaction = () => {
     // searchTerms?: string
   ) => {
     const arrRole: filterRole[] = [];
-    const obj: filterRole = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrRole.push(obj);
+    const addedParams = new Set<string>();
+    arrRole.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     setLoading(true);
     try {
       const response = await getTransaction(
@@ -141,7 +143,7 @@ const Transaction = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bankData?.data?.source?.map((bank: any) => ({
           value: bank.code,
-          label: bank.fullName,
+          label: bank.code + " - " + bank.fullName,
           bankId: bank.id,
         })) || [];
       setBanks(formattedBanks);
@@ -385,15 +387,28 @@ const Transaction = () => {
       title: "Số tiền",
       dataIndex: "balanceBeforeTrans",
       key: "balanceBeforeTrans",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (balance: any) => {
+      render: (balance: number, record: { transType: string }) => {
+        let sign = "";
+        if (record.transType === "2") {
+          sign = "-"; // Tiền ra
+        } else if (record.transType === "3") {
+          sign = "+"; // Tiền vào
+        }
         const formattedBalance = Math.abs(balance).toLocaleString("vi-VN", {
           style: "currency",
           currency: "VND",
         });
-        return balance ? `${formattedBalance}` : "0";
+        return (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <span style={{ marginRight: "4px", fontWeight: "bold" }}>
+              {sign}
+            </span>
+            <span>{formattedBalance}</span>
+          </div>
+        );
       },
     },
+
     {
       title: "Số dư hiện tại",
       dataIndex: "currentBalance",

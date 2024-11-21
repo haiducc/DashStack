@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import BarChart from "./BarChart";
-import Statistics from "./Statistics";
+import Statistics from "./statistics";
 import { useRouter } from "next/navigation";
 
 export default function Home() {

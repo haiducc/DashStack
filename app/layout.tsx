@@ -32,8 +32,8 @@ const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
           <ToastContainer
             position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
+            autoClose={3000}
+            hideProgressBar={true}
             newestOnTop={false}
             closeOnClick
             rtl={false}

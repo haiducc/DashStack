@@ -102,6 +102,22 @@ const items: MenuItem[] = [
     path: "/pages/transaction",
   },
   {
+    key: "asset-management",
+    label: "Quản lý tài sản",
+    items: [
+      // {
+      //   key: "asset_report",
+      //   label: "Báo cáo quản lý tài sản",
+      //   path: "/pages/asset-report",
+      // },
+      {
+        key: "list_transaction",
+        label: "Danh sách giao dịch",
+        path: "/pages/list-transaction",
+      },
+    ],
+  },
+  {
     key: "role",
     label: "Quyền tài khoản",
     path: "/pages/role",

@@ -30,6 +30,7 @@ export interface ListTelegramIntegration {
   chatId: string;
   name: string;
   transType: string;
+  typeDescription: string;
 }
 
 interface filterTeleIntergration {
@@ -104,7 +105,7 @@ const TelegramIntegration = () => {
         response?.data?.source?.map((item: any) => {
           // console.log(item.bankAccount.id);
           return {
-            id: item.id?.toString() || Date.now().toString(), // id
+            id: item.id, // id
             bankAccountId: item.bankAccount.id, // id tài khoản ngân hàng
             groupChatId: item.groupChatId, // id nhóm chat tele
             code: item.bank.code, // mã ngân hàng
@@ -115,6 +116,7 @@ const TelegramIntegration = () => {
             transType: item.transType, // loại giao dịch
             bankId: item.bank.name,
             chatName: item.groupChat.name,
+            typeDescription: item.typeDescription
           };
         }) || [];
 
@@ -164,7 +166,7 @@ const TelegramIntegration = () => {
     }
   };
 
-  const [tranType, setTransType] = useState();
+  const [transType, setTransType] = useState<Array<ListTelegramIntegration>>([]);
 
   const genTransTypes = async (x?: ListTelegramIntegration) => {
     try {
@@ -178,6 +180,7 @@ const TelegramIntegration = () => {
         (await dataTransType?.data?.map((tele: any) => ({
           value: tele.value,
           label: tele.text,
+          transType: tele.value,
         }))) || [];
       setTransType(res);
     } catch (error) {
@@ -208,6 +211,7 @@ const TelegramIntegration = () => {
           fullName: "",
           chatId: "",
           name: "",
+          typeDescription: formData.typeDescription,
         });
         console.log("Dữ liệu đã được cập nhật:", response);
       } else {
@@ -224,6 +228,7 @@ const TelegramIntegration = () => {
           fullName: "",
           chatId: "",
           name: "",
+          typeDescription: formData.typeDescription,
         });
         console.log("Dữ liệu đã được thêm mới:", response);
       }
@@ -251,6 +256,7 @@ const TelegramIntegration = () => {
       accountFullName:
         record.accountNumber + " - " + record.code + " - " + record.fullName,
       chatName: record.chatName,
+      typeDescription: record.typeDescription,
     });
     setAddModalOpen(true);
   };
@@ -519,6 +525,7 @@ const TelegramIntegration = () => {
             columns={columns}
             dataSource={dataTelegramIntegration}
             rowKey="id"
+            // pagination={false}
           />
         )}
       </div>
@@ -530,8 +537,8 @@ const TelegramIntegration = () => {
         }}
         title={
           currentTelegram
-            ? "Chỉnh sửa nhóm tài khoản"
-            : "Thêm mới nhóm tài khoản"
+            ? "Chỉnh sửa tài khoản tích hợp telegram"
+            : "Thêm mới tài khoản tích hợp telegram"
         }
       >
         <Form
@@ -545,18 +552,34 @@ const TelegramIntegration = () => {
           <Form.Item hidden label="bankAccountId" name="bankAccountId">
             <Input />
           </Form.Item>
-          <Form.Item
-            label="Tài khoản ngân hàng"
-            name="accountFullName"
-            rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
-          >
-            <Select
-              placeholder="Chọn ngân hàng"
-              onFocus={genBankData}
-              options={banks}
-              onChange={(value) => setBankAccountIdSelect(value)}
-            />
-          </Form.Item>
+          {currentTelegram ? (
+            <Form.Item
+              label="Tài khoản ngân hàng"
+              name="accountFullName"
+              rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
+            >
+              <Select
+                disabled
+                placeholder="Chọn ngân hàng"
+                onFocus={genBankData}
+                options={banks}
+                onChange={(value) => setBankAccountIdSelect(value)}
+              />
+            </Form.Item>
+          ) : (
+            <Form.Item
+              label="Tài khoản ngân hàng"
+              name="accountFullName"
+              rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
+            >
+              <Select
+                placeholder="Chọn ngân hàng"
+                onFocus={genBankData}
+                options={banks}
+                onChange={(value) => setBankAccountIdSelect(value)}
+              />
+            </Form.Item>
+          )}
           <Form.Item
             label="Chọn nhóm telegram"
             name="chatName"
@@ -598,7 +621,7 @@ const TelegramIntegration = () => {
           </Form.Item>
           <Form.Item
             label="Chọn loại giao dịch"
-            name="transType"
+            name="typeDescription"
             rules={[
               { required: true, message: "Vui lòng chọn loại tài khoản!" },
             ]}
@@ -607,8 +630,23 @@ const TelegramIntegration = () => {
               placeholder="Chọn loại giao dịch"
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onFocus={(value: any) => genTransTypes(value)}
-              options={tranType}
+              options={transType}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={async (value: any) => {
+                const selectedGroup = await transType.find(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (item: any) => item.value === value
+                );
+                if (selectedGroup) {
+                  form.setFieldsValue({
+                    transType: selectedGroup.transType,
+                  });
+                }
+              }}
             />
+          </Form.Item>
+          <Form.Item hidden label="Chọn loại giao dịch" name="transType">
+            <Select />
           </Form.Item>
           <div className="flex justify-end">
             <Button

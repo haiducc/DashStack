@@ -26,6 +26,8 @@ export interface ListSheetIntegration {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   bankAccountId?: any;
   sheetId: number;
+  name: string;
+  typeDescription: string;
 }
 
 interface filterSheetIntergration {
@@ -41,7 +43,7 @@ const SheetIntergration = () => {
       router.push("/pages/login");
     }
   }, []);
-  
+
   const [form] = Form.useForm();
   const [dataSheetIntegration, setDataSheetIntegration] = useState<
     ListSheetIntegration[]
@@ -54,7 +56,7 @@ const SheetIntergration = () => {
     null
   );
   const [banks, setBanks] = useState([]);
-  const [sheet, setSheet] = useState([]);
+  const [sheet, setSheet] = useState<Array<ListSheetIntegration>>([]);
 
   // const keys = localStorage.getItem("key");
   // const values = localStorage.getItem("value");
@@ -107,6 +109,7 @@ const SheetIntergration = () => {
           transType: item.transType, // status loại giao dịch
           bankAccountId: item.bankAccount.id,
           sheetId: item.sheetDetail.id, // id của sheet
+          typeDescription: item.typeDescription,
         })) || [];
       setDataSheetIntegration(formattedData);
     } catch (error) {
@@ -144,6 +147,7 @@ const SheetIntergration = () => {
         dataTelegram?.data?.source?.map((sheet: any) => ({
           value: sheet.id,
           label: sheet.name,
+          sheetId: sheet.id,
         })) || [];
       setSheet(formattedTelegram);
     } catch (error) {
@@ -151,7 +155,7 @@ const SheetIntergration = () => {
     }
   };
 
-  const [tranType, setTransType] = useState();
+  const [transType, setTransType] = useState<Array<ListSheetIntegration>>([]);
 
   const genTransTypes = async (x?: ListSheetIntegration) => {
     try {
@@ -165,6 +169,7 @@ const SheetIntergration = () => {
         (await dataTransType?.data?.map((tele: any) => ({
           value: tele.value,
           label: tele.text,
+          transType: tele.value,
         }))) || [];
       setTransType(res);
     } catch (error) {
@@ -186,7 +191,9 @@ const SheetIntergration = () => {
           linkUrl: formData.linkUrl, // link url
           transType: formData.transType, // status loại giao dịch
           bankAccountId: formData.bankAccountId,
-          sheetId: formData.sheetId, // id của sheet
+          sheetId: formData.sheetId,
+          name: formData.name,
+          typeDescription: formData.typeDescription,
         });
         console.log("Dữ liệu đã được cập nhật:", response);
       } else {
@@ -199,6 +206,8 @@ const SheetIntergration = () => {
           transType: formData.transType, // status loại giao dịch
           bankAccountId: bankAccountIdSelect, // hình như không nhầm thì là lưu stk vào trường có tên là bankAccountId
           sheetId: formData.sheetId, // id của sheet
+          name: formData.name,
+          typeDescription: formData.typeDescription,
         });
         console.log("Dữ liệu đã được thêm mới:", response);
       }
@@ -226,6 +235,10 @@ const SheetIntergration = () => {
       transType: record.transType, // status loại giao dịch
       bankAccountId: record.bankAccountId,
       sheetId: record.sheetId, // id của sheet
+      accountFullName:
+        record.accountNumber + " - " + record.code + " - " + record.fullName,
+      sheetName: record.name,
+      typeDescription: record.typeDescription,
     });
     setAddModalOpen(true);
   };
@@ -513,34 +526,40 @@ const SheetIntergration = () => {
           <Form.Item hidden label="id" name="id">
             <Input hidden />
           </Form.Item>
-          <Form.Item hidden label="groupChatId" name="groupChatId">
+          <Form.Item hidden label="bankAccountId" name="bankAccountId">
             <Input hidden />
           </Form.Item>
-          <Form.Item
-            label="Tài khoản ngân hàng"
-            name="bankAccountId"
-            rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
-          >
-            <Select
-              placeholder="Chọn ngân hàng"
-              onFocus={genBankData}
-              options={banks}
-              onChange={(value) => setBankAccountIdSelect(value)}
-            />
-          </Form.Item>
-          {/* <Form.Item
-            label="Tài khoản ngân hàng 2"
-            name="accountNumber"
-          >
-            <Select
-              placeholder="Chọn ngân hàng 2"
-              onFocus={genBankData}
-              options={banks}
-            />
-          </Form.Item> */}
+          {currentSheet ? (
+            <Form.Item
+              label="Tài khoản ngân hàng"
+              name="accountFullName"
+              rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
+            >
+              <Select
+                disabled
+                placeholder="Chọn ngân hàng"
+                onFocus={genBankData}
+                options={banks}
+                onChange={(value) => setBankAccountIdSelect(value)}
+              />
+            </Form.Item>
+          ) : (
+            <Form.Item
+              label="Tài khoản ngân hàng"
+              name="accountFullName"
+              rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
+            >
+              <Select
+                placeholder="Chọn ngân hàng"
+                onFocus={genBankData}
+                options={banks}
+                onChange={(value) => setBankAccountIdSelect(value)}
+              />
+            </Form.Item>
+          )}
           <Form.Item
             label="Chọn nhóm trang tính"
-            name="sheetId"
+            name="sheetName"
             rules={[
               { required: true, message: "Vui lòng chọn nhóm trang tính!" },
             ]}
@@ -549,11 +568,29 @@ const SheetIntergration = () => {
               placeholder="Chọn nhóm trang tính"
               onFocus={genSheetData}
               options={sheet}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={async (value: any) => {
+                const selectedGroup = await sheet.find(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (item: any) => item.value === value
+                );
+                if (selectedGroup) {
+                  form.setFieldsValue({
+                    sheetId: selectedGroup.sheetId,
+                  });
+                }
+              }}
             />
+          </Form.Item>
+          <Form.Item hidden label="sheetId" name="sheetId">
+            <Input />
+          </Form.Item>
+          <Form.Item hidden label="groupChatId" name="groupChatId">
+            <Input hidden />
           </Form.Item>
           <Form.Item
             label="Chọn loại giao dịch"
-            name="transType"
+            name="typeDescription"
             rules={[
               { required: true, message: "Vui lòng chọn loại tài khoản!" },
             ]}
@@ -561,9 +598,27 @@ const SheetIntergration = () => {
             <Select
               placeholder="Chọn loại giao dịch"
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onFocus={(value: any) => genTransTypes(value)}
-              options={tranType}
+              onFocus={(value: any) => {
+                // console.log(value);
+                genTransTypes(value);
+              }}
+              options={transType}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={async (value: any) => {
+                const selectedGroup = await transType.find(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (item: any) => item.value === value
+                );
+                if (selectedGroup) {
+                  form.setFieldsValue({
+                    transType: selectedGroup.transType,
+                  });
+                }
+              }}
             />
+          </Form.Item>
+          <Form.Item hidden label="Chọn loại giao dịch" name="transType">
+            <Select />
           </Form.Item>
           <div className="flex justify-end">
             <Button

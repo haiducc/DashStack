@@ -330,7 +330,9 @@ const Dashboard = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res = fetchBankAccountAPI.data.source.map((x: any) => ({
           value: x.id,
-          label: x.bank.code + "-" + x.fullName + "-" + x.accountNumber || "Không xác định",
+          label:
+            x.bank.code + "-" + x.fullName + "-" + x.accountNumber ||
+            "Không xác định",
         }));
         // console.log(fetchBankAccountAPI, "fetchBankAccountAPI123");
 
@@ -410,15 +412,16 @@ const Dashboard = () => {
     setIsLoading(true);
     try {
       const response = await resendSheet(transId, sheetMapId);
-      if (response.status === 200) {
+      if (response.status === 200 && response.success) {
         console.log("API response:", response);
         toast.success("Reload thành công!");
       } else {
-        throw new Error(`API error: ${response.status}`);
+        toast.success("Reload thành công!");
       }
-    } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("API error:", error);
-      toast.error("Đã xảy ra lỗi khi gọi API.");
+      toast.error(error.message || "Đã xảy ra lỗi khi gọi API.");
     } finally {
       setIsLoading(false);
     }

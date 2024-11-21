@@ -17,19 +17,25 @@ const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <html lang="en">
       <body>
-        <Layout style={{ minHeight: "100vh" }}>
-          <div className="flex">
-            {!isLoginPage && <SideMenu />}
-            <Content
-              style={{
-                padding: "0 50px",
-                minHeight: "100vh",
-                flexGrow: 1,
-              }}
-            >
-              {children}
-            </Content>
-          </div>
+        <Layout className="min-h-screen">
+          {!isLoginPage ? (
+            <div className="grid grid-cols-12 min-h-screen">
+              {/* SideMenu: Col 2 with sticky behavior */}
+              <div className="col-span-2 bg-gray-100 h-screen sticky top-0">
+                <SideMenu />
+              </div>
+
+              {/* Content: Col 10 */}
+              <div className="col-span-10">
+                <Content>{children}</Content>
+              </div>
+            </div>
+          ) : (
+            // Full width content for Login Page
+            <div className="flex items-center justify-center min-h-screen">
+              <Content>{children}</Content>
+            </div>
+          )}
           <ToastContainer
             position="top-right"
             autoClose={3000}

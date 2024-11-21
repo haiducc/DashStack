@@ -11,7 +11,7 @@ import { DeatailIcon } from "@/public/icon/detail";
 
 const ListTransactionPage = () => {
   const [form] = Form.useForm();
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [dataTransaction, setDataTransaction] = useState([]);
 
   const columns = [
@@ -56,7 +56,7 @@ const ListTransactionPage = () => {
     {
       title: "Chi tiết",
       key: "action",
-      render: (record: any) => <DeatailIcon />,
+      render: () => <DeatailIcon />,
     },
   ];
 
@@ -66,7 +66,9 @@ const ListTransactionPage = () => {
         "/asset-api/find?searchTerms[0].Name=isAdmin&searchTerms[0].Value=1&pageIndex=1&pageSize=20"
       );
       setDataTransaction(responsive.data.data.source);
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -74,7 +76,7 @@ const ListTransactionPage = () => {
   }, []);
 
   const handleCancel = () => {
-    setAddModalOpen((prev) => !prev);
+    setIsAddModalOpen((prev) => !prev);
   };
 
   return (
@@ -129,7 +131,7 @@ const ListTransactionPage = () => {
             className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
             onClick={() => {
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
           >
             Thêm mới
@@ -140,7 +142,6 @@ const ListTransactionPage = () => {
 
       <ModalAddNew
         isAddModalOpen={isAddModalOpen}
-        // form={form}
         onCancel={handleCancel}
         fetchData={fetchData}
       />

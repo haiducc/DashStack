@@ -29,7 +29,6 @@ export const FormGold = ({ onCancel, fetchData }: FormMoneyType) => {
   const [banks, setBanks] = useState([]);
   const [bankAccount, setBankAccount] = useState([]);
   const [listType, setListType] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [listTransType, setListTransType] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [listFaceValue, setListFaceValue] = useState([]);
@@ -38,7 +37,6 @@ export const FormGold = ({ onCancel, fetchData }: FormMoneyType) => {
   >([]);
   const [faceValueList, setFaceValueList] = useState([]);
   const [selectedValues, setSelectedValues] = useState<string | string[]>([]);
-  const [priceGold, setPriceGold] = useState<number>(1);
 
   const getlistTypeAsset = async () => {
     try {
@@ -46,11 +44,13 @@ export const FormGold = ({ onCancel, fetchData }: FormMoneyType) => {
         cdType: "TRANS_GOLD",
         cdName: "GOLD_TYPE",
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const listTypeAssetConvert = listTypeAsset.map((item: any) => {
         return { label: item.vnContent, value: item.cdVal };
       });
 
       setListType(listTypeAssetConvert);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   };
 
@@ -61,17 +61,18 @@ export const FormGold = ({ onCancel, fetchData }: FormMoneyType) => {
         cdName: "TRANS_TYPE",
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const listTypeAssetConvert = listTypeAsset.map((item: any) => {
         return { label: item.vnContent, value: item.cdVal };
       });
 
       setListTransType(listTypeAssetConvert);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   };
 
   const getListFaceValue = async () => {
     try {
-      const data = form.getFieldsValue();
       const listFaceValue = await getTypeAsset({
         cdType: "TRANS_GOLD",
         cdName: "GOLD_FORM",
@@ -91,6 +92,7 @@ export const FormGold = ({ onCancel, fetchData }: FormMoneyType) => {
       });
       setFaceValueList(faceValueTotalConvert);
       setListFaceValue(listFaceConvert);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   };
   const fetchBankData = async () => {
@@ -140,11 +142,6 @@ export const FormGold = ({ onCancel, fetchData }: FormMoneyType) => {
     setSelectedValues(value);
   };
 
-  const parseLabelToNumber = (label: string) => {
-    const number = parseFloat(label.replace(/[$.]/g, ""));
-    return isNaN(number) ? 0 : number;
-  };
-
   const total = faceValueChoose.reduce((sum, item) => {
     const quantity = item.quantity || 0;
     return sum + quantity;
@@ -185,10 +182,10 @@ export const FormGold = ({ onCancel, fetchData }: FormMoneyType) => {
       await apiClient.post("/asset-api/add-or-update", params, {
         timeout: 30000,
       });
-      setLoading(true);
       fetchData();
       onCancel();
       form.resetFields();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   };
 
@@ -245,7 +242,7 @@ export const FormGold = ({ onCancel, fetchData }: FormMoneyType) => {
               options={listType}
               onFocus={() => getlistTypeAsset()}
               placeholder="Chọn loại vàng"
-              onChange={(e) => {
+              onChange={() => {
                 setListFaceValue([]);
                 setFaceValueChoose([]);
                 setSelectedValues([]);

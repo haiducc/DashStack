@@ -83,20 +83,3 @@ export const deleteBankAccount = async (id: number) => {
     throw error;
   }
 };
-
-export const getTypeAsset = async (params: {
-  cdType: string;
-  cdName: string;
-}) => {
-  try {
-    const res = await apiClient.get(`/allcode-api/find`, {
-      params: {
-        cdType: params.cdType,
-        cdName: params.cdName,
-      },
-    });
-    return res.data.data;
-  } catch (error) {
-    console.error("Lỗi khi gọi API:", error);
-  }
-};

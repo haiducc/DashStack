@@ -112,9 +112,9 @@ const Dashboard = () => {
     bankAccount?: string,
     groupChat?: number,
     transType?: string,
-    transDate?: string | Date[]
-    // startDate?: string,
-    // endDate?: string
+    // transDate?: string | Date[]
+    startDate?: string,
+    endDate?: string
   ) => {
     const arrFilter: filterProducts[] = [];
     const addedParams = new Set<string>();
@@ -140,24 +140,34 @@ const Dashboard = () => {
       });
       addedParams.add("transType");
     }
-    if (transDate) {
-      try {
-        let formattedDates: string | string[];
-        if (Array.isArray(transDate)) {
-          formattedDates = transDate.map((date) => formatDate(date));
-        } else {
-          formattedDates = formatDate(transDate);
-        }
-        arrFilter.push({
-          Name: "transDate",
-          Value: Array.isArray(formattedDates)
-            ? formattedDates.join(",")
-            : formattedDates,
-        });
-      } catch (error) {
-        console.error("Invalid transDate format:", transDate, error);
-        return;
-      }
+    // if (transDate) {
+    //   try {
+    //     let formattedDates: string | string[];
+    //     if (Array.isArray(transDate)) {
+    //       formattedDates = transDate.map((date) => formatDate(date));
+    //     } else {
+    //       formattedDates = formatDate(transDate);
+    //     }
+    //     arrFilter.push({
+    //       Name: "transDate",
+    //       Value: Array.isArray(formattedDates)
+    //         ? formattedDates.join(",")
+    //         : formattedDates,
+    //     });
+    //   } catch (error) {
+    //     console.error("Invalid transDate format:", transDate, error);
+    //     return;
+    //   }
+    // }
+    if (startDate && endDate) {
+      arrFilter.push({
+        Name: "startDate",
+        Value: formatDate(startDate),
+      });
+      arrFilter.push({
+        Name: "endDate",
+        Value: formatDate(endDate),
+      });
     }
 
     arrFilter.push({
@@ -396,14 +406,16 @@ const Dashboard = () => {
     bankAccount?: string,
     groupChat?: number,
     transType?: string,
-    tranDate?: string
+    startDate?: string,
+    endDate?: string
   ) => {
     setFilterParams((prevParams) => ({
       ...prevParams,
       bankAccountId: bankAccount,
       groupChatId: groupChat,
       transType: transType,
-      tranDate: tranDate,
+      startDate: startDate,
+      endDate: endDate,
     }));
   };
 
@@ -418,7 +430,7 @@ const Dashboard = () => {
       } else {
         toast.success("Reload thành công!");
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("API error:", error);
       toast.error(error.message || "Đã xảy ra lỗi khi gọi API.");
@@ -559,24 +571,36 @@ const Dashboard = () => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
                 setTranDateFilter(value);
-                if (!value) {
+
+                if (!value || value.length !== 2) {
                   handleSelectChange(
                     bankFilter,
                     chatFilter,
                     transTypeFilter,
-                    value
+                    "",
+                    ""
                   );
                   setCheckFilter(!checkFilter);
                 } else {
+                  const [startDate, endDate] = value;
+                  handleSelectChange(
+                    bankFilter,
+                    chatFilter,
+                    transTypeFilter,
+                    startDate,
+                    endDate
+                  );
                   fetchListStatistics(
                     bankFilter,
                     chatFilter,
                     transTypeFilter,
-                    value
+                    startDate,
+                    endDate
                   );
                 }
               }}
             />
+
             {/* <DatePicker
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {

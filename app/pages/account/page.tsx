@@ -255,12 +255,13 @@ const Account = () => {
   };
 
   const getListAccountGroup = async () => {
-    // const arrAccountGroup: filterGroupAccount[] = [];
-    // const obj: filterGroupAccount = {
-    //   Name: keys!,
-    //   Value: values!,
-    // };
-    // arrAccountGroup.push(obj);
+    const arrAccountGroup: filterGroupAccount[] = [];
+    const addedParams = new Set<string>();
+    arrAccountGroup.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const accountGroup = await getAccountGroup(
         pageIndex,
@@ -281,13 +282,16 @@ const Account = () => {
     }
   };
 
+  const [selectedSystemIds, setSelectedSystemIds] = useState<string[]>([]);
+
   const getGroupSystems = async () => {
     const arrAccountGroup: filterGroupAccount[] = [];
-    const obj: filterGroupAccount = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrAccountGroup.push(obj);
+    const addedParams = new Set<string>();
+    arrAccountGroup.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
 
     try {
       const getSystem = await getGroupSystem(
@@ -302,6 +306,9 @@ const Account = () => {
         label: x.name || "Không xác định",
       }));
       setGroupSystem(res);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const systemIds = getSystem?.data?.source?.map((x: any) => x.id) || [];
+      setSelectedSystemIds(systemIds);
     } catch (error) {
       console.error(error);
     }
@@ -309,12 +316,12 @@ const Account = () => {
 
   const getBranchSystems = async () => {
     const arrAccountGroup: filterGroupAccount[] = [];
-
-    const obj: filterGroupAccount = {
-      Name: "groupSystemId",
-      Value: groupSystemId!,
-    };
-    arrAccountGroup.push(obj);
+    const addedParams = new Set<string>();
+    arrAccountGroup.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const getBranch = await getBranchSystem(
         pageIndex,
@@ -323,10 +330,18 @@ const Account = () => {
         arrAccountGroup
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const res = getBranch?.data?.source?.map((x: any) => ({
-        value: x.id,
-        label: x.name || "Không xác định",
-      }));
+      // const res = getBranch?.data?.source?.map((x: any) => ({
+      //   value: x.id,
+      //   label: x.name || "Không xác định",
+      // }));
+      const res = getBranch?.data?.source
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ?.filter((x: any) => selectedSystemIds.includes(x.systemId))
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((x: any) => ({
+          value: x.id,
+          label: x.name || "Không xác định",
+        }));
       setBranchSystem(res);
     } catch (error) {
       console.error(error);
@@ -335,11 +350,12 @@ const Account = () => {
 
   const getGroupTeams = async () => {
     const arrAccountGroup: filterGroupAccount[] = [];
-    const obj: filterGroupAccount = {
-      Name: "groupBranchId",
-      Value: groupBranchId!,
-    };
-    arrAccountGroup.push(obj);
+    const addedParams = new Set<string>();
+    arrAccountGroup.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const groupTeams = await getGroupTeam(
         pageIndex,
@@ -1066,10 +1082,6 @@ const Account = () => {
               {groupTeamName && (
                 <Select
                   disabled={defaultGroupTeamId ? true : false}
-                  // defaultValue={{
-                  //   value: groupTeamId,
-                  //   label: groupTeamName ? groupTeamName : "",
-                  // }}
                   defaultValue={
                     groupTeamId?.trim()
                       ? {
@@ -1216,7 +1228,7 @@ const Account = () => {
                 options={branchSystem}
                 onChange={(e) => {
                   console.log(e);
-                  
+
                   const id = Number(e).toString();
                   // setGroupBranchId(id);
                   // setParentId(value);

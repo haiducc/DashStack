@@ -3,7 +3,7 @@ import BaseModal from "@/app/component/config/BaseModal";
 
 import React from "react";
 import type { TabsProps } from "antd";
-import { Tabs, theme } from "antd";
+import { Tabs } from "antd";
 import { FormMoney } from "./FormMoney";
 import { FormGold } from "./FormGold";
 import { FormRealEstate } from "./FormRealEstate";
@@ -31,8 +31,6 @@ const ModalAddNew = ({
     },
   ];
 
-  const onChange = (key: string) => {};
-
   return (
     <BaseModal
       open={isAddModalOpen}
@@ -47,7 +45,6 @@ const ModalAddNew = ({
       <Tabs
         defaultActiveKey="1"
         items={items}
-        onChange={onChange}
         className="w-full modal-list-transaction-tabs"
       />
     </BaseModal>

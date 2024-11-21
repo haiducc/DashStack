@@ -28,8 +28,6 @@ export const FormRealEstate = ({ onCancel, fetchData }: FormMoneyType) => {
 
   const [banks, setBanks] = useState([]);
   const [bankAccount, setBankAccount] = useState([]);
-  const [listType, setListType] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [listTransType, setListTransType] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [listFaceValue, setListFaceValue] = useState([]);
@@ -39,20 +37,6 @@ export const FormRealEstate = ({ onCancel, fetchData }: FormMoneyType) => {
   const [faceValueList, setFaceValueList] = useState([]);
   const [selectedValues, setSelectedValues] = useState<string | string[]>([]);
 
-  const getlistTypeAsset = async () => {
-    try {
-      const listTypeAsset = await getTypeAsset({
-        cdType: "TRANS_REAL_ESTATE",
-        cdName: "REAL_ESTATE_TYPE",
-      });
-      const listTypeAssetConvert = listTypeAsset.map((item: any) => {
-        return { label: item.vnContent, value: item.cdVal };
-      });
-
-      setListType(listTypeAssetConvert);
-    } catch (error) {}
-  };
-
   const getListTransType = async () => {
     try {
       const listTypeAsset = await getTypeAsset({
@@ -60,11 +44,13 @@ export const FormRealEstate = ({ onCancel, fetchData }: FormMoneyType) => {
         cdName: "TRANS_TYPE",
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const listTypeAssetConvert = listTypeAsset.map((item: any) => {
         return { label: item.vnContent, value: item.cdVal };
       });
 
       setListTransType(listTypeAssetConvert);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   };
 
@@ -89,6 +75,7 @@ export const FormRealEstate = ({ onCancel, fetchData }: FormMoneyType) => {
       });
       setFaceValueList(faceValueTotalConvert);
       setListFaceValue(listFaceConvert);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   };
   const fetchBankData = async () => {
@@ -183,10 +170,10 @@ export const FormRealEstate = ({ onCancel, fetchData }: FormMoneyType) => {
         timeout: 30000,
       });
 
-      setLoading(true);
       fetchData();
       onCancel();
       form.resetFields();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   };
 

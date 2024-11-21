@@ -29,7 +29,6 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
   const [banks, setBanks] = useState([]);
   const [bankAccount, setBankAccount] = useState([]);
   const [listType, setListType] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [listTransType, setListTransType] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [listFaceValue, setListFaceValue] = useState([]);
@@ -46,11 +45,13 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
         cdType: "TRANS_CASH",
         cdName: "TYPE",
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const listTypeAssetConvert = listTypeAsset.map((item: any) => {
         return { label: item.vnContent, value: item.cdVal };
       });
 
       setListType(listTypeAssetConvert);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   };
 
@@ -61,11 +62,13 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
         cdName: "TRANS_TYPE",
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const listTypeAssetConvert = listTypeAsset.map((item: any) => {
         return { label: item.vnContent, value: item.cdVal };
       });
 
       setListTransType(listTypeAssetConvert);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   };
 
@@ -91,6 +94,7 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
       });
       setFaceValueList(faceValueTotalConvert);
       setListFaceValue(listFaceConvert);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   };
   const fetchBankData = async () => {
@@ -211,15 +215,13 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
       if (responsiove.data.message && !responsiove.data.success) {
         toast.error(responsiove.data.message);
       } else {
-        setLoading(true);
         fetchData();
         onCancel();
         toast.success(responsiove.data.message || "Thêm mới thành công!");
         form.resetFields();
       }
-    } catch (error) {
-      // toast.error(res.message || "Có lỗi xảy ra, vui lòng thử lại.");
-    }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {}
   };
 
   return (
@@ -248,7 +250,7 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
               options={listType}
               onFocus={() => getlistTypeAsset()}
               placeholder="Chọn loại tiền"
-              onChange={(e) => {
+              onChange={() => {
                 setListFaceValue([]);
                 setFaceValueChoose([]);
                 setSelectedValues([]);

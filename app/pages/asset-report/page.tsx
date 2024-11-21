@@ -5,7 +5,7 @@ import { Col, Row } from "antd";
 import { useState } from "react";
 
 import { moockAseet } from "./constants";
-import { AssetType, ItemAssetType } from "@/app/common/type";
+import { ItemAssetType } from "@/app/common/type";
 import CardAseet from "@/app/module/aseetReport";
 import BarChart from "../../module/aseetReport/BarChart";
 import { TotalIcon } from "../../../public/icon/total";

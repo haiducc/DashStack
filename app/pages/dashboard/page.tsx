@@ -5,7 +5,7 @@ import { DatePicker, Select, Space, Spin, Table } from "antd";
 import type { TableProps } from "antd/es/table";
 import Header from "@/app/component/Header";
 import BarChart from "../products/BarChart";
-import Statistics from "../products/Statistics";
+import Statistics from "../products/statistics";
 import {
   getListStatistics,
   getTransactionById,

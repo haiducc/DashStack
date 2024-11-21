@@ -2,7 +2,7 @@ export const buildSearchParams = (
   searchTerms: Array<{ Name: string; Value: string }>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   additionalParams: Record<string, any>
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const params: Record<string, any> = {};
@@ -11,7 +11,12 @@ export const buildSearchParams = (
   if (searchTerms.length > 0) {
     searchTerms.forEach((term, index) => {
       params[`searchTerms[${index}].Name`] = term.Name;
-      params[`searchTerms[${index}].Value`] = term.Value;
+      // params[`searchTerms[${index}].Value`] = term.Value;
+      if (Array.isArray(term.Value)) {
+        params[`searchTerms[${index}].Value`] = term.Value.join(",");
+      } else {
+        params[`searchTerms[${index}].Value`] = term.Value;
+      }
     });
   }
 

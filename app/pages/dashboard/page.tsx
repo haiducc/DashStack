@@ -475,18 +475,21 @@ const Dashboard = () => {
         <div className="flex mx-[35px] mt-7">
           <Space direction="horizontal" size="middle">
             <Select
+              mode="multiple"
               options={bankAccountFilter}
               placeholder="Tài khoản ngân hàng"
               style={{ width: 400 }}
               allowClear
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
+                const parsedValue = Array.isArray(value)
+                  ? value
+                  : value.split(",").map((item: any) => item.trim());
                 setBankFilter(value);
                 // console.log(value, "value");
-
-                if (!value) {
+                if (!parsedValue.length) {
                   handleSelectChange(
-                    value,
+                    parsedValue,
                     chatFilter,
                     transTypeFilter,
                     startDateFilter
@@ -494,7 +497,7 @@ const Dashboard = () => {
                   setCheckFilter(!checkFilter);
                 } else {
                   fetchListStatistics(
-                    value,
+                    parsedValue,
                     chatFilter,
                     transTypeFilter,
                     startDateFilter

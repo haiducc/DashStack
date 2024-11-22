@@ -232,7 +232,7 @@ const Account = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bankData?.data?.source?.map((bank: any) => ({
           value: bank.id,
-          label: bank.fullName || bank.code || "Không xác định",
+          label: bank.code + " - " + bank.fullName || "Không xác định",
         })) || [];
       setBanks(formattedBanks);
     } catch (error) {
@@ -282,7 +282,7 @@ const Account = () => {
     }
   };
 
-  const [selectedSystemIds, setSelectedSystemIds] = useState<string[]>([]);
+  // const [selectedSystemIds, setSelectedSystemIds] = useState<string[]>([]);
 
   const getGroupSystems = async () => {
     const arrAccountGroup: filterGroupAccount[] = [];
@@ -307,8 +307,8 @@ const Account = () => {
       }));
       setGroupSystem(res);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const systemIds = getSystem?.data?.source?.map((x: any) => x.id) || [];
-      setSelectedSystemIds(systemIds);
+      // const systemIds = getSystem?.data?.source?.map((x: any) => x.id) || [];
+      // setSelectedSystemIds(systemIds);
     } catch (error) {
       console.error(error);
     }
@@ -330,18 +330,18 @@ const Account = () => {
         arrAccountGroup
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // const res = getBranch?.data?.source?.map((x: any) => ({
-      //   value: x.id,
-      //   label: x.name || "Không xác định",
-      // }));
-      const res = getBranch?.data?.source
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ?.filter((x: any) => selectedSystemIds.includes(x.systemId))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((x: any) => ({
-          value: x.id,
-          label: x.name || "Không xác định",
-        }));
+      const res = getBranch?.data?.source?.map((x: any) => ({
+        value: x.id,
+        label: x.name || "Không xác định",
+      }));
+      // const res = getBranch?.data?.source
+      //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      //   ?.filter((x: any) => selectedSystemIds.includes(x.systemId))
+      //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      //   .map((x: any) => ({
+      //     value: x.id,
+      //     label: x.name || "Không xác định",
+      //   }));
       setBranchSystem(res);
     } catch (error) {
       console.error(error);
@@ -386,12 +386,8 @@ const Account = () => {
   };
 
   const handleAddConfirm = async () => {
-    // console.log(373, Number(saveBank));
-    // console.log(374, Number(saveGroupSystem));
-    // console.log(375, Number(saveGroupBranch));
-    // console.log(376, Number(saveGroupTeam));
     try {
-      // await form.validateFields();
+      await form.validateFields();
       const formData = await form.getFieldsValue();
       setLoading(true);
       const res = await addBankAccounts({
@@ -412,11 +408,9 @@ const Account = () => {
         groupSystem: formData.groupSystem,
         groupBranch: formData.groupBranch,
         groupTeam: formData.groupTeam,
-        // bankName: formData.bank?.fullNamed
       });
-
-      if (!res) {
-        toast.error(res.message || "Có lỗi xảy ra, vui lòng thử lại.");
+      if (!res || !res.success) {
+        toast.error(res?.message || "Có lỗi xảy ra, vui lòng thử lại.");
       } else {
         setAddModalOpen(false);
         form.resetFields();
@@ -424,38 +418,36 @@ const Account = () => {
         await fetchAccounts();
         toast.success("Thêm mới thành công!");
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      setLoading(false);
-      setAddModalOpen(false);
       const axiosError = error as AxiosError;
       if (axiosError.response) {
         const responseData = axiosError.response.data as {
           success: boolean;
           message: string;
-          messageCode?: string;
           code: number;
           errors?: string[];
+          errorFields?: Array<{
+            name: string[];
+            errors: string[];
+          }>;
         };
-        if (responseData.code === 500) {
-          const errorMessage = responseData.message;
-          toast.error(errorMessage);
-        }
-        if (responseData.code === 400) {
-          const errorMessage = responseData.message || "Thêm mới lỗi";
-          toast.error(errorMessage);
-          if (responseData.errors) {
-            responseData.errors.forEach((err) => {
-              toast.error(err);
+        if (responseData.code === 400 && responseData.errorFields) {
+          responseData.errorFields.forEach((field) => {
+            field.errors.forEach((err) => {
+              toast.error(`Lỗi ở trường ${field.name.join(", ")}: ${err}`);
             });
-          }
+          });
+        } else if (responseData.code === 500) {
+          toast.error(responseData.message || "Lỗi server, vui lòng thử lại.");
         } else {
-          toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+          toast.error(
+            responseData.message || "Có lỗi xảy ra, vui lòng thử lại."
+          );
         }
       } else {
-        toast.error("Lỗi kết nối, vui lòng thử lại.");
+        toast.error("Vui lòng nhập tất cả các trường bắt buộc để thêm mới!");
       }
-      console.error("Lỗi khi thêm tài khoản ngân hàng:", error);
     } finally {
       setLoading(false);
     }
@@ -1230,7 +1222,7 @@ const Account = () => {
                   console.log(e);
 
                   const id = Number(e).toString();
-                  // setGroupBranchId(id);
+                  setGroupBranchId(id);
                   // setParentId(value);
                   getGroupTeams();
                   setSaveGroupBranch(id);

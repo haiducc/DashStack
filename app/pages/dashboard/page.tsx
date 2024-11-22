@@ -230,11 +230,36 @@ const Dashboard = () => {
       dataIndex: "fullName",
       key: "fullName",
     },
+    // {
+    //   title: "Số tiền",
+    //   dataIndex: "transAmount",
+    //   key: "transAmount",
+    //   render: (amount: number) => new Intl.NumberFormat("vi-VN").format(amount),
+    // },
     {
       title: "Số tiền",
       dataIndex: "transAmount",
       key: "transAmount",
-      render: (amount: number) => new Intl.NumberFormat("vi-VN").format(amount),
+      render: (balance: number, record: { transType: string }) => {
+        let sign = "";
+        if (record.transType === "2") {
+          sign = "-"; // Tiền ra
+        } else if (record.transType === "3") {
+          sign = "+"; // Tiền vào
+        }
+        const formattedBalance = Math.abs(balance).toLocaleString("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        });
+        return (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <span style={{ marginRight: "4px", fontWeight: "bold" }}>
+              {sign}
+            </span>
+            <span>{formattedBalance}</span>
+          </div>
+        );
+      },
     },
     { title: "Nội dung CK", dataIndex: "narrative", key: "narrative" },
     {
@@ -484,7 +509,8 @@ const Dashboard = () => {
               onChange={(value: any) => {
                 const parsedValue = Array.isArray(value)
                   ? value
-                  : value.split(",").map((item: any) => item.trim());
+                  : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    value.split(",").map((item: any) => item.trim());
                 setBankFilter(value);
                 // console.log(value, "value");
                 if (!parsedValue.length) {

@@ -15,6 +15,7 @@ import { fetchBankAccounts } from "@/app/services/bankAccount";
 import { getListSheet } from "@/app/services/sheet";
 import DeleteModal from "@/app/component/config/modalDelete";
 import { useRouter } from "next/navigation";
+// import { toast } from "react-toastify";
 
 export interface ListSheetIntegration {
   id: number;
@@ -171,6 +172,8 @@ const SheetIntergration = () => {
           label: tele.text,
           transType: tele.value,
         }))) || [];
+      console.log(174, res);
+
       setTransType(res);
     } catch (error) {
       console.error("Error fetching:", error);
@@ -550,6 +553,7 @@ const SheetIntergration = () => {
               rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
             >
               <Select
+                allowClear
                 placeholder="Chọn ngân hàng"
                 onFocus={genBankData}
                 options={banks}
@@ -565,6 +569,7 @@ const SheetIntergration = () => {
             ]}
           >
             <Select
+              allowClear
               placeholder="Chọn nhóm trang tính"
               onFocus={genSheetData}
               options={sheet}
@@ -596,10 +601,10 @@ const SheetIntergration = () => {
             ]}
           >
             <Select
+              allowClear
               placeholder="Chọn loại giao dịch"
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onFocus={(value: any) => {
-                // console.log(value);
                 genTransTypes(value);
               }}
               options={transType}

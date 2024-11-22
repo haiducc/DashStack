@@ -28,7 +28,7 @@ const PhoneNumber: React.FC = () => {
       router.push("/pages/login");
     }
   }, []);
-  
+
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [currentAccount, setCurrentAccount] = useState<DataAccountGroup | null>(
@@ -90,7 +90,6 @@ const PhoneNumber: React.FC = () => {
       await form.validateFields();
       const formData = form.getFieldsValue();
       setLoading(true);
-
       await addAccountGroup({
         id: formData.id,
         fullName: formData.fullName,
@@ -99,10 +98,10 @@ const PhoneNumber: React.FC = () => {
       toast.success(
         currentAccount ? "Cập nhật thành công!" : "Thêm mới thành công!"
       );
-      setAddModalOpen(false);
+      await fetchAccountGroup();
       form.resetFields();
       setCurrentAccount(null);
-      await fetchAccountGroup();
+      setAddModalOpen(false);
     } catch (error) {
       console.error("Lỗi:", error);
       toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");

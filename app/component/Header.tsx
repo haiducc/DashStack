@@ -3,8 +3,8 @@ import "./header.css";
 import React from "react";
 import { DownOutlined, UserOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown, Menu } from "antd";
-import Menus from "../../public/img/menu.png";
-import Image from "next/image";
+// import Menus from "../../public/img/menu.png";
+// import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { apiClient } from "../services/base_api";
 
@@ -69,13 +69,13 @@ const Header = () => {
   return (
     <div className="bg-white flex justify-between px-[30px] h-[70px] header">
       <div className="flex items-center">
-        <Image
+        {/* <Image
           src={Menus}
           alt="Menu"
           width={22}
           height={24}
           className="mr-[30px]"
-        />
+        /> */}
         <div className="search-container">
           {/* <Input
             placeholder="Search"

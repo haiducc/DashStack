@@ -148,11 +148,19 @@ const PhoneNumber: React.FC = () => {
   const handleDeletePhoneNumber = async (phone: PhoneNumberModal) => {
     setLoading(true);
     try {
-      await deletePhone(phone.id);
-      toast.success("Xóa số điện thoại thành công!");
-      await fetchListPhone();
+      const response = await deletePhone(phone.id);
+      // Kiểm tra phản hồi từ API
+      if (response.success === false) {
+        // Hiển thị thông báo lỗi nếu có vấn đề khi xóa
+        toast.error(response.message || "Có lỗi xảy ra khi xóa số điện thoại.");
+      } else {
+        // Hiển thị thông báo thành công nếu không có lỗi
+        toast.success("Xóa số điện thoại thành công!");
+        await fetchListPhone();
+      }
     } catch (error) {
       console.error("Error deleting phone number:", error);
+      toast.error("Xảy ra lỗi khi xóa số điện thoại.");
     } finally {
       setLoading(false);
     }

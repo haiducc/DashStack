@@ -31,6 +31,7 @@ export interface TransactionModal {
   id: number;
   bankName: string;
   bankAccountId: number;
+  bankAccount: string;
   fullName: string;
   transDateString: string;
   transType: string;
@@ -43,7 +44,6 @@ export interface TransactionModal {
   bankId?: number;
   feeIncurred: number;
   transAmount: number;
-  // bankAccountId: number;
 }
 
 interface filterRole {
@@ -71,7 +71,7 @@ const Transaction = () => {
   const [currentTransaction, setCurrentTransaction] =
     useState<TransactionModal | null>(null);
   const [banks, setBanks] = useState<Array<TransactionModal>>([]);
-  const [bankAccount, setBankAccount] = useState([]);
+  const [bankAccount, setBankAccount] = useState<Array<TransactionModal>>([]);
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
 
@@ -167,9 +167,10 @@ const Transaction = () => {
       // console.log(bankData, "bankData");
       const formattedBanks =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        bankData?.data?.source?.map((bank: any) => ({
-          value: bank.id,
-          label: `${bank.accountNumber} - ${bank.fullName}`,
+        bankData?.data?.source?.map((bankAccount: any) => ({
+          value: bankAccount.id,
+          label: `${bankAccount.accountNumber} - ${bankAccount.fullName}`,
+          bankAccountId: bankAccount.id,
         })) || [];
       setBankAccount(formattedBanks);
     } catch (error) {
@@ -202,6 +203,7 @@ const Transaction = () => {
             : undefined,
           bankId: selectBankId,
           feeIncurred: formData.feeIncurred,
+          bankAccount: "",
         });
         if (response && response.success === false) {
           toast.error(response.message || "Cập nhật giao dịch lỗi.");
@@ -227,6 +229,7 @@ const Transaction = () => {
           transDate: selectedDate,
           bankId: selectBankId,
           feeIncurred: formData.feeIncurred,
+          bankAccount: "",
         });
         if (response && response.success === false) {
           toast.error(response.message || "Thêm mới giao dịch lỗi.");
@@ -278,6 +281,7 @@ const Transaction = () => {
       transAmount: record.transAmount,
       transDate: selectedDate,
       feeIncurred: record.feeIncurred,
+      bankAccountName: record.bankAccount + " - " + record.fullName,
     });
     setAddModalOpen(true);
   };
@@ -408,7 +412,6 @@ const Transaction = () => {
         );
       },
     },
-
     {
       title: "Số dư hiện tại",
       dataIndex: "currentBalance",
@@ -493,20 +496,14 @@ const Transaction = () => {
         }}
         title={
           currentTransaction
-            ? "Chỉnh sửa tích hợp trang tính"
-            : "Thêm mới tích hợp trang tính"
+            ? "Chỉnh sửa giao dịch thủ công"
+            : "Thêm mới giao dịch thủ công"
         }
       >
         <Form
           form={form}
           layout="vertical"
           className="flex flex-col gap-1 w-full"
-          // initialValues={{
-          //   ...initialData,
-          //   transDate: initialData.transDate
-          //     ? dayjs(initialData.transDate)
-          //     : null,
-          // }}
         >
           <Form.Item hidden label="id" name="id">
             <Input hidden />
@@ -519,44 +516,47 @@ const Transaction = () => {
               rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
             >
               <Select
+                allowClear
                 placeholder="Chọn ngân hàng"
                 onFocus={fetchBankData}
                 options={banks}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onChange={async (value: any) => {
-                  // console.log(value);
-                  const selectedGroup = await banks.find(
+                onChange={(value: string | null) => {
+                  if (!value) {
+                    // Khi clear, xóa hết các giá trị liên quan
+                    form.setFieldsValue({
+                      bankId: undefined,
+                      bankAccountName: undefined,
+                      bankAccountId: undefined,
+                    });
+                    return;
+                  }
+                  const selectedGroup = banks.find(
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (item: any) => item.value === value
+                    (item:any) => item.value === value
                   );
                   if (selectedGroup) {
                     genBankAccountData(selectedGroup.bankId);
                     form.setFieldsValue({
                       bankId: selectedGroup.bankId,
+                      bankAccountName: undefined,
+                      bankAccountId: undefined,
                     });
                   }
                 }}
               />
             </Form.Item>
-            <Form.Item
-              hidden
-              className="w-[45%]"
-              label="Id Ngân hàng 2"
-              name="bankId"
-            >
-              <Select
-                placeholder="Chọn ngân hàng 2"
-                onFocus={fetchBankData}
-                options={banks}
-              />
+
+            <Form.Item hidden label="Id Ngân hàng 2" name="bankId">
+              <Select placeholder="Chọn ngân hàng 2" />
             </Form.Item>
             <Form.Item
               className="w-[45%]"
               label="Tài khoản ngân hàng"
-              name="bankAccountId"
+              name="bankAccountName"
               rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
             >
               <Select
+                allowClear
                 placeholder="Chọn tài khoản ngân hàng"
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onFocus={() => {
@@ -564,10 +564,24 @@ const Transaction = () => {
                   genBankAccountData(formData.bankId);
                 }}
                 options={bankAccount}
-                onChange={(value) => {
-                  console.log(value);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={async (value: any) => {
+                  // console.log(value);
+                  const selectedGroup = await bankAccount.find(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (item: any) => item.value === value
+                  );
+                  if (selectedGroup) {
+                    genBankAccountData(selectedGroup.bankAccountId);
+                    form.setFieldsValue({
+                      bankAccountId: selectedGroup.bankAccountId,
+                    });
+                  }
                 }}
               />
+            </Form.Item>
+            <Form.Item hidden label="Id Ngân hàng 2" name="bankAccountId">
+              <Select placeholder="Chọn ngân hàng 2" />
             </Form.Item>
           </div>
           <div className="flex justify-between">

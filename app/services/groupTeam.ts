@@ -9,6 +9,7 @@ export const getGroupTeam = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -16,6 +17,9 @@ export const getGroupTeam = async (
     });
     const res = await apiClient.get(`/group-team-api/find`, {
       params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.data;
   } catch (error) {
@@ -38,7 +42,6 @@ export const addGroupTeam = async (team: dataTeamModal) => {
     throw error;
   }
 };
-
 
 export const deleteGroupTeam = async (id: number) => {
   try {

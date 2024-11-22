@@ -9,6 +9,7 @@ export const getListPhone = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -16,6 +17,9 @@ export const getListPhone = async (
     });
     const res = await apiClient.get(`/phone-api/find`, {
       params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.data;
   } catch (error) {
@@ -41,9 +45,13 @@ export const addPhoneNumber = async (phoneData: PhoneNumberModal) => {
 
 export const deletePhone = async (id: number) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/phone-api/delete`, {
       params: {
         id: id,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     });
     return res.data;

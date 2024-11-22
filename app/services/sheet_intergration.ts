@@ -9,6 +9,7 @@ export const getListSheetIntergration = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -16,6 +17,9 @@ export const getListSheetIntergration = async (
     });
     const res = await apiClient.get(`/sheet-api/map/find`, {
       params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.data;
   } catch (error) {
@@ -26,7 +30,12 @@ export const getListSheetIntergration = async (
 
 export const addSheetIntergration = async (sheet: ListSheetIntegration) => {
   try {
-    const res = await apiClient.post(`/sheet-api/map/add-or-update`, sheet);
+    const token = localStorage.getItem("accessToken");
+    const res = await apiClient.post(`/sheet-api/map/add-or-update`, sheet, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);
@@ -36,9 +45,13 @@ export const addSheetIntergration = async (sheet: ListSheetIntegration) => {
 
 export const deleteSheetIntergration = async (id: number) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/sheet-api/map/delete`, {
       params: {
         id: id,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     });
     return res.data;
@@ -49,20 +62,14 @@ export const deleteSheetIntergration = async (id: number) => {
 };
 
 export const getTransTypeSheet = async (
-  pageIndex: number,
-  pageSize: number,
-  globalTerm?: string,
-  searchTerms: Array<{ Name: string; Value: string }> = []
+  bankAccountId: number,
+  sheetId: number,
+  id?: number
 ) => {
   try {
-    const params = await buildSearchParams(searchTerms, {
-      pageIndex,
-      pageSize,
-      globalTerm: globalTerm || undefined,
-    });
     const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/sheet-api/map/get-trans-type`, {
-      params,
+      params: { bankAccountId, sheetId, id },
       headers: {
         Authorization: `Bearer ${token}`,
       },

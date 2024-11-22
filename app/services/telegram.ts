@@ -70,11 +70,7 @@ export const getTransType = async (
   try {
     const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/group-chat-api/map/get-trans-type`, {
-      params: {
-        bankAccountId,
-        groupId,
-        id,
-      },
+      params: { bankAccountId, groupId, id },
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -85,3 +81,4 @@ export const getTransType = async (
     throw error;
   }
 };
+

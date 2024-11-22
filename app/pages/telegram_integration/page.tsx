@@ -54,7 +54,7 @@ const TelegramIntegration = () => {
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [currentTelegram, setCurrentTelegram] =
     useState<ListTelegramIntegration | null>(null);
-  const [banks, setBanks] = useState([]);
+    const [banks, setBanks] = useState<Array<ListTelegramIntegration>>([]);
   const [telegram, setTelegram] = useState<Array<ListTelegramIntegration>>([]);
   const [loading, setLoading] = useState(false);
   const [globalTerm, setGlobalTerm] = useState("");
@@ -116,7 +116,7 @@ const TelegramIntegration = () => {
             transType: item.transType, // loại giao dịch
             bankId: item.bank.name,
             chatName: item.groupChat.name,
-            typeDescription: item.typeDescription
+            typeDescription: item.typeDescription,
           };
         }) || [];
 
@@ -140,6 +140,7 @@ const TelegramIntegration = () => {
         bankData?.data?.source?.map((bank: any) => ({
           value: bank.id,
           label: `${bank.accountNumber} - ${bank.bank.code} - ${bank.fullName}`,
+          bankAccountId: bank.id,
         })) || [];
 
       setBanks(formattedBanks);
@@ -166,15 +167,17 @@ const TelegramIntegration = () => {
     }
   };
 
-  const [transType, setTransType] = useState<Array<ListTelegramIntegration>>([]);
+  const [transType, setTransType] = useState<Array<ListTelegramIntegration>>(
+    []
+  );
 
-  const genTransTypes = async (x?: ListTelegramIntegration) => {
+  const genTransTypes = async (
+    bankAccountId: number,
+    groupChatId: number,
+    id?: number
+  ) => {
     try {
-      const dataTransType = await getTransType(
-        x!.bankAccountId,
-        x!.groupChatId,
-        x!.id
-      );
+      const dataTransType = await getTransType(bankAccountId, groupChatId, id);
       const res =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (await dataTransType?.data?.map((tele: any) => ({
@@ -576,7 +579,18 @@ const TelegramIntegration = () => {
                 placeholder="Chọn ngân hàng"
                 onFocus={genBankData}
                 options={banks}
-                onChange={(value) => setBankAccountIdSelect(value)}
+                onChange={async (value) => {
+                  setBankAccountIdSelect(value);
+                  const selectedGroup = await banks.find(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (item: any) => item.value === value
+                  );
+                  if (selectedGroup) {
+                    form.setFieldsValue({
+                      bankAccountId: selectedGroup.bankAccountId,
+                    });
+                  }
+                }}
               />
             </Form.Item>
           )}
@@ -629,7 +643,15 @@ const TelegramIntegration = () => {
             <Select
               placeholder="Chọn loại giao dịch"
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onFocus={(value: any) => genTransTypes(value)}
+              onFocus={() => {
+                const formData = form.getFieldsValue();
+                console.log("Form data on focus:", formData);
+                genTransTypes(
+                  formData.bankAccountId,
+                  formData.groupChatId,
+                  formData.id
+                );
+              }}
               options={transType}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={async (value: any) => {

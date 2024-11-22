@@ -418,7 +418,7 @@ const Account = () => {
         await fetchAccounts();
         toast.success("Thêm mới thành công!");
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const axiosError = error as AxiosError;
       if (axiosError.response) {
@@ -1277,59 +1277,41 @@ const Account = () => {
                 </Form.Item>
               </>
             )}
-            <Form.Item
-              className="w-[45%]"
-              label="Chọn ngân hàng"
-              name="bankName"
-            >
-              <Select
-                defaultValue={
-                  form.getFieldsValue().bankId?.toString().trim()
-                    ? {
-                        value: form.getFieldsValue().bankId,
-                        label: form.getFieldsValue().bankName,
-                      }
-                    : undefined
-                }
-                onFocus={() => fetchBankData()}
-                placeholder="Chọn ngân hàng"
-                options={banks}
-                onChange={async (e) => {
-                  console.log(e);
-                  const id = Number(e).toString();
-                  setSaveBank(id);
-                }}
-              />
-            </Form.Item>
-            <Form.Item
-              hidden
-              className="w-[45%]"
-              label="Chọn ngân hàng hidden"
-              name="bankId"
-            >
-              <Select />
-            </Form.Item>
-            {/* <Form.Item
-              className="w-[45%]"
-              label="Chọn ngân hàng"
-              name="bankId"
-              rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
-            >
-              <Select
-                placeholder="Chọn ngân hàng"
-                onFocus={fetchBankData}
-                options={banks}
-              />
-            </Form.Item> */}
-            {/* <Form.Item
-              className="w-[45%]"
-              label="Chọn ngân hàng"
-              name="bankName"
-              rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
-            >
-              <Select />
-            </Form.Item> */}
           </div>
+          <Form.Item
+            className="w-full"
+            label="Chọn ngân hàng"
+            name="bankName"
+            rules={[{ required: true, message: "Vui lòng chọn ngân hàng!" }]}
+          >
+            <Select
+              allowClear
+              defaultValue={
+                form.getFieldsValue().bankId?.toString().trim()
+                  ? {
+                      value: form.getFieldsValue().bankId,
+                      label: form.getFieldsValue().bankName,
+                    }
+                  : undefined
+              }
+              onFocus={() => fetchBankData()}
+              placeholder="Chọn ngân hàng"
+              options={banks}
+              onChange={async (e) => {
+                console.log(e);
+                const id = Number(e).toString();
+                setSaveBank(id);
+              }}
+            />
+          </Form.Item>
+          <Form.Item
+            hidden
+            className="w-[45%]"
+            label="Chọn ngân hàng hidden"
+            name="bankId"
+          >
+            <Select />
+          </Form.Item>
           <div className="flex justify-between">
             <Form.Item
               className="w-[45%]"

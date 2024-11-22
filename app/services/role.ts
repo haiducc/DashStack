@@ -9,6 +9,7 @@ export const getRole = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -16,6 +17,9 @@ export const getRole = async (
     });
     const res = await apiClient.get(`/account/find`, {
       params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.data;
   } catch (error) {
@@ -41,9 +45,13 @@ export const addRole = async (x: dataRole) => {
 
 export const deleteRole = async (id: number) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/account/delete`, {
       params: {
         id: id,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     });
     return res.data;

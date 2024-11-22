@@ -9,6 +9,7 @@ export const getListTelegramIntergration = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -16,6 +17,9 @@ export const getListTelegramIntergration = async (
     });
     const res = await apiClient.get(`/group-chat-api/map/find`, {
       params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.data;
   } catch (error) {
@@ -28,7 +32,16 @@ export const addTelegramIntergration = async (
   tele: ListTelegramIntegration
 ) => {
   try {
-    const res = await apiClient.post(`/group-chat-api/map/add-or-update`, tele);
+    const token = localStorage.getItem("accessToken");
+    const res = await apiClient.post(
+      `/group-chat-api/map/add-or-update`,
+      tele,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);
@@ -38,9 +51,13 @@ export const addTelegramIntergration = async (
 
 export const deleteTelegramIntergration = async (id: number) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/group-chat-api/map/delete`, {
       params: {
         id: id,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     });
     return res.data;

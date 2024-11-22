@@ -85,6 +85,7 @@ const Dashboard = () => {
     useState<TransactionData | null>(null);
   const [loading, setLoading] = useState(false);
   const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
@@ -140,25 +141,6 @@ const Dashboard = () => {
       });
       addedParams.add("transType");
     }
-    // if (transDate) {
-    //   try {
-    //     let formattedDates: string | string[];
-    //     if (Array.isArray(transDate)) {
-    //       formattedDates = transDate.map((date) => formatDate(date));
-    //     } else {
-    //       formattedDates = formatDate(transDate);
-    //     }
-    //     arrFilter.push({
-    //       Name: "transDate",
-    //       Value: Array.isArray(formattedDates)
-    //         ? formattedDates.join(",")
-    //         : formattedDates,
-    //     });
-    //   } catch (error) {
-    //     console.error("Invalid transDate format:", transDate, error);
-    //     return;
-    //   }
-    // }
     if (startDate && endDate) {
       arrFilter.push({
         Name: "startDate",
@@ -324,10 +306,7 @@ const Dashboard = () => {
     Array<{ value: string; label: string }>
   >([]);
   const [transTypeFilter, setTransTypeFilter] = useState();
-  // const [date, setDate] = useState();
   const [startDateFilter, setTranDateFilter] = useState();
-  // const [startDate, setStartDate] = useState();
-  // const [endDate, setEndDate] = useState();
 
   const options = [
     { value: "3", label: "Tiền vào" },
@@ -340,15 +319,18 @@ const Dashboard = () => {
   // ];
   const fetchBankData = async (bankAccount?: string) => {
     const arr: filterProducts[] = [];
-    const groupChatFilter: filterProducts = {
-      Name: "bankAccountId",
-      Value: bankAccount!,
-    };
-    const obj: filterProducts = {
-      Name: keys!,
-      Value: values!,
-    };
-    arr.push(obj, groupChatFilter);
+    const addedParams = new Set<string>();
+    if (bankAccount && !addedParams.has("bankAccount")) {
+      arr.push({
+        Name: "bankAccount",
+        Value: bankAccount,
+      });
+    }
+    arr.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const fetchBankAccountAPI = await fetchBankAccounts(
         pageIndex,
@@ -382,15 +364,18 @@ const Dashboard = () => {
 
   const fetchListTelegram = async (groupChat?: string) => {
     const arr: filterProducts[] = [];
-    const groupChatFilter: filterProducts = {
-      Name: "groupChatId",
-      Value: groupChat!,
-    };
-    const obj: filterProducts = {
-      Name: keys!,
-      Value: values!,
-    };
-    arr.push(obj, groupChatFilter);
+    const addedParams = new Set<string>();
+    if (groupChat && !addedParams.has("groupChat")) {
+      arr.push({
+        Name: "groupChat",
+        Value: groupChat,
+      });
+    }
+    arr.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const fetchBankAccountAPI = await getListTelegram(
         pageIndex,

@@ -9,13 +9,17 @@ export const getListSheet = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
       globalTerm: globalTerm || undefined,
     });
     const res = await apiClient.get(`/sheet-api/find`, {
-     params
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.data;
   } catch (error) {
@@ -26,7 +30,12 @@ export const getListSheet = async (
 
 export const addSheet = async (tele: dataSheetModal) => {
   try {
-    const res = await apiClient.post(`/sheet-api/add-or-update`, tele);
+    const token = localStorage.getItem("accessToken");
+    const res = await apiClient.post(`/sheet-api/add-or-update`, tele, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);
@@ -36,9 +45,13 @@ export const addSheet = async (tele: dataSheetModal) => {
 
 export const deleteSheet = async (id: number) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`sheet-api/delete`, {
       params: {
         id: id,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     });
     return res.data;

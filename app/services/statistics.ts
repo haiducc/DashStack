@@ -8,6 +8,7 @@ export const getListStatistics = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -15,6 +16,9 @@ export const getListStatistics = async (
     });
     const res = await apiClient.get(`/transaction-api/find-transaction`, {
       params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.data;
   } catch (error) {
@@ -29,11 +33,15 @@ export const getDetailCurentBalance = async (
   globalTerm?: string
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/transaction-api/find-balance-account`, {
       params: {
         pageIndex: pageIndex,
         pageSize: pageSize,
         globalTerm: globalTerm,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     });
     return res.data;
@@ -49,11 +57,15 @@ export const getDataGenaral = async (
   globalTerm?: string
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/transaction-api/find-genaral`, {
       params: {
         pageIndex: pageIndex,
         pageSize: pageSize,
         globalTerm: globalTerm,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     });
     return res.data;
@@ -65,7 +77,12 @@ export const getDataGenaral = async (
 
 export const getTransactionById = async (id: number) => {
   try {
-    const res = await apiClient.get(`/transaction-api/find-by-id?id=${id}`);
+    const token = localStorage.getItem("accessToken");
+    const res = await apiClient.get(`/transaction-api/find-by-id?id=${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

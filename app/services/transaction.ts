@@ -9,6 +9,7 @@ export const getTransaction = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -16,6 +17,9 @@ export const getTransaction = async (
     });
     const res = await apiClient.get(`/transaction-api/manual/find`, {
       params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.data;
   } catch (error) {
@@ -38,8 +42,12 @@ export const getTransaction = async (
 
 export const addTransaction = async (trans: TransactionModal) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(`/transaction-api/manual/update`, trans, {
       timeout: 30000,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.data;
   } catch (error) {
@@ -50,9 +58,13 @@ export const addTransaction = async (trans: TransactionModal) => {
 
 export const deleteTransaction = async (id: number) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/transaction-api/manual/delete`, {
       params: {
         id: id,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     });
     return res.data;

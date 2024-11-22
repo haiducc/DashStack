@@ -55,7 +55,7 @@ const SheetIntergration = () => {
   const [currentSheet, setCurrentSheet] = useState<ListSheetIntegration | null>(
     null
   );
-  const [banks, setBanks] = useState([]);
+  const [banks, setBanks] = useState<Array<ListSheetIntegration>>([]);
   const [sheet, setSheet] = useState<Array<ListSheetIntegration>>([]);
 
   // const keys = localStorage.getItem("key");
@@ -132,6 +132,7 @@ const SheetIntergration = () => {
           value: bank.id,
           // label: bank.accountNumber || bank.code || "Không xác định",
           label: `${bank.accountNumber} - ${bank.bank.code} - ${bank.fullName}`,
+          bankAccountId: bank.id,
         })) || [];
       setBanks(formattedBanks);
     } catch (error) {
@@ -162,26 +163,8 @@ const SheetIntergration = () => {
     sheetId: number,
     id?: number
   ) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const arr: any[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const objBankAccount: any = {
-      Name: "bankAccountId",
-      Value: bankAccountId,
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const objSheetId: any = {
-      Name: "sheetId",
-      Value: sheetId,
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ids: any = {
-      Name: "id",
-      Value: id,
-    };
-    await arr.push(objBankAccount, objSheetId, ids);
     try {
-      const dataTransType = await getTransTypeSheet(1, 20, undefined);
+      const dataTransType = await getTransTypeSheet(bankAccountId, sheetId, id);
       const res =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (await dataTransType?.data?.map((tele: any) => ({
@@ -559,7 +542,9 @@ const SheetIntergration = () => {
                 placeholder="Chọn ngân hàng"
                 onFocus={genBankData}
                 options={banks}
-                onChange={(value) => setBankAccountIdSelect(value)}
+                onChange={(value) => {
+                  setBankAccountIdSelect(value);
+                }}
               />
             </Form.Item>
           ) : (
@@ -573,7 +558,19 @@ const SheetIntergration = () => {
                 placeholder="Chọn ngân hàng"
                 onFocus={genBankData}
                 options={banks}
-                onChange={(value) => setBankAccountIdSelect(value)}
+                onChange={async (value) => {
+                  // console.log(value);
+                  setBankAccountIdSelect(value);
+                  const selectedGroup = await banks.find(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (item: any) => item.value === value
+                  );
+                  if (selectedGroup) {
+                    form.setFieldsValue({
+                      bankAccountId: selectedGroup.bankAccountId,
+                    });
+                  }
+                }}
               />
             </Form.Item>
           )}
@@ -622,6 +619,7 @@ const SheetIntergration = () => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onFocus={() => {
                 const formData = form.getFieldsValue();
+                console.log("Form data on focus:", formData);
                 genTransTypes(
                   formData.bankAccountId,
                   formData.sheetId,

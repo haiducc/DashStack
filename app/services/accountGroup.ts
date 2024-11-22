@@ -9,13 +9,19 @@ export const getAccountGroup = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
       globalTerm: globalTerm || undefined,
     });
-    const res = await apiClient.get(`/group-account-api/find`, {params});
-    console.log("searchTerms :", searchTerms);
+    const res = await apiClient.get(`/group-account-api/find`, {
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    // console.log("searchTerms :", searchTerms);
 
     return res.data;
   } catch (error) {
@@ -26,9 +32,15 @@ export const getAccountGroup = async (
 
 export const addAccountGroup = async (accountGroup: DataAccountGroup) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(
       `/group-account-api/add-or-update`,
-      accountGroup
+      accountGroup,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
     return res.data;
   } catch (error) {
@@ -39,9 +51,13 @@ export const addAccountGroup = async (accountGroup: DataAccountGroup) => {
 
 export const deleteAccountGroup = async (id: number) => {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/group-account-api/delete`, {
       params: {
         id: id,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     });
     return res.data;

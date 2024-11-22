@@ -48,20 +48,21 @@ export const deleteSheetIntergration = async (id: number) => {
   }
 };
 
-
 export const getTransTypeSheet = async (
-  bankAccountId: number,
-  sheetId: number,
-  id?: number
+  pageIndex: number,
+  pageSize: number,
+  globalTerm?: string,
+  searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    const params = await buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
+    });
     const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/sheet-api/map/get-trans-type`, {
-      params: {
-        bankAccountId,
-        sheetId,
-        id,
-      },
+      params,
       headers: {
         Authorization: `Bearer ${token}`,
       },

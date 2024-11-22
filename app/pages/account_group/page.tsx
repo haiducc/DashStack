@@ -45,6 +45,7 @@ const PhoneNumber: React.FC = () => {
   // const keys = localStorage.getItem("key");
   // const values = localStorage.getItem("value");
   const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
@@ -52,19 +53,20 @@ const PhoneNumber: React.FC = () => {
   }, []);
 
   const fetchAccountGroup = async (globalTerm?: string) => {
-    const arrAccountGroup: filterGroupAccount[] = [];
-    const obj: filterGroupAccount = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrAccountGroup.push(obj);
+    const arr: filterGroupAccount[] = [];
+    const addedParams = new Set<string>();
+    arr.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     setLoading(true);
     try {
       const response = await getAccountGroup(
         pageIndex,
         pageSize,
         globalTerm,
-        arrAccountGroup
+        arr
       );
       const formattedData =
         response?.data?.source?.map((x: DataAccountGroup) => ({

@@ -15,7 +15,6 @@ import { fetchBankAccounts } from "@/app/services/bankAccount";
 import { getListSheet } from "@/app/services/sheet";
 import DeleteModal from "@/app/component/config/modalDelete";
 import { useRouter } from "next/navigation";
-// import { toast } from "react-toastify";
 
 export interface ListSheetIntegration {
   id: number;
@@ -158,13 +157,31 @@ const SheetIntergration = () => {
 
   const [transType, setTransType] = useState<Array<ListSheetIntegration>>([]);
 
-  const genTransTypes = async (x?: ListSheetIntegration) => {
+  const genTransTypes = async (
+    bankAccountId: number,
+    sheetId: number,
+    id?: number
+  ) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const arr: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const objBankAccount: any = {
+      Name: "bankAccountId",
+      Value: bankAccountId,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const objSheetId: any = {
+      Name: "sheetId",
+      Value: sheetId,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ids: any = {
+      Name: "id",
+      Value: id,
+    };
+    await arr.push(objBankAccount, objSheetId, ids);
     try {
-      const dataTransType = await getTransTypeSheet(
-        x!.bankAccountId,
-        x!.sheetId,
-        x!.id
-      );
+      const dataTransType = await getTransTypeSheet(1, 20, undefined);
       const res =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (await dataTransType?.data?.map((tele: any) => ({
@@ -487,7 +504,6 @@ const SheetIntergration = () => {
               />
             </Space>
           </div>
-
           <Button
             className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
             onClick={() => {
@@ -604,8 +620,13 @@ const SheetIntergration = () => {
               allowClear
               placeholder="Chọn loại giao dịch"
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onFocus={(value: any) => {
-                genTransTypes(value);
+              onFocus={() => {
+                const formData = form.getFieldsValue();
+                genTransTypes(
+                  formData.bankAccountId,
+                  formData.sheetId,
+                  formData.id
+                );
               }}
               options={transType}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any

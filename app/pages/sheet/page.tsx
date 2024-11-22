@@ -41,6 +41,7 @@ const Sheet = () => {
   const [pageSize] = useState(20);
 
   const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
@@ -48,18 +49,19 @@ const Sheet = () => {
   }, []);
 
   const fetchSheet = async (globalTerm?: string) => {
-    const arrRole: filterRole[] = [];
-    const obj: filterRole = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrRole.push(obj);
+    const arr: filterRole[] = [];
+    const addedParams = new Set<string>();
+    arr.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const response = await getListSheet(
         pageIndex,
         pageSize,
         globalTerm,
-        arrRole
+        arr
       );
       const formattedData =
         response?.data?.source?.map((x: dataSheetModal) => ({

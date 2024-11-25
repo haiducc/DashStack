@@ -189,6 +189,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchListStatistics();
+    console.log(192,localStorage.getItem("key") )
   }, [keys]);
 
   const fetchStatisticsById = async (id: number) => {

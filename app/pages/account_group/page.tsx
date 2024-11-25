@@ -129,12 +129,26 @@ const PhoneNumber: React.FC = () => {
   const handleDeleteAccountGroup = async (x: DataAccountGroup) => {
     setLoading(true);
     try {
-      await deleteAccountGroup(x.id);
+      const response = await deleteAccountGroup(x.id);
+      if (response.success === false) {
+        toast.error(response.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+        return;
+      }
       toast.success("Xóa thành công!");
       await fetchAccountGroup();
-    } catch (error) {
-      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error:any) {
+      console.error("Lỗi khi xóa nhóm tài khoản:", error);
+      if (error.isAxiosError && error.response) {
+        const { status, data } = error.response;
+        if (status === 400 && data && data.message) {
+          toast.error(data.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+        } else {
+          toast.error(data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+        }
+      } else {
+        toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+      }
     } finally {
       setLoading(false);
     }

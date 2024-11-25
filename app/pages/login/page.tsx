@@ -37,6 +37,42 @@ function Login() {
     setValues(localStorage.getItem("value"));
   }, []);
 
+  const fetchRoleData = async (accessToken: string) => {
+    try {
+      const response = await fetch(
+        "https://apiweb.bankings.vnrsoftware.vn/account/find-role-by-account",
+        {
+          method: "GET",
+          headers: {
+            Authorization: accessToken,
+          },
+        }
+      );
+
+      const res = await response.json();
+
+      localStorage.setItem("key", res.data.key);
+      localStorage.setItem("value", res.data.value);
+
+      localStorage.setItem("groupSystemId", res.data.groupSystemId || "");
+      localStorage.setItem("groupBranchId", res.data.groupBranchId || "");
+      localStorage.setItem("groupTeamId", res.data.groupTeamId || "");
+
+      localStorage.setItem("groupSystemName", res.data.groupSystemName || " ");
+      localStorage.setItem("groupBranchName", res.data.groupBranchName || " ");
+      localStorage.setItem("groupTeamName", res.data.groupTeamName || " ");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch role data");
+      }
+
+      return res;
+    } catch (error) {
+      console.error("Error fetching role data:", error);
+      return null;
+    }
+  };
+
   const handleLogin = async () => {
     const arrRole: filterRole[] = [];
     const addedParams = new Set<string>();
@@ -52,7 +88,7 @@ function Login() {
         JSON.stringify({
           username,
           password,
-          roles: arrRole,
+          arrRole,
         })
       );
 
@@ -61,6 +97,7 @@ function Login() {
 
       if (data && data.success) {
         await localStorage.setItem("accessToken", data.data.token);
+        await fetchRoleData(data.data.token);
         router.push("/pages/dashboard");
       } else {
         const message = data.message || "Đã xảy ra lỗi. Vui lòng thử lại sau.";

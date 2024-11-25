@@ -58,10 +58,12 @@ const Settings = () => {
   }, []);
 
   const handleEditConfirm = async () => {
-    const formData = form.getFieldsValue();
+    // const formData = form.getFieldsValue();
     setLoading(true);
-
     try {
+      await form.validateFields();
+      setAddModalOpen(false);
+      const formData = form.getFieldsValue();
       await editSettings({
         id: formData.id,
         name: formData.name,

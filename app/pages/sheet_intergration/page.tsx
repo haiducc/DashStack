@@ -183,6 +183,7 @@ const SheetIntergration = () => {
   const handleAddConfirm = async () => {
     try {
       await form.validateFields();
+      setAddModalOpen(false);
       const formData = form.getFieldsValue();
       setLoading(true);
       if (currentSheet) {
@@ -249,6 +250,7 @@ const SheetIntergration = () => {
   const handleDelete = async (x: ListSheetIntegration) => {
     setLoading(true);
     try {
+      setAddModalOpen(false);
       await deleteSheetIntergration(x.id);
       await fetchSheetIntegration();
     } catch (error) {
@@ -499,7 +501,7 @@ const SheetIntergration = () => {
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} />
+          <Spin spinning={loading} fullscreen/>
         ) : (
           <Table
             columns={columns}

@@ -153,10 +153,12 @@ const Role = () => {
   };
 
   const handleAddConfirm = async () => {
-    const formData = form.getFieldsValue();
+    // const formData = form.getFieldsValue();
     setLoading(true);
-
     try {
+      await form.validateFields();
+      setAddModalOpen(false);
+      const formData = form.getFieldsValue();
       const roleData = {
         id: currentRole ? currentRole.id : formData.id,
         userName: formData.userName,
@@ -218,6 +220,7 @@ const Role = () => {
   const handleDeleteRole = async (role: dataRole) => {
     setLoading(true);
     try {
+      setAddModalOpen(false);
       await deleteRole(role.id);
       await fetchListRole();
     } catch (error) {

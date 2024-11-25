@@ -83,6 +83,7 @@ const Sheet = () => {
   const handleAddConfirm = async () => {
     try {
       await form.validateFields();
+      setAddModalOpen(false);
       const formData = form.getFieldsValue();
       setLoading(true);
       if (currentSheet) {
@@ -133,6 +134,7 @@ const Sheet = () => {
     }
     setLoading(true);
     try {
+      setAddModalOpen(false);
       await deleteSheet(x.id);
       await fetchSheet();
       toast.success("Xóa thành công!");

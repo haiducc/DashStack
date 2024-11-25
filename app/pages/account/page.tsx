@@ -379,6 +379,7 @@ const Account = () => {
     const formData = await form.validateFields();
     try {
       await form.validateFields();
+      setAddModalOpen(false);
       // const formData = await form.getFieldsValue();
       setLoading(true);
       const res = await addBankAccounts({
@@ -392,9 +393,9 @@ const Account = () => {
         typeAccount: formData.typeAccount,
         notes: formData.notes,
         transactionSource: formData.transactionSource,
-        groupSystemId: Number(saveGroupSystem),
-        groupBranchId: Number(saveGroupBranch),
-        groupTeamId: Number(saveGroupTeam),
+        groupSystemId: Number(saveGroupSystem) || undefined,
+        groupBranchId: Number(saveGroupBranch) || undefined,
+        groupTeamId: Number(saveGroupTeam) || undefined,
         bankId: Number(saveBank),
         groupSystem: formData.groupSystem,
         groupBranch: formData.groupBranch,
@@ -504,6 +505,7 @@ const Account = () => {
   const handleDeleteAccount = async (x: BankAccounts) => {
     setLoading(true);
     try {
+      setAddModalOpen(false);
       const response = await deleteBankAccount(x.id);
       if (response.success === false) {
         toast.error(response.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
@@ -511,7 +513,7 @@ const Account = () => {
       }
       toast.success("Xóa thành công tài khoản ngân hàng!");
       await fetchAccounts();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
       if (error.isAxiosError && error.response) {
@@ -1129,12 +1131,14 @@ const Account = () => {
             Thêm mới
           </Button>
         </div>
-        {loading ? (
+        {/* {loading ? (
           <Spin spinning={loading} />
         ) : (
           <Table columns={columns} dataSource={dataAccount} />
-        )}
-        {/* <Table columns={columns} dataSource={dataAccount} /> */}
+        )} */}
+        <Spin spinning={loading}>
+          <Table columns={columns} dataSource={dataAccount} />
+        </Spin>
       </div>
       <BaseModal
         open={isAddModalOpen}

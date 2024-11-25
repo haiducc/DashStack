@@ -64,12 +64,7 @@ const PhoneNumber: React.FC = () => {
     addedParams.add(keys!);
     setLoading(true);
     try {
-      const response = await getListPhone(
-        pageIndex,
-        pageSize,
-        globalTerm,
-        arr
-      );
+      const response = await getListPhone(pageIndex, pageSize, globalTerm, arr);
       const formattedData =
         response?.data?.source?.map((x: PhoneNumberModal) => ({
           id: x.id,
@@ -93,6 +88,7 @@ const PhoneNumber: React.FC = () => {
     try {
       await form.validateFields();
       const formData = form.getFieldsValue();
+      setAddModalOpen(false);
       setLoading(true);
       const response = await addPhoneNumber({
         number: formData.number,
@@ -102,30 +98,20 @@ const PhoneNumber: React.FC = () => {
       });
       if (response && response.success === false) {
         toast.error(response.message || "Thêm mới số điện thoại lỗi.");
-        setLoading(false);
         return;
       }
-      // toast.success("Thêm mới số điện thoại thành công!");
+      form.resetFields();
+      // setAddModalOpen(false);
+      setCurrentPhoneNumber(null);
       setCurrentTelegram(null);
       toast.success(
         currentTelegram ? "Cập nhật thành công!" : "Thêm mới thành công!"
       );
-      setAddModalOpen(false);
-      form.resetFields();
-      setCurrentPhoneNumber(null);
       await fetchListPhone();
-    } catch (error) {
-      setLoading(false);
-      if (typeof error === "object" && error !== null && "response" in error) {
-        const responseError = error as {
-          response: { data?: { message?: string } };
-        };
-
-        if (responseError.response && responseError.response.data) {
-          toast.error(`Error: ${responseError.response.data.message}`);
-        } else {
-          toast.error("Thêm mới số điện thoại lỗi.");
-        }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error:any) {
+      if (error?.response?.data?.message) {
+        toast.error(`Lỗi: ${error.response.data.message}`);
       } else {
         console.error("Error:", error);
         toast.error("Thêm mới số điện thoại lỗi.");
@@ -150,6 +136,7 @@ const PhoneNumber: React.FC = () => {
   const handleDeletePhoneNumber = async (phone: PhoneNumberModal) => {
     setLoading(true);
     try {
+      setAddModalOpen(false);
       const response = await deletePhone(phone.id);
       // Kiểm tra phản hồi từ API
       if (response.success === false) {

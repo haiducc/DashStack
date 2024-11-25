@@ -95,6 +95,7 @@ const GroupBranchPage = () => {
   const handleAddConfirm = async () => {
     try {
       await form.validateFields();
+      setAddModalOpen(false);
       const formData = form.getFieldsValue();
       setLoading(true);
       const response = await addGroupBranch({
@@ -152,6 +153,7 @@ const GroupBranchPage = () => {
   const handleDeleteTele = async (x: dataBranchModal) => {
     setLoading(true);
     try {
+      setAddModalOpen(false);
       await deleteGroupBranch(x.id);
       toast.success("Xóa nhóm chi nhánh thành công!");
       await fetchGroupSystem();

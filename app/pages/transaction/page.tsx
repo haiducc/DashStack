@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {  DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined } from "@ant-design/icons";
 import Header from "@/app/component/Header";
 import {
   Button,
@@ -184,6 +184,8 @@ const Transaction = () => {
     setLoading(true);
     // console.log(formData, "formData");
     try {
+      await form.validateFields();
+      setAddModalOpen(false);
       if (currentTransaction) {
         const response = await addTransaction({
           id: currentTransaction.id,
@@ -292,6 +294,7 @@ const Transaction = () => {
   const handleDelete = async (x: TransactionModal) => {
     setLoading(true);
     try {
+      setAddModalOpen(false);
       await deleteTransaction(x.id);
       await fetchTransaction();
     } catch (error) {
@@ -486,7 +489,7 @@ const Transaction = () => {
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} />
+          <Spin spinning={loading} fullscreen/>
         ) : (
           <Table columns={columns} dataSource={dataTransaction} rowKey="id" />
         )}

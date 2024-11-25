@@ -54,7 +54,7 @@ const TelegramIntegration = () => {
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [currentTelegram, setCurrentTelegram] =
     useState<ListTelegramIntegration | null>(null);
-    const [banks, setBanks] = useState<Array<ListTelegramIntegration>>([]);
+  const [banks, setBanks] = useState<Array<ListTelegramIntegration>>([]);
   const [telegram, setTelegram] = useState<Array<ListTelegramIntegration>>([]);
   const [loading, setLoading] = useState(false);
   const [globalTerm, setGlobalTerm] = useState("");
@@ -192,11 +192,12 @@ const TelegramIntegration = () => {
   };
 
   const handleAddConfirm = async () => {
-    if (loading) return; // Nếu đang loading thì không làm gì cả
+    if (loading) return;
 
     try {
       await form.validateFields();
-      setLoading(true); // Chỉ định `loading` true ngay khi bắt đầu xử lý
+      setAddModalOpen(false);
+      setLoading(true);
 
       const formData = form.getFieldsValue();
       let response;
@@ -267,6 +268,7 @@ const TelegramIntegration = () => {
   const handleDelete = async (x: ListTelegramIntegration) => {
     setLoading(true);
     try {
+      setAddModalOpen(false);
       await deleteTelegramIntergration(x.id);
       await fetchListTelegramIntegration();
     } catch (error) {
@@ -522,7 +524,7 @@ const TelegramIntegration = () => {
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} />
+          <Spin spinning={loading} fullscreen />
         ) : (
           <Table
             columns={columns}

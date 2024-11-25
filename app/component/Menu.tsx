@@ -129,7 +129,6 @@ const items: MenuItem[] = [
   },
 ];
 
-// Hàm gọi API để lấy quyền của tài khoản
 const fetchRoleData = async (accessToken: string) => {
   try {
     const response = await fetch(
@@ -169,15 +168,11 @@ const fetchRoleData = async (accessToken: string) => {
 const SideMenu = () => {
   const router = useRouter();
   const [openKeys, setOpenKeys] = useState<string[]>([]);
-  // const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    // console.log("useEffect is running");
-    // setLoading(true);
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       fetchRoleData(accessToken).then((data) => {
-        // setLoading(false);
         if (data) {
           console.log("Role data fetched:", data);
         }
@@ -195,25 +190,17 @@ const SideMenu = () => {
     }
 
     try {
-      // setLoading(true);
       const roleData = await fetchRoleData(accessToken);
-      // setLoading(false);
       if (roleData) {
         console.log(roleData, "Role data");
         if (menuItem.path) {
           router.push(menuItem.path);
         }
-        // if (roleData.data.isAdmin || roleData.data.value === 1) {
-        //   // Điều hướng nếu có quyền
-        // } else {
-        //   toast.error("Bạn không có quyền truy cập vào trang này.");
-        // }
       } else {
         toast.error("Không thể xác minh quyền của bạn.");
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      // setLoading(false);
       toast.error("Lỗi khi kiểm tra quyền truy cập.");
     }
   };
@@ -257,11 +244,6 @@ const SideMenu = () => {
       >
         {renderMenuItems(items)}
       </AntMenu>
-      {/* {loading && (
-        <div className="loading-overlay">
-          <Spin size="large" />
-        </div>
-      )} */}
     </div>
   );
 };

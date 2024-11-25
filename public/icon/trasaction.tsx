@@ -1,4 +1,4 @@
-import { Transaction1Props } from "@/app/common/type";
+import { Transaction1Props } from "@/src/common/type";
 import React from "react";
 
 export const TransactionIcon: React.FC<Transaction1Props> = ({

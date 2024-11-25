@@ -51,8 +51,8 @@ const Account = () => {
   const [dataAccount, setDataAccount] = useState<BankAccounts[]>([]);
   const [banks, setBanks] = useState([]);
   const [phoneNumber, setPhoneNumber] = useState([]);
-  const [groupSystem, setGroupSystem] = useState([]);
-  const [branchSystem, setBranchSystem] = useState([]);
+  const [groupSystem, setGroupSystem] = useState<Array<BankAccounts>>([]);
+  const [branchSystem, setBranchSystem] = useState<Array<BankAccounts>>([]);
   const [groupTeam, setGroupTeam] = useState<Array<BankAccounts>>([]);
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
@@ -285,83 +285,73 @@ const Account = () => {
   // const [selectedSystemIds, setSelectedSystemIds] = useState<string[]>([]);
 
   const getGroupSystems = async () => {
-    const arrAccountGroup: filterGroupAccount[] = [];
-    const addedParams = new Set<string>();
-    arrAccountGroup.push({
-      Name: localStorage.getItem("key")!,
-      Value: localStorage.getItem("value")!,
-    });
-    addedParams.add(keys!);
-
     try {
-      const getSystem = await getGroupSystem(
-        pageIndex,
-        pageSize,
-        globalTerm,
-        arrAccountGroup
-      );
+      const getSystem = await getGroupSystem(pageIndex, pageSize, globalTerm);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = getSystem?.data?.source?.map((x: any) => ({
         value: x.id,
         label: x.name || "Không xác định",
+        groupSystemId: x.id,
       }));
       setGroupSystem(res);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // const systemIds = getSystem?.data?.source?.map((x: any) => x.id) || [];
-      // setSelectedSystemIds(systemIds);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const getBranchSystems = async () => {
-    const arrAccountGroup: filterGroupAccount[] = [];
-    const addedParams = new Set<string>();
-    arrAccountGroup.push({
+  const getBranchSystems = async (groupSystemId?: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const arr: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj: any = {
+      Name: "groupSystemId",
+      Value: groupSystemId || 0,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj2: any = {
       Name: localStorage.getItem("key")!,
       Value: localStorage.getItem("value")!,
-    });
-    addedParams.add(keys!);
+    };
+    await arr.push(obj, obj2);
     try {
       const getBranch = await getBranchSystem(
         pageIndex,
         pageSize,
         globalTerm,
-        arrAccountGroup
+        arr
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = getBranch?.data?.source?.map((x: any) => ({
         value: x.id,
         label: x.name || "Không xác định",
+        groupBranchId: x.id,
       }));
-      // const res = getBranch?.data?.source
-      //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      //   ?.filter((x: any) => selectedSystemIds.includes(x.systemId))
-      //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      //   .map((x: any) => ({
-      //     value: x.id,
-      //     label: x.name || "Không xác định",
-      //   }));
       setBranchSystem(res);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const getGroupTeams = async () => {
-    const arrAccountGroup: filterGroupAccount[] = [];
-    const addedParams = new Set<string>();
-    arrAccountGroup.push({
+  const getGroupTeams = async (groupBranchId?: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const arr: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj1: any = {
+      Name: "groupBranchId",
+      Value: groupBranchId || 0,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj2: any = {
       Name: localStorage.getItem("key")!,
       Value: localStorage.getItem("value")!,
-    });
-    addedParams.add(keys!);
+    };
+    await arr.push(obj1, obj2);
     try {
       const groupTeams = await getGroupTeam(
         pageIndex,
         pageSize,
         globalTerm,
-        arrAccountGroup
+        arr
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = groupTeams?.data?.source?.map((x: any) => ({
@@ -386,9 +376,10 @@ const Account = () => {
   };
 
   const handleAddConfirm = async () => {
+    const formData = await form.validateFields();
     try {
       await form.validateFields();
-      const formData = await form.getFieldsValue();
+      // const formData = await form.getFieldsValue();
       setLoading(true);
       const res = await addBankAccounts({
         id: formData.id,
@@ -513,12 +504,26 @@ const Account = () => {
   const handleDeleteAccount = async (x: BankAccounts) => {
     setLoading(true);
     try {
-      await deleteBankAccount(x.id);
+      const response = await deleteBankAccount(x.id);
+      if (response.success === false) {
+        toast.error(response.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+        return;
+      }
       toast.success("Xóa thành công tài khoản ngân hàng!");
       await fetchAccounts();
-    } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+      if (error.isAxiosError && error.response) {
+        const { status, data } = error.response;
+        if (status === 400 && data && data.message) {
+          toast.error(data.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+        } else {
+          toast.error(data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+        }
+      } else {
+        toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+      }
     } finally {
       setLoading(false);
     }
@@ -1184,11 +1189,20 @@ const Account = () => {
                 onFocus={() => getGroupSystems()}
                 placeholder="Chọn hệ thống"
                 options={groupSystem}
-                onChange={(e) => {
-                  console.log(e);
+                onChange={async (e) => {
                   const id = Number(e).toString();
                   setSaveGroupSystem(id);
-                  getBranchSystems();
+                  // getBranchSystems();
+                  const selectedGroup = await groupSystem.find(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (item: any) => item.value === e
+                  );
+                  if (selectedGroup) {
+                    getBranchSystems(selectedGroup.groupSystemId);
+                    form.setFieldsValue({
+                      groupSystemId: selectedGroup.groupSystemId,
+                    });
+                  }
                 }}
               />
             </Form.Item>
@@ -1215,17 +1229,29 @@ const Account = () => {
                       }
                     : undefined
                 }
-                onFocus={() => getBranchSystems()}
+                onFocus={() => {
+                  // getBranchSystems();
+                  const formData = form.getFieldsValue();
+                  getBranchSystems(formData.groupSystemId);
+                }}
                 placeholder="Chọn chi nhánh"
                 options={branchSystem}
-                onChange={(e) => {
-                  console.log(e);
-
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={async (e) => {
                   const id = Number(e).toString();
                   setGroupBranchId(id);
-                  // setParentId(value);
-                  getGroupTeams();
+                  // getGroupTeams();
                   setSaveGroupBranch(id);
+                  const selectedGroup = await branchSystem.find(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (item: any) => item.value === e
+                  );
+                  if (selectedGroup) {
+                    getGroupTeams(selectedGroup.groupBranchId);
+                    form.setFieldsValue({
+                      groupBranchId: selectedGroup.groupBranchId,
+                    });
+                  }
                 }}
               />
             </Form.Item>
@@ -1256,7 +1282,11 @@ const Account = () => {
                           }
                         : undefined
                     }
-                    onFocus={() => getGroupTeams()}
+                    onFocus={() => {
+                      //  getGroupTeams();
+                      const formData = form.getFieldsValue();
+                      getGroupTeams(formData.groupBranchId);
+                    }}
                     placeholder="Chọn đội nhóm"
                     // onFocus={getGroupTeams}
                     options={groupTeam}

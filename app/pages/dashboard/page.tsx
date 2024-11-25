@@ -18,6 +18,7 @@ import { getListTelegram } from "@/app/services/telegram";
 import { useRouter } from "next/navigation";
 import { SyncOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
+import dayjs from "dayjs";
 
 interface DataType {
   id: number;
@@ -157,9 +158,11 @@ const Dashboard = () => {
       Value: localStorage.getItem("value")!,
     });
     addedParams.add(keys!);
+    console.log(localStorage.getItem("key"),1);
+    console.log(localStorage.getItem("value"),2);
     setLoading(true);
     try {
-      const response = await getListStatistics(1, 20, arrFilter);
+      const response = await getListStatistics(1, 20, undefined, arrFilter);
       console.log(response);
 
       const formattedData =
@@ -311,7 +314,7 @@ const Dashboard = () => {
   const options = [
     { value: "3", label: "Tiền vào" },
     { value: "2", label: "Tiền ra" },
-    { value: "1", label: "Cả hai" },
+    // { value: "1", label: "Cả hai" },
   ];
   // const optionCompany = [
   //   { value: "1", label: "Tài khoản công ty" },
@@ -613,6 +616,9 @@ const Dashboard = () => {
                   );
                 }
               }}
+              disabledDate={(current) =>
+                current && current > dayjs().endOf("day")
+              }
             />
 
             {/* <DatePicker

@@ -4,7 +4,7 @@ import { apiClient } from "./base_api";
 export const getListStatistics = async (
   pageIndex: number,
   pageSize: number,
-  // globalTerm?: string,
+  globalTerm?: string,
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
@@ -12,7 +12,7 @@ export const getListStatistics = async (
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
-      // globalTerm: globalTerm || undefined,
+      globalTerm: globalTerm || undefined,
     });
     const res = await apiClient.get(`/transaction-api/find-transaction`, {
       params,
@@ -30,16 +30,18 @@ export const getListStatistics = async (
 export const getDetailCurentBalance = async (
   pageIndex: number,
   pageSize: number,
-  globalTerm?: string
+  globalTerm?: string,
+  searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
     const token = localStorage.getItem("accessToken");
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
+    });
     const res = await apiClient.get(`/transaction-api/find-balance-account`, {
-      params: {
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        globalTerm: globalTerm,
-      },
+      params,
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -54,16 +56,18 @@ export const getDetailCurentBalance = async (
 export const getDataGenaral = async (
   pageIndex: number,
   pageSize: number,
-  globalTerm?: string
+  globalTerm?: string,
+  searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
     const token = localStorage.getItem("accessToken");
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
+    });
     const res = await apiClient.get(`/transaction-api/find-genaral`, {
-      params: {
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        globalTerm: globalTerm,
-      },
+      params,
       headers: {
         Authorization: `Bearer ${token}`,
       },

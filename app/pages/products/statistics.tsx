@@ -8,15 +8,35 @@ import {
   getDetailCurentBalance,
 } from "@/app/services/statistics";
 
+interface filterRole {
+  Name: string;
+  Value: string;
+}
+
 const Statistics = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dataDetailCurentBalance, setDataDetailCurentBalance] = useState([]);
   const [databalance, setDataBalance] = useState();
   const [dataTotalAmount, setDataTotalAmount] = useState();
+  const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [values, setValues] = useState<string | null>(null);
+
+  useEffect(() => {
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
+  }, []);
 
   const fetchDataGenaral = async () => {
+    const arrRole: filterRole[] = [];
+    const addedParams = new Set<string>();
+    arrRole.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
-      const res = await getDataGenaral(1, 20);
+      const res = await getDataGenaral(1, 20, undefined, arrRole);
       // console.log("Response:", res);
       if (
         res &&

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import imgrb from "../../../public/img/imgrb.png";
 import imgrt from "../../../public/img/imgrt.png";
 import imglb from "../../../public/img/imglb.png";
@@ -18,13 +18,33 @@ import { Spin } from "antd";
 //   message?: string;
 // }
 
+interface filterRole {
+  Name: string;
+  Value: string;
+}
+
 function Login() {
   const router = useRouter();
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = useState(false);
+  const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [values, setValues] = useState<string | null>(null);
+
+  useEffect(() => {
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
+  }, []);
 
   const handleLogin = async () => {
+    const arrRole: filterRole[] = [];
+    const addedParams = new Set<string>();
+    arrRole.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     setLoading(true);
     try {
       const response = await apiClient.post(
@@ -32,6 +52,7 @@ function Login() {
         JSON.stringify({
           username,
           password,
+          roles: arrRole,
         })
       );
 
@@ -39,7 +60,7 @@ function Login() {
       console.log("Phản hồi API:", data);
 
       if (data && data.success) {
-        localStorage.setItem("accessToken", data.data.token);
+        await localStorage.setItem("accessToken", data.data.token);
         router.push("/pages/dashboard");
       } else {
         const message = data.message || "Đã xảy ra lỗi. Vui lòng thử lại sau.";

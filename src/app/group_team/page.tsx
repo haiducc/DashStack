@@ -100,6 +100,7 @@ const GroupTeamPage = () => {
   const handleAddConfirm = async () => {
     try {
       await form.validateFields();
+      setAddModalOpen(false);
       const formData = form.getFieldsValue();
       setLoading(true);
       const response = await addGroupTeam({
@@ -161,6 +162,7 @@ const GroupTeamPage = () => {
   const handleDeleteTele = async (x: dataTeamModal) => {
     setLoading(true);
     try {
+      setAddModalOpen(false);
       await deleteGroupTeam(x.id);
       toast.success("Xóa nhóm chi nhánh thành công!");
       await fetchGroupSystem();

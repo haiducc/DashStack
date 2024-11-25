@@ -88,6 +88,7 @@ const GroupSystemPage = () => {
     try {
       await form.validateFields();
       const formData = form.getFieldsValue();
+      setAddModalOpen(false);
       setLoading(true);
       const response = await addGroupSystem({
         id: formData.id,
@@ -140,6 +141,7 @@ const GroupSystemPage = () => {
   const handleDeleteTele = async (x: dataSystemModal) => {
     setLoading(true);
     try {
+      setAddModalOpen(false);
       await deleteGroupSystem(x.id);
       toast.success("Xóa nhóm hệ thống thành công!");
       await fetchGroupSystem();

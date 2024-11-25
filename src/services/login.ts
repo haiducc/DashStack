@@ -1,0 +1,27 @@
+import { buildSearchParams } from "../pages/utils/buildQueryParams";
+import { apiClient } from "./base_api";
+
+export const Login = async (
+  pageIndex: number,
+  pageSize: number,
+  globalTerm?: string,
+  searchTerms: Array<{ Name: string; Value: string }> = []
+) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    const params = buildSearchParams(searchTerms, {
+      pageIndex,
+      pageSize,
+      globalTerm: globalTerm || undefined,
+    });
+    const res = await apiClient.get("/account/login", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      params,
+    });
+    return res.data;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error("Lỗi khi gọi API:", error.response?.data || error.message);
+    throw error;
+  }
+};

@@ -23,9 +23,9 @@ export interface BankAccounts {
   typeAccountDescription?: string;
   id: number;
   selectedAccountGroups?: number[];
-  groupSystemId: number;
-  groupBranchId: number;
-  groupTeamId: number;
+  groupSystemId?: number;
+  groupBranchId?: number;
+  groupTeamId?: number;
   groupSystem: {
     name: string;
     id: number;

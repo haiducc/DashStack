@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import imgrb from "../../../public/img/imgrb.png";
 import imgrt from "../../../public/img/imgrt.png";
 import imglb from "../../../public/img/imglb.png";
@@ -18,13 +18,69 @@ import { Spin } from "antd";
 //   message?: string;
 // }
 
+interface filterRole {
+  Name: string;
+  Value: string;
+}
+
 function Login() {
   const router = useRouter();
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = useState(false);
+  const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [values, setValues] = useState<string | null>(null);
+
+  useEffect(() => {
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
+  }, []);
+
+  const fetchRoleData = async (accessToken: string) => {
+    try {
+      const response = await fetch(
+        "https://apiweb.bankings.vnrsoftware.vn/account/find-role-by-account",
+        {
+          method: "GET",
+          headers: {
+            Authorization: accessToken,
+          },
+        }
+      );
+
+      const res = await response.json();
+
+      localStorage.setItem("key", res.data.key);
+      localStorage.setItem("value", res.data.value);
+
+      localStorage.setItem("groupSystemId", res.data.groupSystemId || "");
+      localStorage.setItem("groupBranchId", res.data.groupBranchId || "");
+      localStorage.setItem("groupTeamId", res.data.groupTeamId || "");
+
+      localStorage.setItem("groupSystemName", res.data.groupSystemName || " ");
+      localStorage.setItem("groupBranchName", res.data.groupBranchName || " ");
+      localStorage.setItem("groupTeamName", res.data.groupTeamName || " ");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch role data");
+      }
+
+      return res;
+    } catch (error) {
+      console.error("Error fetching role data:", error);
+      return null;
+    }
+  };
 
   const handleLogin = async () => {
+    const arrRole: filterRole[] = [];
+    const addedParams = new Set<string>();
+    arrRole.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     setLoading(true);
     try {
       const response = await apiClient.post(
@@ -32,6 +88,7 @@ function Login() {
         JSON.stringify({
           username,
           password,
+          arrRole,
         })
       );
 
@@ -39,8 +96,9 @@ function Login() {
       console.log("Phản hồi API:", data);
 
       if (data && data.success) {
-        localStorage.setItem("accessToken", data.data.token);
-        router.push("/dashboard");
+        await localStorage.setItem("accessToken", data.data.token);
+        await fetchRoleData(data.data.token);
+        router.push("/pages/dashboard");
       } else {
         const message = data.message || "Đã xảy ra lỗi. Vui lòng thử lại sau.";
         toast.error(message);

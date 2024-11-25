@@ -89,21 +89,24 @@ const PhoneNumber: React.FC = () => {
 
   const handleAddConfirm = async () => {
     try {
-      await form.validateFields();
+      await form.validateFields(); // Xác nhận form hợp lệ trước
       const formData = form.getFieldsValue();
+      setAddModalOpen(false); // Đóng popup ngay lập tức
       setLoading(true);
+
+      // Xử lý thêm mới
       await addAccountGroup({
         id: formData.id,
         fullName: formData.fullName,
         notes: formData.notes,
       });
+
       toast.success(
         currentAccount ? "Cập nhật thành công!" : "Thêm mới thành công!"
       );
       await fetchAccountGroup();
       form.resetFields();
       setCurrentAccount(null);
-      setAddModalOpen(false);
     } catch (error) {
       console.error("Lỗi:", error);
       toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
@@ -129,12 +132,27 @@ const PhoneNumber: React.FC = () => {
   const handleDeleteAccountGroup = async (x: DataAccountGroup) => {
     setLoading(true);
     try {
-      await deleteAccountGroup(x.id);
+      setAddModalOpen(false);
+      const response = await deleteAccountGroup(x.id);
+      if (response.success === false) {
+        toast.error(response.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+        return;
+      }
       toast.success("Xóa thành công!");
       await fetchAccountGroup();
-    } catch (error) {
-      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
-      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("Lỗi khi xóa nhóm tài khoản:", error);
+      if (error.isAxiosError && error.response) {
+        const { status, data } = error.response;
+        if (status === 400 && data && data.message) {
+          toast.error(data.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+        } else {
+          toast.error(data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+        }
+      } else {
+        toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+      }
     } finally {
       setLoading(false);
     }

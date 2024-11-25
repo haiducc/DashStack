@@ -88,6 +88,7 @@ const Telegram = () => {
   const handleAddConfirm = async () => {
     try {
       await form.validateFields();
+      setAddModalOpen(false);
       const formData = form.getFieldsValue();
       setLoading(true);
       const response = await addTelegram({
@@ -143,6 +144,7 @@ const Telegram = () => {
   const handleDeleteTele = async (x: dataTelegramModal) => {
     setLoading(true);
     try {
+      setAddModalOpen(false);
       await deleteTelegram(x.id);
       toast.success("Xóa nhóm telegram thành công!");
       await fetchTelegram();

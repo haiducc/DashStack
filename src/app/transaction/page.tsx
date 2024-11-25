@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import Header from "@/src/component/Header";
+import { DeleteOutlined } from "@ant-design/icons";
+import Header from "@/app/component/Header";
 import {
   Button,
   DatePicker,
@@ -179,10 +179,13 @@ const Transaction = () => {
   };
 
   const handleAddConfirm = async () => {
-    const formData = form.getFieldsValue();
+    // const formData = form.getFieldsValue();
+    const formData = await form.validateFields();
     setLoading(true);
     // console.log(formData, "formData");
     try {
+      await form.validateFields();
+      setAddModalOpen(false);
       if (currentTransaction) {
         const response = await addTransaction({
           id: currentTransaction.id,
@@ -250,7 +253,9 @@ const Transaction = () => {
 
       if (error instanceof AxiosError && error.response) {
         if (error.response.status === 400) {
-          const message = error.response.data.message || "Có lỗi xảy ra.";
+          const message =
+            error.response.data.message ||
+            "Vui lòng nhập các trường dữ liệu để thêm mới!";
           toast.error(message);
         } else {
           toast.error("Đã xảy ra lỗi, vui lòng thử lại.");
@@ -263,32 +268,33 @@ const Transaction = () => {
     }
   };
 
-  const handleEdit = (record: TransactionModal) => {
-    console.log("data edit", record);
-    setCurrentTransaction(record);
-    form.setFieldsValue({
-      id: record.id,
-      bankName: record.bankName,
-      bankAccountId: record.bankAccountId,
-      fullName: record.fullName,
-      transDateString: record.transDateString,
-      transType: record.transType,
-      purposeDescription: record.purposeDescription,
-      reason: record.reason,
-      balanceBeforeTrans: record.balanceBeforeTrans,
-      currentBalance: record.currentBalance,
-      notes: record.notes,
-      transAmount: record.transAmount,
-      transDate: selectedDate,
-      feeIncurred: record.feeIncurred,
-      bankAccountName: record.bankAccount + " - " + record.fullName,
-    });
-    setAddModalOpen(true);
-  };
+  // const handleEdit = (record: TransactionModal) => {
+  //   console.log("data edit", record);
+  //   setCurrentTransaction(record);
+  //   form.setFieldsValue({
+  //     id: record.id,
+  //     bankName: record.bankName,
+  //     bankAccountId: record.bankAccountId,
+  //     fullName: record.fullName,
+  //     transDateString: record.transDateString,
+  //     transType: record.transType,
+  //     purposeDescription: record.purposeDescription,
+  //     reason: record.reason,
+  //     balanceBeforeTrans: record.balanceBeforeTrans,
+  //     currentBalance: record.currentBalance,
+  //     notes: record.notes,
+  //     transAmount: record.transAmount,
+  //     transDate: selectedDate,
+  //     feeIncurred: record.feeIncurred,
+  //     bankAccountName: record.bankAccount + " - " + record.fullName,
+  //   });
+  //   setAddModalOpen(true);
+  // };
 
   const handleDelete = async (x: TransactionModal) => {
     setLoading(true);
     try {
+      setAddModalOpen(false);
       await deleteTransaction(x.id);
       await fetchTransaction();
     } catch (error) {
@@ -427,9 +433,9 @@ const Transaction = () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       render: (record: TransactionModal) => (
         <Space size="middle">
-          <Button onClick={() => handleEdit(record)} icon={<EditOutlined />}>
+          {/* <Button onClick={() => handleEdit(record)} icon={<EditOutlined />}>
             Chỉnh sửa
-          </Button>
+          </Button> */}
           <Button
             onClick={() => handleDeleteClick(record)}
             icon={<DeleteOutlined />}
@@ -483,7 +489,7 @@ const Transaction = () => {
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} />
+          <Spin spinning={loading} fullscreen />
         ) : (
           <Table columns={columns} dataSource={dataTransaction} rowKey="id" />
         )}
@@ -504,6 +510,7 @@ const Transaction = () => {
           form={form}
           layout="vertical"
           className="flex flex-col gap-1 w-full"
+          onFinish={handleAddConfirm}
         >
           <Form.Item hidden label="id" name="id">
             <Input hidden />
@@ -522,7 +529,6 @@ const Transaction = () => {
                 options={banks}
                 onChange={(value: string | null) => {
                   if (!value) {
-                    // Khi clear, xóa hết các giá trị liên quan
                     form.setFieldsValue({
                       bankId: undefined,
                       bankAccountName: undefined,
@@ -642,8 +648,11 @@ const Transaction = () => {
                   className="w-full"
                   showTime
                   required
+                  disabledDate={(current) => {
+                    return current && current.isAfter(dayjs());
+                  }}
                   onChange={async (value: Dayjs | null) => {
-                    const formattedDate = await value?.format(
+                    const formattedDate = value?.format(
                       "YYYY-MM-DDTHH:mm:ss.SSSZ"
                     );
                     setSelectedDate(formattedDate!);
@@ -660,6 +669,14 @@ const Transaction = () => {
                 {
                   required: true,
                   message: "Vui lòng nhập số dư trước giao dịch!",
+                },
+                {
+                  validator: (_, value) =>
+                    value > 0
+                      ? Promise.resolve()
+                      : Promise.reject(
+                          new Error("Số dư trước giao dịch phải lớn hơn 0!")
+                        ),
                 },
               ]}
             >
@@ -684,6 +701,14 @@ const Transaction = () => {
                   required: true,
                   message: "Vui lòng nhập số tiền giao dịch!",
                 },
+                {
+                  validator: (_, value) =>
+                    value > 0
+                      ? Promise.resolve()
+                      : Promise.reject(
+                          new Error("Số tiền giao dịch phải lớn hơn 0!")
+                        ),
+                },
               ]}
             >
               <InputNumber
@@ -704,6 +729,14 @@ const Transaction = () => {
                 {
                   required: true,
                   message: "Vui lòng nhập số dư sau giao dịch!",
+                },
+                {
+                  validator: (_, value) =>
+                    value > 0
+                      ? Promise.resolve()
+                      : Promise.reject(
+                          new Error("Số dư sau giao dịch phải lớn hơn 0!")
+                        ),
                 },
               ]}
             >
@@ -727,6 +760,14 @@ const Transaction = () => {
                 {
                   required: true,
                   message: "Vui lòng nhập chi phí phát sinh!",
+                },
+                {
+                  validator: (_, value) =>
+                    value > 0
+                      ? Promise.resolve()
+                      : Promise.reject(
+                          new Error("Chi phí phát sinh phải lớn hơn 0!")
+                        ),
                 },
               ]}
             >

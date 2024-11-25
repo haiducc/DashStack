@@ -48,6 +48,8 @@ const GroupSystemPage = () => {
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
+  const [isAddGroupSystem, setIsAddGroupSystem] = useState<boolean>(false);
+
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
     setValues(localStorage.getItem("value"));
@@ -84,9 +86,10 @@ const GroupSystemPage = () => {
     fetchGroupSystem();
   }, [keys]);
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isAddGroupSystem: boolean) => {
     try {
       await form.validateFields();
+      setIsAddGroupSystem(isAddGroupSystem);
       const formData = form.getFieldsValue();
       setAddModalOpen(false);
       setLoading(true);
@@ -98,6 +101,7 @@ const GroupSystemPage = () => {
       if (response && response.success === false) {
         toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
         setLoading(false);
+        setIsAddGroupSystem(false);
         return;
       }
       setAddModalOpen(false);
@@ -110,6 +114,7 @@ const GroupSystemPage = () => {
       setLoading(false);
     } catch (error) {
       setLoading(false);
+      setIsAddGroupSystem(false);
       console.error("Lỗi:", error);
       if (typeof error === "object" && error !== null && "response" in error) {
         const responseError = error as {
@@ -315,8 +320,9 @@ const GroupSystemPage = () => {
             <div className="w-5" />
             <Button
               type="primary"
-              onClick={handleAddConfirm}
+              onClick={() => handleAddConfirm(true)}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              loading={isAddGroupSystem}
             >
               {currentSystem ? "Cập nhật" : "Thêm mới"}
             </Button>

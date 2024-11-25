@@ -92,6 +92,7 @@ const Account = () => {
   const [defaultGroupTeamName, setDefaultGroupTeamName] = useState<
     string | null
   >(null);
+  const [isAddAccount, setIsAddAccount] = useState<boolean>(false);
 
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
@@ -375,10 +376,11 @@ const Account = () => {
     });
   };
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isAddAccount: boolean) => {
     const formData = await form.validateFields();
     try {
       await form.validateFields();
+      setIsAddAccount(isAddAccount);
       setAddModalOpen(false);
       // const formData = await form.getFieldsValue();
       setLoading(true);
@@ -403,6 +405,7 @@ const Account = () => {
       });
       if (!res || !res.success) {
         toast.error(res?.message || "Có lỗi xảy ra, vui lòng thử lại.");
+        setIsAddAccount(false);
       } else {
         setAddModalOpen(false);
         form.resetFields();
@@ -413,6 +416,7 @@ const Account = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const axiosError = error as AxiosError;
+      setIsAddAccount(false);
       if (axiosError.response) {
         const responseData = axiosError.response.data as {
           success: boolean;
@@ -1422,10 +1426,11 @@ const Account = () => {
             <Button
               type="primary"
               onClick={() => {
-                handleAddConfirm();
+                handleAddConfirm(true);
                 // defaultModalAdd()
               }}
               className="w-full h-[40px] bg-[#4B5CB8] hover:bg-[#3A4A9D]"
+              loading={isAddAccount}
             >
               {currentAccount ? "Cập nhật" : "Thêm mới"}
             </Button>

@@ -49,6 +49,8 @@ const PhoneNumber: React.FC = () => {
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
+  const [isAddPhoneNumber, setIsAddPhoneNumber] = useState<boolean>(false);
+
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
     setValues(localStorage.getItem("value"));
@@ -84,9 +86,10 @@ const PhoneNumber: React.FC = () => {
     fetchListPhone();
   }, [keys]);
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isAddPhoneNumber: boolean) => {
     try {
       await form.validateFields();
+      setIsAddPhoneNumber(isAddPhoneNumber);
       const formData = form.getFieldsValue();
       setAddModalOpen(false);
       setLoading(true);
@@ -98,6 +101,7 @@ const PhoneNumber: React.FC = () => {
       });
       if (response && response.success === false) {
         toast.error(response.message || "Thêm mới số điện thoại lỗi.");
+        setIsAddPhoneNumber(false);
         return;
       }
       form.resetFields();
@@ -108,12 +112,13 @@ const PhoneNumber: React.FC = () => {
         currentTelegram ? "Cập nhật thành công!" : "Thêm mới thành công!"
       );
       await fetchListPhone();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error:any) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       if (error?.response?.data?.message) {
+        setIsAddPhoneNumber(false);
         toast.error(`Lỗi: ${error.response.data.message}`);
       } else {
-        console.error("Error:", error);
+        setIsAddPhoneNumber(false);
         toast.error("Thêm mới số điện thoại lỗi.");
       }
     } finally {
@@ -337,8 +342,9 @@ const PhoneNumber: React.FC = () => {
             <div className="w-5" />
             <Button
               type="primary"
-              onClick={handleAddConfirm}
+              onClick={() => handleAddConfirm(true)}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              loading={isAddPhoneNumber}
             >
               {currentPhoneNumber ? "Cập nhật" : "Thêm mới"}
             </Button>

@@ -15,7 +15,7 @@ import {
 import { getGroupSystem } from "@/src/services/groupSystem";
 import { useRouter } from "next/navigation";
 
-export interface dataBranchModal {
+export interface DataBranchModal {
   id: number;
   name: string;
   note: string;
@@ -23,7 +23,7 @@ export interface dataBranchModal {
   groupSystemName: string;
 }
 
-interface filterRole {
+interface FilterRole {
   Name: string;
   Value: string;
 }
@@ -40,10 +40,10 @@ const GroupBranchPage = () => {
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [currentBranch, setCurrentBranch] = useState<dataBranchModal | null>(
+  const [currentBranch, setCurrentBranch] = useState<DataBranchModal | null>(
     null
   );
-  const [dataBranch, setDataBranch] = useState<dataBranchModal[]>([]);
+  const [dataBranch, setDataBranch] = useState<DataBranchModal[]>([]);
   const [, setGlobalTerm] = useState("");
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
@@ -53,6 +53,7 @@ const GroupBranchPage = () => {
   const [values, setValues] = useState<string | null>(null);
   const [groupSystem, setGroupSystem] = useState([]);
   const [systemId, setSystemId] = useState<number>(0);
+  const [isAddGroupBranch, setIsAddGroupBranch] = useState<boolean>(false);
 
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
@@ -60,7 +61,7 @@ const GroupBranchPage = () => {
   }, []);
 
   const fetchGroupSystem = async (globalTerm?: string) => {
-    const arrRole: filterRole[] = [];
+    const arrRole: FilterRole[] = [];
     const addedParams = new Set<string>();
     arrRole.push({
       Name: localStorage.getItem("key")!,
@@ -75,7 +76,7 @@ const GroupBranchPage = () => {
         arrRole
       );
       const formattedData =
-        response?.data?.source?.map((x: dataBranchModal) => ({
+        response?.data?.source?.map((x: DataBranchModal) => ({
           id: x.id,
           name: x.name,
           note: x.note,
@@ -92,10 +93,11 @@ const GroupBranchPage = () => {
     fetchGroupSystem();
   }, [keys]);
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isAddGroupBranch: boolean) => {
     try {
       await form.validateFields();
       setAddModalOpen(false);
+      setIsAddGroupBranch(isAddGroupBranch);
       const formData = form.getFieldsValue();
       setLoading(true);
       const response = await addGroupBranch({
@@ -108,6 +110,7 @@ const GroupBranchPage = () => {
       if (response && response.success === false) {
         toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
         setLoading(false);
+        setIsAddGroupBranch(false);
         return;
       }
       setAddModalOpen(false);
@@ -120,6 +123,7 @@ const GroupBranchPage = () => {
       setLoading(false);
     } catch (error) {
       setLoading(false);
+      setIsAddGroupBranch(false);
       console.error("Lỗi:", error);
       if (typeof error === "object" && error !== null && "response" in error) {
         const responseError = error as {
@@ -138,7 +142,7 @@ const GroupBranchPage = () => {
     }
   };
 
-  const handleEditTele = (x: dataBranchModal) => {
+  const handleEditTele = (x: DataBranchModal) => {
     setCurrentBranch(x);
     form.setFieldsValue({
       id: x.id,
@@ -150,7 +154,7 @@ const GroupBranchPage = () => {
     setAddModalOpen(true);
   };
 
-  const handleDeleteTele = async (x: dataBranchModal) => {
+  const handleDeleteTele = async (x: DataBranchModal) => {
     setLoading(true);
     try {
       setAddModalOpen(false);
@@ -171,7 +175,7 @@ const GroupBranchPage = () => {
       if (value.trim() === "") {
         const data = await getBranchSystem(1, 20);
         const formattedData =
-          data?.data?.source?.map((x: dataBranchModal) => ({
+          data?.data?.source?.map((x: DataBranchModal) => ({
             id: x.id,
             name: x.name,
             note: x.note,
@@ -183,7 +187,7 @@ const GroupBranchPage = () => {
       } else {
         const data = await getBranchSystem(1, 20, value);
         const formattedData =
-          data?.data?.source?.map((x: dataBranchModal) => ({
+          data?.data?.source?.map((x: DataBranchModal) => ({
             id: x.id,
             name: x.name,
             note: x.note,
@@ -215,9 +219,9 @@ const GroupBranchPage = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAccountGroup, setSelectedAccountGroup] =
-    useState<dataBranchModal | null>(null);
+    useState<DataBranchModal | null>(null);
 
-  const handleDeleteClick = (tele: dataBranchModal) => {
+  const handleDeleteClick = (tele: DataBranchModal) => {
     setSelectedAccountGroup(tele);
     setIsDeleteModalOpen(true);
   };
@@ -252,7 +256,7 @@ const GroupBranchPage = () => {
     {
       title: "Chức năng",
       key: "action",
-      render: (record: dataBranchModal) => (
+      render: (record: DataBranchModal) => (
         <Space size="middle">
           <Button
             icon={<EditOutlined />}
@@ -371,8 +375,9 @@ const GroupBranchPage = () => {
             <div className="w-5" />
             <Button
               type="primary"
-              onClick={handleAddConfirm}
+              onClick={() => handleAddConfirm(true)}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              loading={isAddGroupBranch}
             >
               {currentBranch ? "Cập nhật" : "Thêm mới"}
             </Button>

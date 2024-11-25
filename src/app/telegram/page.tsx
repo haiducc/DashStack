@@ -48,6 +48,7 @@ const Telegram = () => {
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
+  const [isAddTelegram, setIsAddTelegram] = useState<boolean>(false);
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
     setValues(localStorage.getItem("value"));
@@ -85,9 +86,10 @@ const Telegram = () => {
     fetchTelegram();
   }, [keys]);
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isAddTelegram: boolean) => {
     try {
       await form.validateFields();
+      setIsAddTelegram(isAddTelegram);
       setAddModalOpen(false);
       const formData = form.getFieldsValue();
       setLoading(true);
@@ -100,6 +102,7 @@ const Telegram = () => {
       if (response && response.success === false) {
         toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
         setLoading(false);
+        setIsAddTelegram(false);
         return;
       }
       setAddModalOpen(false);
@@ -112,7 +115,7 @@ const Telegram = () => {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      console.error("Lỗi:", error);
+      setIsAddTelegram(false);
       if (typeof error === "object" && error !== null && "response" in error) {
         const responseError = error as {
           response: { data?: { message?: string } };
@@ -340,8 +343,9 @@ const Telegram = () => {
             <div className="w-5" />
             <Button
               type="primary"
-              onClick={handleAddConfirm}
+              onClick={() => handleAddConfirm(true)}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              loading={isAddTelegram}
             >
               {currentTelegram ? "Cập nhật" : "Thêm mới"}
             </Button>

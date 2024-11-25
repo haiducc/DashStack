@@ -43,6 +43,8 @@ const Sheet = () => {
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
+  const [isAddSheet, setIsAddSheet] = useState<boolean>(false);
+
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
     setValues(localStorage.getItem("value"));
@@ -75,9 +77,10 @@ const Sheet = () => {
     fetchSheet(globalTerm);
   }, [globalTerm]);
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isAddSheet: boolean) => {
     try {
       await form.validateFields();
+      setIsAddSheet(isAddSheet);
       setAddModalOpen(false);
       const formData = form.getFieldsValue();
       setLoading(true);
@@ -105,6 +108,7 @@ const Sheet = () => {
       setLoading(false);
       await fetchSheet();
     } catch (error) {
+      setIsAddSheet(false);
       console.error("Lỗi:", error);
       toast.error("Có lỗi xảy ra, vui lòng thử lại!");
       setLoading(false);
@@ -317,8 +321,9 @@ const Sheet = () => {
             <div className="w-5" />
             <Button
               type="primary"
-              onClick={handleAddConfirm}
+              onClick={() => handleAddConfirm(true)}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              loading={isAddSheet}
             >
               {currentSheet ? "Cập nhật" : "Thêm mới"}
             </Button>

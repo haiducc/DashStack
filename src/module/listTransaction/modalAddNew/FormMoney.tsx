@@ -3,11 +3,7 @@ import {
   FaceValueType,
   ItemFaceValueChooseType,
 } from "@/src/common/type";
-import {
-  fetchBankAccounts,
-  getBank,
-  getTypeAsset,
-} from "@/src/services/bankAccount";
+import { fetchBankAccounts, getTypeAsset } from "@/src/services/bankAccount";
 import { apiClient } from "@/src/services/base_api";
 import {
   Button,
@@ -24,9 +20,9 @@ import { Dayjs } from "dayjs";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
-export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
+export const FormMoney = ({ onCancel, fetchData, banks }: FormMoneyType) => {
   const [form] = Form.useForm();
-  const [banks, setBanks] = useState([]);
+
   const [bankAccount, setBankAccount] = useState([]);
   const [listType, setListType] = useState([]);
   const [listTransType, setListTransType] = useState([]);
@@ -38,6 +34,7 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
   const [faceValueList, setFaceValueList] = useState([]);
   const [selectedValues, setSelectedValues] = useState<string | string[]>([]);
   const [exchangeRate, setExchangeRate] = useState<number>(0);
+  const [isCreateMoney, setIsCreateMoney] = useState<boolean>(false);
 
   const getlistTypeAsset = async () => {
     try {
@@ -97,20 +94,6 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
   };
-  const fetchBankData = async () => {
-    try {
-      const bankData = await getBank(1, 20);
-      const formattedBanks =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        bankData?.data?.source?.map((bank: any) => ({
-          value: bank.id,
-          label: bank.fullName || bank.code || "Không xác định",
-        })) || [];
-      setBanks(formattedBanks);
-    } catch (error) {
-      console.error("Error fetching banks:", error);
-    }
-  };
 
   const genBankAccountData = async (bankId?: number) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -158,8 +141,6 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
   let formattedTotal = "";
   const dataForm = form.getFieldsValue();
 
-  console.log("dataForm", dataForm);
-
   if (dataForm.type === "1") {
     formattedTotal = new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -176,9 +157,10 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
     totalAmount: formattedTotal,
   });
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (isCreateMoney: boolean) => {
     try {
       await form.validateFields();
+      setIsCreateMoney(isCreateMoney);
       const formData = form.getFieldsValue();
       const params = {
         bankAccountId: formData.bankAccountId,
@@ -214,6 +196,7 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
 
       if (responsiove.data.message && !responsiove.data.success) {
         toast.error(responsiove.data.message);
+        setIsCreateMoney(false);
       } else {
         fetchData();
         onCancel();
@@ -235,11 +218,7 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
               { required: true, message: "Vui lòng chọn ngân hàng giao dịch!" },
             ]}
           >
-            <Select
-              options={banks}
-              placeholder="Chọn ngân hàng giao dịch"
-              onFocus={() => fetchBankData()}
-            />
+            <Select options={banks} placeholder="Chọn ngân hàng giao dịch" />
           </Form.Item>
           <Form.Item
             label="Loại tiền"
@@ -473,9 +452,10 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
               <Button
                 type="primary"
                 onClick={() => {
-                  handleSubmit();
+                  handleSubmit(true);
                 }}
-                className="w-full h-[40px] bg-[#4B5CB8] hover:bg-[#3A4A9D]"
+                className="w-[189px] h-[40px] bg-[#4B5CB8] hover:bg-[#3A4A9D]"
+                loading={isCreateMoney}
               >
                 Tiếp tục
               </Button>

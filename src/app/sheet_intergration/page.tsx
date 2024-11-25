@@ -63,6 +63,8 @@ const SheetIntergration = () => {
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
+  const [isAddSheetInter, setIsAddSheetInter] = useState<boolean>(false);
+
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
     setValues(localStorage.getItem("value"));
@@ -180,10 +182,11 @@ const SheetIntergration = () => {
     }
   };
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isAddSheetInter: boolean) => {
     try {
       await form.validateFields();
       setAddModalOpen(false);
+      setIsAddSheetInter(isAddSheetInter);
       const formData = form.getFieldsValue();
       setLoading(true);
       if (currentSheet) {
@@ -222,8 +225,10 @@ const SheetIntergration = () => {
       fetchSheetIntegration();
     } catch (error) {
       console.error("Lỗi:", error);
+      setIsAddSheetInter(false);
     } finally {
       setLoading(false);
+      setIsAddSheetInter(false);
     }
   };
 
@@ -501,7 +506,7 @@ const SheetIntergration = () => {
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} fullscreen/>
+          <Spin spinning={loading} fullscreen />
         ) : (
           <Table
             columns={columns}
@@ -656,8 +661,9 @@ const SheetIntergration = () => {
             <div className="w-4" />
             <Button
               type="primary"
-              onClick={handleAddConfirm}
+              onClick={() => handleAddConfirm(true)}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              loading={isAddSheetInter}
             >
               {currentSheet ? "Cập nhật" : "Thêm mới"}
             </Button>

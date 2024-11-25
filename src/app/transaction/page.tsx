@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { DeleteOutlined } from "@ant-design/icons";
-import Header from "@/app/component/Header";
+import Header from "@/src/component/Header";
 import {
   Button,
   DatePicker,
@@ -78,6 +78,8 @@ const Transaction = () => {
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
+  const [isAddTransaction, setIsAddTransaction] = useState<boolean>(false);
+
   // const initialDate = dataTransaction?.transDate
   //   ? dayjs(dataTransaction.transDate)
   //   : null;
@@ -178,13 +180,14 @@ const Transaction = () => {
     }
   };
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isAddTransaction: boolean) => {
     // const formData = form.getFieldsValue();
     const formData = await form.validateFields();
     setLoading(true);
     // console.log(formData, "formData");
     try {
       await form.validateFields();
+      setIsAddTransaction(isAddTransaction);
       setAddModalOpen(false);
       if (currentTransaction) {
         const response = await addTransaction({
@@ -211,6 +214,7 @@ const Transaction = () => {
         if (response && response.success === false) {
           toast.error(response.message || "Cập nhật giao dịch lỗi.");
           setLoading(false);
+          setIsAddTransaction(false);
           return;
         }
         console.log("Dữ liệu đã được cập nhật:", response);
@@ -237,6 +241,7 @@ const Transaction = () => {
         if (response && response.success === false) {
           toast.error(response.message || "Thêm mới giao dịch lỗi.");
           setLoading(false);
+          setIsAddTransaction(false);
           return;
         }
         console.log("Dữ liệu đã được thêm mới:", response);
@@ -249,8 +254,7 @@ const Transaction = () => {
       fetchTransaction();
       setSelectBankId(0);
     } catch (error) {
-      console.error("Lỗi:", error);
-
+      setIsAddTransaction(false);
       if (error instanceof AxiosError && error.response) {
         if (error.response.status === 400) {
           const message =
@@ -811,8 +815,9 @@ const Transaction = () => {
             <div className="w-4" />
             <Button
               type="primary"
-              onClick={handleAddConfirm}
+              onClick={() => handleAddConfirm(false)}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              loading={isAddTransaction}
             >
               {currentTransaction ? "Cập nhật" : "Thêm mới"}
             </Button>

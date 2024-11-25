@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 
 export interface ItemAssetType {
@@ -30,11 +31,13 @@ export interface ModalAddNewType {
   isAddModalOpen: boolean;
   onCancel: () => void;
   fetchData: () => void;
+  banks?: any;
 }
 
 export interface FormMoneyType {
   onCancel: () => void;
   fetchData: () => void;
+  banks?: any;
 }
 
 export interface FaceValueType {

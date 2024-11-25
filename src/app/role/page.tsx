@@ -70,6 +70,8 @@ const Role = () => {
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
+  const [isAddRole, setIsAddRole] = useState<boolean>(false);
+
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
     setValues(localStorage.getItem("value"));
@@ -152,11 +154,12 @@ const Role = () => {
     }
   };
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isAddRole: boolean) => {
     // const formData = form.getFieldsValue();
     setLoading(true);
     try {
       await form.validateFields();
+      setIsAddRole(isAddRole);
       setAddModalOpen(false);
       const formData = form.getFieldsValue();
       const roleData = {
@@ -177,6 +180,7 @@ const Role = () => {
 
       // Kiểm tra phản hồi từ máy chủ
       if (response && response.success === false) {
+        setIsAddRole(false);
         throw new Error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
       }
 
@@ -186,7 +190,7 @@ const Role = () => {
       await fetchListRole();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error("Lỗi:", error);
+      setIsAddRole(false);
 
       if (error && typeof error === "object" && "message" in error) {
         toast.error(error.message);
@@ -194,6 +198,7 @@ const Role = () => {
         toast.error("Có lỗi xảy ra, vui lòng thử lại!");
       }
     } finally {
+      setIsAddRole(false);
       setLoading(false);
     }
   };
@@ -470,8 +475,9 @@ const Role = () => {
             <div className="w-5" />
             <Button
               type="primary"
-              onClick={handleAddConfirm}
+              onClick={() => handleAddConfirm(true)}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              loading={isAddRole}
             >
               {currentRole ? "Cập nhật" : "Thêm mới"}
             </Button>

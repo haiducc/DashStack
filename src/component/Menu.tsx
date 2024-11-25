@@ -1,11 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Menu as AntMenu } from "antd";
 import Image from "next/image";
 import Logo from "../../public/img/logo.png";
-import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
 import "./menu.css";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type MenuItem = {
   key: string;
@@ -18,7 +18,7 @@ type MenuItem = {
 
 const items: MenuItem[] = [
   {
-    key: "statistics",
+    key: "dashboard",
     label: "Thống kê",
     path: "/dashboard",
   },
@@ -44,7 +44,7 @@ const items: MenuItem[] = [
     ],
   },
   {
-    key: "account",
+    key: "account-config",
     label: "Cấu hình tài khoản",
     items: [
       {
@@ -53,12 +53,12 @@ const items: MenuItem[] = [
         path: "/account_group",
       },
       {
-        key: "phone",
+        key: "phone_number",
         label: "Danh sách số điện thoại",
         path: "/phone_number",
       },
       {
-        key: "list_account",
+        key: "account",
         label: "Danh sách tài khoản",
         path: "/account",
       },
@@ -69,7 +69,7 @@ const items: MenuItem[] = [
     label: "Cấu hình telegram",
     items: [
       {
-        key: "group_telegram",
+        key: "telegram",
         label: "Nhóm telegram",
         path: "/telegram",
       },
@@ -111,7 +111,7 @@ const items: MenuItem[] = [
       //   path: "/pages/asset-report",
       // },
       {
-        key: "list_transaction",
+        key: "list-transaction",
         label: "Danh sách giao dịch",
         path: "/list-transaction",
       },
@@ -129,82 +129,14 @@ const items: MenuItem[] = [
   },
 ];
 
-const fetchRoleData = async (accessToken: string) => {
-  try {
-    const response = await fetch(
-      "https://apiweb.bankings.vnrsoftware.vn/account/find-role-by-account",
-      {
-        method: "GET",
-        headers: {
-          Authorization: accessToken,
-        },
-      }
-    );
-
-    const res = await response.json();
-
-    localStorage.setItem("key", res.data.key);
-    localStorage.setItem("value", res.data.value);
-
-    localStorage.setItem("groupSystemId", res.data.groupSystemId || "");
-    localStorage.setItem("groupBranchId", res.data.groupBranchId || "");
-    localStorage.setItem("groupTeamId", res.data.groupTeamId || "");
-
-    localStorage.setItem("groupSystemName", res.data.groupSystemName || " ");
-    localStorage.setItem("groupBranchName", res.data.groupBranchName || " ");
-    localStorage.setItem("groupTeamName", res.data.groupTeamName || " ");
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch role data");
-    }
-
-    return res;
-  } catch (error) {
-    console.error("Error fetching role data:", error);
-    return null;
-  }
-};
-
 const SideMenu = () => {
-  const router = useRouter();
-  const [openKeys, setOpenKeys] = useState<string[]>([]);
-
-  useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-    if (accessToken) {
-      fetchRoleData(accessToken).then((data) => {
-        if (data) {
-          console.log("Role data fetched:", data);
-        }
-      });
-    }
-  }, []);
-
-  const handleMenuClick = async (menuItem: MenuItem) => {
-    const accessToken = localStorage.getItem("accessToken");
-
-    if (!accessToken) {
-      toast.error("Vui lòng đăng nhập.");
-      router.push("/login");
-      return;
-    }
-
-    try {
-      const roleData = await fetchRoleData(accessToken);
-      if (roleData) {
-        console.log(roleData, "Role data");
-        if (menuItem.path) {
-          router.push(menuItem.path);
-        }
-      } else {
-        toast.error("Không thể xác minh quyền của bạn.");
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Lỗi khi kiểm tra quyền truy cập.");
-    }
-  };
-
+  const pathname = usePathname();
+  const parentKey = items.find((item) =>
+    item.items?.some((subItem) => subItem.path === pathname)
+  )?.key;
+  const [openKeys, setOpenKeys] = useState<string[]>(
+    parentKey ? [parentKey] : []
+  );
   const onOpenChange = (keys: string[]) => {
     const latestOpenKey = keys.find((key) => !openKeys.includes(key));
     if (latestOpenKey) {
@@ -221,12 +153,8 @@ const SideMenu = () => {
           {renderMenuItems(item.items)}
         </AntMenu.SubMenu>
       ) : (
-        <AntMenu.Item
-          key={item.key}
-          onClick={() => handleMenuClick(item)}
-          icon={item.icon}
-        >
-          {item.label}
+        <AntMenu.Item key={item.key} icon={item.icon}>
+          <Link href={item.path ?? "/"}>{item.label}</Link>
         </AntMenu.Item>
       )
     );
@@ -240,6 +168,7 @@ const SideMenu = () => {
         mode="inline"
         theme="dark"
         openKeys={openKeys}
+        selectedKeys={[pathname.split("/")[1]]}
         onOpenChange={onOpenChange}
       >
         {renderMenuItems(items)}

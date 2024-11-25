@@ -3,11 +3,7 @@ import {
   FaceValueType,
   ItemFaceValueChooseType,
 } from "@/src/common/type";
-import {
-  fetchBankAccounts,
-  getBank,
-  getTypeAsset,
-} from "@/src/services/bankAccount";
+import { fetchBankAccounts, getTypeAsset } from "@/src/services/bankAccount";
 import { apiClient } from "@/src/services/base_api";
 import {
   Button,
@@ -23,10 +19,13 @@ import {
 import { Dayjs } from "dayjs";
 import { useState } from "react";
 
-export const FormRealEstate = ({ onCancel, fetchData }: FormMoneyType) => {
+export const FormRealEstate = ({
+  onCancel,
+  fetchData,
+  banks,
+}: FormMoneyType) => {
   const [form] = Form.useForm();
 
-  const [banks, setBanks] = useState([]);
   const [bankAccount, setBankAccount] = useState([]);
   const [listTransType, setListTransType] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
@@ -77,20 +76,6 @@ export const FormRealEstate = ({ onCancel, fetchData }: FormMoneyType) => {
       setListFaceValue(listFaceConvert);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
-  };
-  const fetchBankData = async () => {
-    try {
-      const bankData = await getBank(1, 20);
-      const formattedBanks =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        bankData?.data?.source?.map((bank: any) => ({
-          value: bank.id,
-          label: bank.fullName || bank.code || "Không xác định",
-        })) || [];
-      setBanks(formattedBanks);
-    } catch (error) {
-      console.error("Error fetching banks:", error);
-    }
   };
 
   const genBankAccountData = async (bankId?: number) => {
@@ -188,11 +173,7 @@ export const FormRealEstate = ({ onCancel, fetchData }: FormMoneyType) => {
               { required: true, message: "Vui lòng chọn ngân hàng giao dịch!" },
             ]}
           >
-            <Select
-              options={banks}
-              placeholder="Chọn ngân hàng giao dịch"
-              onFocus={() => fetchBankData()}
-            />
+            <Select options={banks} placeholder="Chọn ngân hàng giao dịch" />
           </Form.Item>
 
           <Form.Item

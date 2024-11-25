@@ -56,6 +56,7 @@ const GroupTeamPage = () => {
   const [systemId, setSystemId] = useState<number>(0);
   const [branchSystem, setBranchSystem] = useState([]);
   const [parentId, setParentId] = useState<number>(0);
+  const [isAddGroupTeam, setIsAddGroupTeam] = useState<boolean>(false);
 
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
@@ -97,10 +98,11 @@ const GroupTeamPage = () => {
     fetchGroupSystem();
   }, [keys]);
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isAddGroupTeam: boolean) => {
     try {
       await form.validateFields();
       setAddModalOpen(false);
+      setIsAddGroupTeam(isAddGroupTeam);
       const formData = form.getFieldsValue();
       setLoading(true);
       const response = await addGroupTeam({
@@ -115,6 +117,7 @@ const GroupTeamPage = () => {
       if (response && response.success === false) {
         toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
         setLoading(false);
+        setIsAddGroupTeam(false);
         return;
       }
       setAddModalOpen(false);
@@ -127,6 +130,7 @@ const GroupTeamPage = () => {
       setLoading(false);
     } catch (error) {
       setLoading(false);
+      setIsAddGroupTeam(false);
       console.error("Lỗi:", error);
       if (typeof error === "object" && error !== null && "response" in error) {
         const responseError = error as {
@@ -434,8 +438,9 @@ const GroupTeamPage = () => {
             <div className="w-5" />
             <Button
               type="primary"
-              onClick={handleAddConfirm}
+              onClick={() => handleAddConfirm(true)}
               className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              loading={isAddGroupTeam}
             >
               {currentTeam ? "Cập nhật" : "Thêm mới"}
             </Button>

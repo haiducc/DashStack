@@ -158,12 +158,12 @@ const Dashboard = () => {
       Value: localStorage.getItem("value")!,
     });
     addedParams.add(keys!);
-    console.log(localStorage.getItem("key"),1);
-    console.log(localStorage.getItem("value"),2);
+    // console.log(localStorage.getItem("key"), 1);
+    // console.log(localStorage.getItem("value"), 2);
     setLoading(true);
     try {
       const response = await getListStatistics(1, 20, undefined, arrFilter);
-      console.log(response);
+      // console.log(response);
 
       const formattedData =
         response?.data?.source?.map((x: DataType) => ({
@@ -189,7 +189,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchListStatistics();
-    console.log(192,localStorage.getItem("key") )
+    // console.log(192, localStorage.getItem("key"));
   }, [keys]);
 
   const fetchStatisticsById = async (id: number) => {
@@ -203,7 +203,7 @@ const Dashboard = () => {
   };
 
   const columns: TableProps<DataType>["columns"] = [
-    { title: "Id", dataIndex: "id", key: "id" },
+    { title: "Id", dataIndex: "id", key: "id", hidden: true },
     { title: "Ngân hàng", dataIndex: "bankName", key: "bankName" },
     { title: "TK ngân hàng", dataIndex: "bankAccount", key: "bankAccount" },
     {

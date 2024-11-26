@@ -1,4 +1,5 @@
-import { buildSearchParams } from "../pages/utils/buildQueryParams";
+
+import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
 export const Login = async (

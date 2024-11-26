@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { DatePicker, Select, Space, Spin, Table } from "antd";
 import type { TableProps } from "antd/es/table";
 import Header from "@/src/component/Header";
-import BarChart from "../products/BarChart";
+import BarChart from "../products/BarChartMoney";
 import Statistics from "../products/statistics";
 import {
   getListStatistics,
@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { SyncOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
+import BarChartType from "../products/BarChartType";
 
 interface DataType {
   id: number;
@@ -477,13 +478,10 @@ const Dashboard = () => {
       <div>
         <Header />
         <div className="dashboard mt-7">
-          <div style={{ display: "flex", gap: "20px" }}>
-            <div style={{ flex: 2 }}>
-              <BarChart />
-            </div>
-            <div style={{ flex: 1 }}>
-              <Statistics />
-            </div>
+          <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+            <BarChart />
+            <BarChartType />
+            <Statistics />
           </div>
         </div>
         <div className="flex mx-[35px] mt-7">

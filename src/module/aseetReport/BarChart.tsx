@@ -95,7 +95,7 @@ const options = {
 
 export default function BarChart() {
   return (
-    <div style={{ width: "80%", margin: "0 auto" }}>
+    <div style={{ margin: "0 auto" }}>
       <Bar data={data} options={options} />
     </div>
   );

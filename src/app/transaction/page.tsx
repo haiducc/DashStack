@@ -651,16 +651,15 @@ const Transaction = () => {
                 <DatePicker
                   className="w-full"
                   showTime
-                  required
                   disabledDate={(current) => {
                     return current && current.isAfter(dayjs());
                   }}
-                  onChange={async (value: Dayjs | null) => {
+                  onChange={(value: Dayjs | null) => {
                     const formattedDate = value?.format(
                       "YYYY-MM-DDTHH:mm:ss.SSSZ"
                     );
                     setSelectedDate(formattedDate!);
-                    // console.log("Selected Time: ", formattedDate);
+                    form.setFieldsValue({ transDate: value });
                   }}
                 />
               </Space>
@@ -676,7 +675,7 @@ const Transaction = () => {
                 },
                 {
                   validator: (_, value) =>
-                    value > 0
+                    value >= 0
                       ? Promise.resolve()
                       : Promise.reject(
                           new Error("Số dư trước giao dịch phải lớn hơn 0!")
@@ -736,7 +735,7 @@ const Transaction = () => {
                 },
                 {
                   validator: (_, value) =>
-                    value > 0
+                    value >= 0
                       ? Promise.resolve()
                       : Promise.reject(
                           new Error("Số dư sau giao dịch phải lớn hơn 0!")
@@ -767,7 +766,7 @@ const Transaction = () => {
                 },
                 {
                   validator: (_, value) =>
-                    value > 0
+                    value >= 0
                       ? Promise.resolve()
                       : Promise.reject(
                           new Error("Chi phí phát sinh phải lớn hơn 0!")

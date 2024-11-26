@@ -50,7 +50,7 @@ const Account = () => {
   };
   const [dataAccount, setDataAccount] = useState<BankAccounts[]>([]);
   const [banks, setBanks] = useState([]);
-  const [phoneNumber, setPhoneNumber] = useState([]);
+  const [phoneNumber, setPhoneNumber] = useState<Array<BankAccounts>>([]);
   const [groupSystem, setGroupSystem] = useState<Array<BankAccounts>>([]);
   const [branchSystem, setBranchSystem] = useState<Array<BankAccounts>>([]);
   const [groupTeam, setGroupTeam] = useState<Array<BankAccounts>>([]);
@@ -60,7 +60,7 @@ const Account = () => {
   const [globalTerm, setGlobalTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [, setIsEditMode] = useState(false);
-  const [accountGroup, setAccountGroup] = useState([]);
+  const [accountGroup, setAccountGroup] = useState<Array<BankAccounts>>([]);
   //
   const [keys, setKeys] = useState<string | null>(null);
   const [values, setValues] = useState<string | null>(null);
@@ -244,10 +244,12 @@ const Account = () => {
   const getListPhoneNumber = async () => {
     try {
       const phone = await getListPhone(pageIndex, pageSize);
+      console.log(phone);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = phone?.data?.source?.map((x: any) => ({
         value: x.id,
         label: x.number || "Không xác định",
+        phoneId: x.id,
       }));
       setPhoneNumber(res);
     } catch (error) {
@@ -270,13 +272,15 @@ const Account = () => {
         globalTerm
         // arrAccountGroup
       );
-      console.log("accountGroup", accountGroup);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = accountGroup?.data?.source?.map((x: any) => ({
         value: x.id,
         label: x.fullName || "Không xác định",
+        selectedAccountGroups: x.id,
       }));
+      console.log(res, "res");
+
       setAccountGroup(res);
     } catch (error) {
       console.error(error);
@@ -402,6 +406,7 @@ const Account = () => {
         groupSystem: formData.groupSystem,
         groupBranch: formData.groupBranch,
         groupTeam: formData.groupTeam,
+        typeGroupAccountString: formData.typeGroupAccountString,
       });
       if (!res || !res.success) {
         toast.error(res?.message || "Có lỗi xảy ra, vui lòng thử lại.");
@@ -475,7 +480,8 @@ const Account = () => {
     const initBankId = account.bankId?.toString();
     setSaveBank(initBankId!);
 
-    // console.log();
+    const str = account.typeGroupAccountString;
+    const arr = str?.split(",").map((item) => item.trim());
 
     form.setFieldsValue({
       id: account.id,
@@ -497,7 +503,12 @@ const Account = () => {
       groupBranchName: account.groupBranch?.name,
       groupTeamName: account.groupTeam?.name,
       bankName: account.bankName,
+      typeGroupAccountString: arr,
     });
+    console.log(
+      typeof account.typeGroupAccountString,
+      "account.typeGroupAccountString"
+    );
     setAddModalOpen(true);
   };
 
@@ -1386,35 +1397,66 @@ const Account = () => {
               </Radio.Group>
             </Form.Item>
             {value === "2" && (
-              <Form.Item
-                className="w-[45%]"
-                label="Nhập số điện thoại"
-                name="phoneId"
-              >
-                <Select
-                  options={phoneNumber}
-                  onFocus={getListPhoneNumber}
-                  placeholder="Chọn số điện thoại"
-                />
-              </Form.Item>
+              <>
+                <Form.Item
+                  className="w-[45%]"
+                  label="Nhập số điện thoại"
+                  name="phone"
+                >
+                  <Select
+                    options={phoneNumber}
+                    onFocus={getListPhoneNumber}
+                    placeholder="Chọn số điện thoại"
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    onChange={async (value: any) => {
+                      const selectedGroup = await phoneNumber.find(
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (item: any) => item.value === value
+                      );
+                      if (selectedGroup) {
+                        form.setFieldsValue({
+                          phoneId: selectedGroup.phoneId,
+                        });
+                      }
+                    }}
+                  />
+                </Form.Item>
+                <Form.Item hidden label="Nhập số điện thoại" name="phoneId">
+                  <Select />
+                </Form.Item>
+              </>
             )}
           </div>
           <Form.Item
             label="Chọn nhóm tài khoản"
-            name="selectedAccountGroups"
+            name="typeGroupAccountString"
             rules={[
               { required: true, message: "Vui lòng chọn nhóm tài khoản!" },
             ]}
           >
             <Select
+              allowClear
               options={accountGroup}
               placeholder="Chọn nhóm tài khoản"
               mode="multiple"
               onFocus={getListAccountGroup}
-              onChange={(e) => {
-                console.log(e);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={async (value: any[]) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const selectedGroups = accountGroup.filter((item: any) =>
+                  value.includes(item.value)
+                );
+                form.setFieldsValue({
+                  selectedAccountGroups: selectedGroups.map(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (group: any) => group.selectedAccountGroups
+                  ),
+                });
               }}
             />
+          </Form.Item>
+          <Form.Item label="Chọn nhóm tài khoản 2" name="selectedAccountGroups">
+            <Select mode="multiple" />
           </Form.Item>
           <Form.Item label="Ghi chú" name="notes">
             <Input.TextArea

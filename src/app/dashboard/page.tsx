@@ -85,7 +85,7 @@ const Dashboard = () => {
   const [dataStatistics, setDataStatistics] = useState<DataType[]>([]);
   const [dataTransaction, setDataTransaction] =
     useState<TransactionData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
@@ -159,8 +159,6 @@ const Dashboard = () => {
       Value: localStorage.getItem("value")!,
     });
     addedParams.add(keys!);
-    // console.log(localStorage.getItem("key"), 1);
-    // console.log(localStorage.getItem("value"), 2);
     setLoading(true);
     try {
       const response = await getListStatistics(1, 20, undefined, arrFilter);
@@ -190,7 +188,6 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchListStatistics();
-    // console.log(192, localStorage.getItem("key"));
   }, [keys]);
 
   const fetchStatisticsById = async (id: number) => {
@@ -619,55 +616,6 @@ const Dashboard = () => {
                 current && current > dayjs().endOf("day")
               }
             />
-
-            {/* <DatePicker
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onChange={(value: any) => {
-                setStartDate(value);
-                if (!value) {
-                  handleSelectChange(
-                    bankFilter,
-                    chatFilter,
-                    transTypeFilter,
-                    value,
-                    endDate
-                  );
-                  setCheckFilter(!checkFilter);
-                } else {
-                  fetchListStatistics(
-                    bankFilter,
-                    chatFilter,
-                    transTypeFilter,
-                    value,
-                    // endDate
-                  );
-                }
-              }}
-            /> */}
-            {/* <DatePicker
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onChange={(value: any) => {
-                setEndDate(value);
-                if (!value) {
-                  handleSelectChange(
-                    bankFilter,
-                    chatFilter,
-                    transTypeFilter,
-                    startDate,
-                    value
-                  );
-                  setCheckFilter(!checkFilter);
-                } else {
-                  fetchListStatistics(
-                    bankFilter,
-                    chatFilter,
-                    transTypeFilter,
-                    startDate,
-                    // value
-                  );
-                }
-              }}
-            /> */}
           </Space>
         </div>
         <div className="mt-5 mx-[35px]">

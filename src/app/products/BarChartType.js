@@ -11,6 +11,8 @@ import {
 } from 'chart.js';
 import { getDataGenaral } from '@/src/services/statistics';
 import { useEffect, useState } from 'react';
+import { Spin } from 'antd';
+
 
 ChartJS.register(
     CategoryScale,
@@ -23,6 +25,7 @@ ChartJS.register(
 
 const BarChartType = () => {
     const [dataChart, setDataChart] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const fetchDataGenaral = async () => {
         try {
@@ -59,6 +62,8 @@ const BarChartType = () => {
             }
         } catch (error) {
             console.error("Lỗi r:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -81,10 +86,12 @@ const BarChartType = () => {
 
     return (
         <div>
-            {dataChart ? (
-                <Bar data={dataChart} options={options} />
+            {loading ? (
+                <div style={{ textAlign: 'center', marginTop: '50px' }}>
+                    <Spin size="default" />
+                </div>
             ) : (
-                <p>Loading...</p>
+                <Bar data={dataChart} options={options} />
             )}
         </div>
     );

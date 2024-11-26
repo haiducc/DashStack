@@ -155,7 +155,7 @@ const Settings = () => {
           <div className="flex justify-end">
             <Button
               onClick={() => setAddModalOpen(false)}
-              className="w-[189px] h-[42px]"
+              className="w-[189px] !h-10"
             >
               Đóng
             </Button>
@@ -163,7 +163,7 @@ const Settings = () => {
             <Button
               type="primary"
               onClick={handleEditConfirm}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
             >
               Lưu
             </Button>

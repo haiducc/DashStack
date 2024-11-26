@@ -161,6 +161,17 @@ body {
   color: #666666;
 }
 
+.ant-input-number {
+  width: 100% !important;
+}
+.ant-input-number-input,
+.ant-select-selection-search-input,
+.ant-select-single,
+.ant-input,
+.ant-picker.ant-picker-outlined,
+.ant-select-selector {
+  height: 40px !important;
+}
 .input-number-custom-total {
   width: 100%;
 }

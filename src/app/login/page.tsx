@@ -98,7 +98,7 @@ function Login() {
       if (data && data.success) {
         await localStorage.setItem("accessToken", data.data.token);
         await fetchRoleData(data.data.token);
-        router.push("/pages/dashboard");
+        router.push("/dashboard");
       } else {
         const message = data.message || "Đã xảy ra lỗi. Vui lòng thử lại sau.";
         toast.error(message);

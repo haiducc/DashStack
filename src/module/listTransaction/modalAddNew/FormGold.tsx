@@ -429,17 +429,17 @@ export const FormGold = ({ onCancel, fetchData, banks }: FormMoneyType) => {
               autoSize={{ minRows: 3, maxRows: 5 }}
             />
           </Form.Item>
-          <div className="flex items-center justify-between gap-2">
-            <Button onClick={onCancel} className="w-[189px] h-[42px]">
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button onClick={onCancel} className="w-[189px] !h-10">
               Đóng
             </Button>
-            <Form.Item className="my-auto flex-[50%]">
+            <Form.Item className="!my-auto">
               <Button
                 type="primary"
                 onClick={() => {
                   handleSubmit();
                 }}
-                className="w-full h-[40px] bg-[#4B5CB8] hover:bg-[#3A4A9D]"
+                className="w-full !h-10 bg-[#4B5CB8] hover:bg-[#3A4A9D]"
               >
                 Tiếp tục
               </Button>

@@ -69,7 +69,12 @@ const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <body>
         <AntdRegistry>
           <Layout className="min-h-screen">
-            <NextTopLoader color="#2299DD" height={3} speed={400} />
+            <NextTopLoader
+              color="#2299DD"
+              height={3}
+              speed={400}
+              showSpinner={false}
+            />
             {!isLoginPage ? (
               <div className="grid grid-cols-12 min-h-screen">
                 {/* SideMenu: Col 2 with sticky behavior */}

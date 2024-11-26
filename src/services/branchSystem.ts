@@ -1,4 +1,4 @@
-import { dataBranchModal } from "../app/group_branch/page";
+import { DataBranchModal } from "../app/group_branch/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -28,7 +28,7 @@ export const getBranchSystem = async (
   }
 };
 
-export const addGroupBranch = async (branch: dataBranchModal) => {
+export const addGroupBranch = async (branch: DataBranchModal) => {
   try {
     const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(

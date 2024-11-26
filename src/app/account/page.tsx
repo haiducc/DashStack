@@ -1124,7 +1124,7 @@ const Account = () => {
             </Space>
           </div>
           <Button
-            className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
+            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
             onClick={() => {
               setCurrentAccount(null);
               form.resetFields();
@@ -1429,7 +1429,7 @@ const Account = () => {
                 handleAddConfirm(true);
                 // defaultModalAdd()
               }}
-              className="w-full h-[40px] bg-[#4B5CB8] hover:bg-[#3A4A9D]"
+              className="w-full !h-10 bg-[#4B5CB8] hover:bg-[#3A4A9D]"
               loading={isAddAccount}
             >
               {currentAccount ? "Cập nhật" : "Thêm mới"}

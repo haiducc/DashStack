@@ -307,7 +307,7 @@ const GroupBranchPage = () => {
             }}
           />
           <Button
-            className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
+            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
             onClick={() => {
               setCurrentBranch(null);
               form.resetFields();
@@ -368,7 +368,7 @@ const GroupBranchPage = () => {
           <div className="flex justify-end">
             <Button
               onClick={() => setAddModalOpen(false)}
-              className="w-[189px] h-[42px]"
+              className="w-[189px] !h-10"
             >
               Đóng
             </Button>
@@ -376,7 +376,7 @@ const GroupBranchPage = () => {
             <Button
               type="primary"
               onClick={() => handleAddConfirm(true)}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
               loading={isAddGroupBranch}
             >
               {currentBranch ? "Cập nhật" : "Thêm mới"}

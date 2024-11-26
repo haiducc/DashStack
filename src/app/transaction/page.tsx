@@ -482,7 +482,7 @@ const Transaction = () => {
             />
           </div>
           <Button
-            className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
+            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
             onClick={() => {
               setCurrentTransaction(null);
               form.resetFields();
@@ -808,7 +808,7 @@ const Transaction = () => {
           <div className="flex justify-end pt-5">
             <Button
               onClick={() => setAddModalOpen(false)}
-              className="w-[189px] h-[42px]"
+              className="w-[189px] !h-10"
             >
               Đóng
             </Button>
@@ -816,7 +816,7 @@ const Transaction = () => {
             <Button
               type="primary"
               onClick={() => handleAddConfirm(false)}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] h-[42px]"
+              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
               loading={isAddTransaction}
             >
               {currentTransaction ? "Cập nhật" : "Thêm mới"}

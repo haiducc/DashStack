@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { DatePicker, Select, Space, Spin, Table } from "antd";
+import { DatePicker, Select, Skeleton, Space, Spin, Table } from "antd";
 import type { TableProps } from "antd/es/table";
 import Header from "@/src/component/Header";
 import BarChart from "../products/BarChart";
@@ -84,7 +84,7 @@ const Dashboard = () => {
   const [dataStatistics, setDataStatistics] = useState<DataType[]>([]);
   const [dataTransaction, setDataTransaction] =
     useState<TransactionData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
@@ -158,8 +158,8 @@ const Dashboard = () => {
       Value: localStorage.getItem("value")!,
     });
     addedParams.add(keys!);
-    console.log(localStorage.getItem("key"),1);
-    console.log(localStorage.getItem("value"),2);
+    console.log(localStorage.getItem("key"), 1);
+    console.log(localStorage.getItem("value"), 2);
     setLoading(true);
     try {
       const response = await getListStatistics(1, 20, undefined, arrFilter);
@@ -189,7 +189,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchListStatistics();
-    console.log(192,localStorage.getItem("key") )
+    console.log(192, localStorage.getItem("key"));
   }, [keys]);
 
   const fetchStatisticsById = async (id: number) => {
@@ -467,6 +467,26 @@ const Dashboard = () => {
     fetchListStatistics(bankFilter, chatFilter);
   }, [checkFilter]);
 
+  const skeletonData = Array.from({ length: 5 }).map((_, index) => ({
+    id: index,
+    bankName: <Skeleton.Input active size="small" style={{ width: 100 }} />,
+    bankAccount: <Skeleton.Input active size="small" style={{ width: 100 }} />,
+    transDateString: (
+      <Skeleton.Input active size="small" style={{ width: 100 }} />
+    ),
+    fullName: <Skeleton.Input active size="small" style={{ width: 100 }} />,
+    transAmount: <Skeleton.Input active size="small" style={{ width: 100 }} />,
+    narrative: <Skeleton.Input active size="small" style={{ width: 100 }} />,
+    transType: <Skeleton.Input active size="small" style={{ width: 100 }} />,
+    currentBalance: (
+      <Skeleton.Input active size="small" style={{ width: 100 }} />
+    ),
+    logStatus: <Skeleton.Input active size="small" style={{ width: 100 }} />,
+    bankAccountId: (
+      <Skeleton.Input active size="small" style={{ width: 100 }} />
+    ),
+  }));
+
   return (
     <>
       {isLoading && (
@@ -675,7 +695,7 @@ const Dashboard = () => {
         <div className="mt-5 mx-[35px]">
           <Table<DataType>
             columns={columns}
-            dataSource={dataStatistics}
+            dataSource={loading ? skeletonData : dataStatistics}
             loading={loading}
           />
         </div>

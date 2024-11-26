@@ -152,7 +152,7 @@ const ListTransactionPage = () => {
             </Space>
           </div>
           <Button
-            className="bg-[#4B5CB8] w-[136px] h-[40px] text-white font-medium hover:bg-[#3A4A9D]"
+            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
             onClick={() => {
               handleCreateAdd();
             }}

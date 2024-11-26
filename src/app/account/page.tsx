@@ -1455,7 +1455,7 @@ const Account = () => {
               }}
             />
           </Form.Item>
-          <Form.Item label="Chọn nhóm tài khoản 2" name="selectedAccountGroups">
+          <Form.Item hidden label="Chọn nhóm tài khoản 2" name="selectedAccountGroups">
             <Select mode="multiple" />
           </Form.Item>
           <Form.Item label="Ghi chú" name="notes">

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Skeleton, Space, Table } from "antd";
 import {
   addTelegram,
   deleteTelegram,
@@ -14,17 +14,19 @@ import { toast } from "react-toastify"; // Import toast
 import DeleteModal from "@/src/component/config/modalDelete";
 import { useRouter } from "next/navigation";
 
-export interface dataTelegramModal {
+export interface DataTelegramModal {
   id: number;
   name: string;
   chatId: string;
   notes: string;
 }
 
-interface filterRole {
+interface FilterRole {
   Name: string;
   Value: string;
 }
+
+type DataTypeWithKey = DataTelegramModal & { key: React.Key };
 
 const Telegram = () => {
   const router = useRouter();
@@ -36,11 +38,11 @@ const Telegram = () => {
   }, []);
 
   const [form] = Form.useForm();
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [currentTelegram, setCurrentTelegram] =
-    useState<dataTelegramModal | null>(null);
-  const [dataTelegram, setDataTelegram] = useState<dataTelegramModal[]>([]);
+    useState<DataTelegramModal | null>(null);
+  const [dataTelegram, setDataTelegram] = useState<DataTelegramModal[]>([]);
   const [, setGlobalTerm] = useState("");
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
@@ -55,7 +57,7 @@ const Telegram = () => {
   }, []);
 
   const fetchTelegram = async (globalTerm?: string) => {
-    const arr: filterRole[] = [];
+    const arr: FilterRole[] = [];
     const addedParams = new Set<string>();
     arr.push({
       Name: localStorage.getItem("key")!,
@@ -70,7 +72,7 @@ const Telegram = () => {
         arr
       );
       const formattedData =
-        response?.data?.source?.map((x: dataTelegramModal) => ({
+        response?.data?.source?.map((x: DataTelegramModal) => ({
           id: x.id?.toString() || Date.now().toString(),
           name: x.name,
           chatId: x.chatId,
@@ -79,6 +81,8 @@ const Telegram = () => {
       setDataTelegram(formattedData);
     } catch (error) {
       console.error("Error fetching:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,7 +94,7 @@ const Telegram = () => {
     try {
       await form.validateFields();
       setIsAddTelegram(isAddTelegram);
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       const formData = form.getFieldsValue();
       setLoading(true);
       const response = await addTelegram({
@@ -105,7 +109,7 @@ const Telegram = () => {
         setIsAddTelegram(false);
         return;
       }
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       form.resetFields();
       setCurrentTelegram(null);
       toast.success(
@@ -133,7 +137,7 @@ const Telegram = () => {
     }
   };
 
-  const handleEditTele = (x: dataTelegramModal) => {
+  const handleEditTele = (x: DataTelegramModal) => {
     setCurrentTelegram(x);
     form.setFieldsValue({
       id: x.id,
@@ -141,13 +145,13 @@ const Telegram = () => {
       chatId: x.chatId,
       notes: x.notes,
     });
-    setAddModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
-  const handleDeleteTele = async (x: dataTelegramModal) => {
+  const handleDeleteTele = async (x: DataTelegramModal) => {
     setLoading(true);
     try {
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       await deleteTelegram(x.id);
       toast.success("Xóa nhóm telegram thành công!");
       await fetchTelegram();
@@ -165,7 +169,7 @@ const Telegram = () => {
       if (value.trim() === "") {
         const data = await getListTelegram(1, 20);
         const formattedData =
-          data?.data?.source?.map((x: dataTelegramModal) => ({
+          data?.data?.source?.map((x: DataTelegramModal) => ({
             id: x.id,
             name: x.name,
             chatId: x.chatId,
@@ -176,7 +180,7 @@ const Telegram = () => {
       } else {
         const data = await getListTelegram(1, 20, value);
         const formattedData =
-          data?.data?.source?.map((x: dataTelegramModal) => ({
+          data?.data?.source?.map((x: DataTelegramModal) => ({
             id: x.id,
             name: x.name,
             chatId: x.chatId,
@@ -193,9 +197,9 @@ const Telegram = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAccountGroup, setSelectedAccountGroup] =
-    useState<dataTelegramModal | null>(null);
+    useState<DataTelegramModal | null>(null);
 
-  const handleDeleteClick = (tele: dataTelegramModal) => {
+  const handleDeleteClick = (tele: DataTelegramModal) => {
     setSelectedAccountGroup(tele);
     setIsDeleteModalOpen(true);
   };
@@ -220,7 +224,7 @@ const Telegram = () => {
     {
       title: "Chức năng",
       key: "action",
-      render: (record: dataTelegramModal) => (
+      render: (record: DataTelegramModal) => (
         <Space size="middle">
           <Button
             icon={<EditOutlined />}
@@ -277,22 +281,44 @@ const Telegram = () => {
             onClick={() => {
               setCurrentTelegram(null);
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
           >
             Thêm mới
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} fullscreen />
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
         ) : (
-          <Table columns={columns} dataSource={dataTelegram} />
+          <Table dataSource={dataTelegram} columns={columns} />
         )}
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={
@@ -335,7 +361,7 @@ const Telegram = () => {
           </Form.Item>
           <div className="flex justify-end">
             <Button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               className="w-[189px] !h-10"
             >
               Đóng

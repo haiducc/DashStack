@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Space, Table, Spin } from "antd";
+import { Button, Form, Input, Space, Table, Skeleton } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
 import BaseModal from "@/src/component/config/BaseModal";
@@ -15,10 +15,11 @@ import { toast } from "react-toastify";
 import DeleteModal from "@/src/component/config/modalDelete";
 import { useRouter } from "next/navigation";
 
-interface filterGroupAccount {
+interface FilterGroupAccount {
   Name: string;
   Value: string;
 }
+type DataTypeWithKey = DataAccountGroup & { key: React.Key };
 
 const PhoneNumber: React.FC = () => {
   const router = useRouter();
@@ -30,14 +31,14 @@ const PhoneNumber: React.FC = () => {
   }, []);
 
   const [form] = Form.useForm();
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [currentAccount, setCurrentAccount] = useState<DataAccountGroup | null>(
     null
   );
   const [dataAccountGroup, setDataAccountGroup] = useState<DataAccountGroup[]>(
     []
   );
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [, setGlobalTerm] = useState("");
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
@@ -53,7 +54,7 @@ const PhoneNumber: React.FC = () => {
   }, []);
 
   const fetchAccountGroup = async (globalTerm?: string) => {
-    const arr: filterGroupAccount[] = [];
+    const arr: FilterGroupAccount[] = [];
     const addedParams = new Set<string>();
     arr.push({
       Name: localStorage.getItem("key")!,
@@ -91,7 +92,7 @@ const PhoneNumber: React.FC = () => {
     try {
       await form.validateFields(); // Xác nhận form hợp lệ trước
       const formData = form.getFieldsValue();
-      setAddModalOpen(false); // Đóng popup ngay lập tức
+      setIsAddModalOpen(false); // Đóng popup ngay lập tức
       setLoading(true);
 
       // Xử lý thêm mới
@@ -122,7 +123,7 @@ const PhoneNumber: React.FC = () => {
       notes: accountGroup.notes,
     });
     setCurrentAccount(accountGroup);
-    setAddModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -132,7 +133,7 @@ const PhoneNumber: React.FC = () => {
   const handleDeleteAccountGroup = async (x: DataAccountGroup) => {
     setLoading(true);
     try {
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       const response = await deleteAccountGroup(x.id);
       if (response.success === false) {
         toast.error(response.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
@@ -242,24 +243,51 @@ const PhoneNumber: React.FC = () => {
             onClick={() => {
               setCurrentAccount(null);
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
           >
             Thêm mới
           </Button>
         </div>
-        <Spin spinning={loading}>
+        {loading ? (
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
+        ) : (
+          <Table dataSource={dataAccountGroup} columns={columns} />
+        )}
+        {/* <Spin spinning={loading}>
           <Table
             columns={columns}
             dataSource={dataAccountGroup}
             rowKey={"id"}
           />
-        </Spin>
+        </Spin> */}
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={
@@ -291,7 +319,7 @@ const PhoneNumber: React.FC = () => {
           </Form.Item>
           <div className="flex justify-end">
             <Button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               className="w-[189px] !h-10"
             >
               Đóng

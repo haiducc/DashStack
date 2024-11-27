@@ -10,8 +10,8 @@ import {
   Input,
   InputNumber,
   Select,
+  Skeleton,
   Space,
-  Spin,
   Table,
 } from "antd";
 import {
@@ -46,10 +46,12 @@ export interface TransactionModal {
   transAmount: number;
 }
 
-interface filterRole {
+interface FilterRole {
   Name: string;
   Value: string;
 }
+
+type DataTypeWithKey = TransactionModal & { key: React.Key };
 
 const Transaction = () => {
   const router = useRouter();
@@ -61,13 +63,13 @@ const Transaction = () => {
   }, []);
 
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [dataTransaction, setDataTransaction] = useState<TransactionModal[]>(
     []
   );
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [globalTerm, setGlobalTerm] = useState("");
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [currentTransaction, setCurrentTransaction] =
     useState<TransactionModal | null>(null);
   const [banks, setBanks] = useState<Array<TransactionModal>>([]);
@@ -92,7 +94,7 @@ const Transaction = () => {
     globalTerm?: string
     // searchTerms?: string
   ) => {
-    const arrRole: filterRole[] = [];
+    const arrRole: FilterRole[] = [];
     const addedParams = new Set<string>();
     arrRole.push({
       Name: localStorage.getItem("key")!,
@@ -188,7 +190,7 @@ const Transaction = () => {
     try {
       await form.validateFields();
       setIsAddTransaction(isAddTransaction);
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       if (currentTransaction) {
         const response = await addTransaction({
           id: currentTransaction.id,
@@ -248,7 +250,7 @@ const Transaction = () => {
         toast.success("Thêm mới giao dịch thành công!");
       }
 
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       form.resetFields();
       setCurrentTransaction(null);
       fetchTransaction();
@@ -292,13 +294,13 @@ const Transaction = () => {
   //     feeIncurred: record.feeIncurred,
   //     bankAccountName: record.bankAccount + " - " + record.fullName,
   //   });
-  //   setAddModalOpen(true);
+  //   setIsAddModalOpen(true);
   // };
 
   const handleDelete = async (x: TransactionModal) => {
     setLoading(true);
     try {
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       await deleteTransaction(x.id);
       await fetchTransaction();
     } catch (error) {
@@ -486,22 +488,44 @@ const Transaction = () => {
             onClick={() => {
               setCurrentTransaction(null);
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
           >
             Thêm mới
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} fullscreen />
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
         ) : (
-          <Table columns={columns} dataSource={dataTransaction} rowKey="id" />
+          <Table dataSource={dataTransaction} columns={columns} />
         )}
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={
@@ -806,7 +830,7 @@ const Transaction = () => {
           </Form.Item>
           <div className="flex justify-end pt-5">
             <Button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               className="w-[189px] !h-10"
             >
               Đóng

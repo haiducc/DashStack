@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Select, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Select, Skeleton, Space, Table } from "antd";
 import BaseModal from "@/src/component/config/BaseModal";
 import { toast } from "react-toastify"; // Import toast
 import DeleteModal from "@/src/component/config/modalDelete";
@@ -16,7 +16,7 @@ import {
 import { getBranchSystem } from "@/src/services/branchSystem";
 import { useRouter } from "next/navigation";
 
-export interface dataTeamModal {
+export interface DataTeamModal {
   id: number;
   name: string;
   note: string;
@@ -26,10 +26,12 @@ export interface dataTeamModal {
   groupBranchName: string;
 }
 
-interface filterRole {
+interface FilterRole {
   Name: string;
   Value: string;
 }
+
+type DataTypeWithKey = DataTeamModal & { key: React.Key };
 
 const GroupTeamPage = () => {
   const router = useRouter();
@@ -42,9 +44,9 @@ const GroupTeamPage = () => {
 
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [currentTeam, setCurrentTeam] = useState<dataTeamModal | null>(null);
-  const [dataTeam, setDataTeam] = useState<dataTeamModal[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentTeam, setCurrentTeam] = useState<DataTeamModal | null>(null);
+  const [dataTeam, setDataTeam] = useState<DataTeamModal[]>([]);
   const [, setGlobalTerm] = useState("");
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
@@ -64,7 +66,7 @@ const GroupTeamPage = () => {
   }, []);
 
   const fetchGroupSystem = async (globalTerm?: string) => {
-    const arrRole: filterRole[] = [];
+    const arrRole: FilterRole[] = [];
     const addedParams = new Set<string>();
     arrRole.push({
       Name: localStorage.getItem("key")!,
@@ -79,7 +81,7 @@ const GroupTeamPage = () => {
         arrRole
       );
       const formattedData =
-        response?.data?.source?.map((x: dataTeamModal) => ({
+        response?.data?.source?.map((x: DataTeamModal) => ({
           id: x.id,
           name: x.name,
           note: x.note,
@@ -91,6 +93,8 @@ const GroupTeamPage = () => {
       setDataTeam(formattedData);
     } catch (error) {
       console.error("Error fetching:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -149,7 +153,7 @@ const GroupTeamPage = () => {
     }
   };
 
-  const handleEditTele = (x: dataTeamModal) => {
+  const handleEditTele = (x: DataTeamModal) => {
     setCurrentTeam(x);
     form.setFieldsValue({
       id: x.id,
@@ -163,7 +167,7 @@ const GroupTeamPage = () => {
     setAddModalOpen(true);
   };
 
-  const handleDeleteTele = async (x: dataTeamModal) => {
+  const handleDeleteTele = async (x: DataTeamModal) => {
     setLoading(true);
     try {
       setAddModalOpen(false);
@@ -184,7 +188,7 @@ const GroupTeamPage = () => {
       if (value.trim() === "") {
         const data = await getGroupTeam(1, 20);
         const formattedData =
-          data?.data?.source?.map((x: dataTeamModal) => ({
+          data?.data?.source?.map((x: DataTeamModal) => ({
             id: x.id,
             name: x.name,
             note: x.note,
@@ -198,7 +202,7 @@ const GroupTeamPage = () => {
       } else {
         const data = await getGroupTeam(1, 20, value);
         const formattedData =
-          data?.data?.source?.map((x: dataTeamModal) => ({
+          data?.data?.source?.map((x: DataTeamModal) => ({
             id: x.id,
             name: x.name,
             note: x.note,
@@ -254,9 +258,9 @@ const GroupTeamPage = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAccountGroup, setSelectedAccountGroup] =
-    useState<dataTeamModal | null>(null);
+    useState<DataTeamModal | null>(null);
 
-  const handleDeleteClick = (tele: dataTeamModal) => {
+  const handleDeleteClick = (tele: DataTeamModal) => {
     setSelectedAccountGroup(tele);
     setIsDeleteModalOpen(true);
   };
@@ -302,7 +306,7 @@ const GroupTeamPage = () => {
     {
       title: "Chức năng",
       key: "action",
-      render: (record: dataTeamModal) => (
+      render: (record: DataTeamModal) => (
         <Space size="middle">
           <Button
             icon={<EditOutlined />}
@@ -364,9 +368,31 @@ const GroupTeamPage = () => {
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} fullscreen />
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
         ) : (
-          <Table columns={columns} dataSource={dataTeam} />
+          <Table dataSource={dataTeam} columns={columns} />
         )}
       </div>
       <BaseModal

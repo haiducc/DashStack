@@ -1,6 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 
+export interface DataAseet {
+  cashTotal: number;
+  goldTotal: number;
+  realEstateTotal: number;
+  id: number;
+  isDelete: boolean;
+  createdBy: Date | null;
+  createdDate: Date | null;
+  modifiedBy: null;
+  modifiedDate: Date | null;
+}
+export interface ResponsiveData<T> {
+  success: boolean;
+  message: string | null;
+  messageCode: string | null;
+  msgParams: string | null;
+  code: 200;
+  errors: string | null;
+  data: T;
+}
 export interface ItemAssetType {
   title: string;
   quantity: number;
@@ -9,9 +29,8 @@ export interface ItemAssetType {
 
 export interface AssetType {
   title: string;
-  quantity: number;
+  quantity?: number;
   type: number;
-  key: string;
   handleClick?: (type: number) => void;
   active: number;
 }
@@ -62,4 +81,57 @@ export interface ItemFaceValueChooseType {
   label?: string;
   quantity: number;
   price: number;
+}
+
+export interface TypeAsset {
+  key: string;
+  value: number;
+}
+
+export interface ChartAssetType {
+  cashChart: TypeAsset[] | null;
+  goldChart: TypeAsset[] | null;
+  realEstateChart: TypeAsset[] | null;
+}
+
+export interface TransactionType {
+  totalAmountOut: number;
+  totalAmountIn: number;
+  balance: number;
+  month: number;
+}
+
+export interface AssetInventory {
+  value: string;
+  quantity: number;
+  price: number | null;
+  name: string;
+}
+
+export interface DataTransactionType {
+  bankAccountId: number;
+  transType: string;
+  purposeTrans: string;
+  type: string;
+  addedBy: string;
+  managerBy: string;
+  departmentManager: string;
+  totalAmount: number;
+  price: number | null;
+  bankAccountNumber: string | null;
+  bankCode: string;
+  transDate: string; // ISO string format
+  groupSystemId: number | null;
+  groupBranchId: number | null;
+  groupTeamId: number | null;
+  unit: string | null;
+  quantity: number | null;
+  amount: number | null;
+  assetInventories: AssetInventory[];
+  id: number;
+  isDelete: boolean;
+  createdBy: string | null;
+  createdDate: string; // ISO string format
+  modifiedBy: string | null;
+  modifiedDate: string; // ISO string format
 }

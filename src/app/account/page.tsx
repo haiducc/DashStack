@@ -3,7 +3,16 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as React from "react";
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Select, Space, Table, Radio, Spin } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Select,
+  Space,
+  Table,
+  Radio,
+  Skeleton,
+} from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import BaseModal from "@/src/component/config/BaseModal";
@@ -23,7 +32,7 @@ import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import DeleteModal from "@/src/component/config/modalDelete";
 
-interface filterGroupAccount {
+interface FilterGroupAccount {
   Name: string;
   Value: string;
 }
@@ -37,9 +46,11 @@ const accountTypeOptions = [
   { value: "2", label: "Tài khoản marketing" },
 ];
 
+type DataTypeWithKey = BankAccounts & { key: React.Key };
+
 const Account = () => {
   const [form] = Form.useForm();
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [currentAccount, setCurrentAccount] = useState<BankAccounts | null>(
     null
   );
@@ -58,7 +69,7 @@ const Account = () => {
   const [pageSize] = useState(20);
   const [value, setValue] = useState("");
   const [globalTerm, setGlobalTerm] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [, setIsEditMode] = useState(false);
   const [accountGroup, setAccountGroup] = useState([]);
   //
@@ -125,7 +136,7 @@ const Account = () => {
     branch?: string,
     team?: string
   ) => {
-    const arrBankAccount: filterGroupAccount[] = [];
+    const arrBankAccount: FilterGroupAccount[] = [];
     const addedParams = new Set();
     if (Array.isArray(searchTerms)) {
       searchTerms.forEach((term) => {
@@ -256,7 +267,7 @@ const Account = () => {
   };
 
   const getListAccountGroup = async () => {
-    const arrAccountGroup: filterGroupAccount[] = [];
+    const arrAccountGroup: FilterGroupAccount[] = [];
     const addedParams = new Set<string>();
     arrAccountGroup.push({
       Name: localStorage.getItem("key")!,
@@ -381,7 +392,7 @@ const Account = () => {
     try {
       await form.validateFields();
       setIsAddAccount(isAddAccount);
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       // const formData = await form.getFieldsValue();
       setLoading(true);
       const res = await addBankAccounts({
@@ -407,7 +418,7 @@ const Account = () => {
         toast.error(res?.message || "Có lỗi xảy ra, vui lòng thử lại.");
         setIsAddAccount(false);
       } else {
-        setAddModalOpen(false);
+        setIsAddModalOpen(false);
         form.resetFields();
         setCurrentAccount(null);
         await fetchAccounts();
@@ -498,7 +509,7 @@ const Account = () => {
       groupTeamName: account.groupTeam?.name,
       bankName: account.bankName,
     });
-    setAddModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -509,7 +520,7 @@ const Account = () => {
   const handleDeleteAccount = async (x: BankAccounts) => {
     setLoading(true);
     try {
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       const response = await deleteBankAccount(x.id);
       if (response.success === false) {
         toast.error(response.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
@@ -652,12 +663,12 @@ const Account = () => {
 
   // call api lấy dsach filter nhóm tài khoản
   const handleFilter = async (searchTerms?: string) => {
-    const arrAccountGroup: filterGroupAccount[] = [];
-    const groupAccount: filterGroupAccount = {
+    const arrAccountGroup: FilterGroupAccount[] = [];
+    const groupAccount: FilterGroupAccount = {
       Name: "groupAccountId",
       Value: searchTerms!,
     };
-    const obj: filterGroupAccount = {
+    const obj: FilterGroupAccount = {
       Name: keys!,
       Value: values!,
     };
@@ -738,7 +749,7 @@ const Account = () => {
   };
 
   const handleFilterSystem = async (groupSystemId?: string) => {
-    const arrAccountGroup: filterGroupAccount[] = [];
+    const arrAccountGroup: FilterGroupAccount[] = [];
     arrAccountGroup.push({
       Name: localStorage.getItem("key")!,
       Value: localStorage.getItem("value")!,
@@ -774,12 +785,12 @@ const Account = () => {
   };
 
   const handleFilterBranch = async (groupBranchId?: string) => {
-    const arr: filterGroupAccount[] = [];
-    const branch: filterGroupAccount = {
+    const arr: FilterGroupAccount[] = [];
+    const branch: FilterGroupAccount = {
       Name: "groupBranchId",
       Value: groupBranchId!,
     };
-    const obj: filterGroupAccount = {
+    const obj: FilterGroupAccount = {
       Name: keys!,
       Value: values!,
     };
@@ -811,16 +822,16 @@ const Account = () => {
   };
 
   const handleFilterTeam = async (groupTeamId?: string) => {
-    const arr: filterGroupAccount[] = [];
-    const system: filterGroupAccount = {
+    const arr: FilterGroupAccount[] = [];
+    const system: FilterGroupAccount = {
       Name: "groupSystemId",
       Value: groupSystemId!,
     };
-    const team: filterGroupAccount = {
+    const team: FilterGroupAccount = {
       Name: "groupTeamId",
       Value: groupTeamId!,
     };
-    const obj: filterGroupAccount = {
+    const obj: FilterGroupAccount = {
       Name: keys!,
       Value: values!,
     };
@@ -929,7 +940,6 @@ const Account = () => {
   // const [typeAccountValue, setTypeAccountValue] = useState()
 
   useEffect(() => {
-    // console.log(1);
     fetchAccounts(
       globalTerm,
       groupAccountFilter,
@@ -1128,26 +1138,45 @@ const Account = () => {
             onClick={() => {
               setCurrentAccount(null);
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
               defaultModalAdd();
             }}
           >
             Thêm mới
           </Button>
         </div>
-        {/* {loading ? (
-          <Spin spinning={loading} />
+        {loading ? (
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
         ) : (
-          <Table columns={columns} dataSource={dataAccount} />
-        )} */}
-        <Spin spinning={loading}>
-          <Table columns={columns} dataSource={dataAccount} />
-        </Spin>
+          <Table dataSource={dataAccount} columns={columns} />
+        )}
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={currentAccount ? "Chỉnh sửa tài khoản" : "Thêm mới tài khoản"}

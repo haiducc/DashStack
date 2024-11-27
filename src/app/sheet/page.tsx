@@ -4,23 +4,25 @@ import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import BaseModal from "@/src/component/config/BaseModal";
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Skeleton, Space, Table } from "antd";
 import { addSheet, deleteSheet, getListSheet } from "@/src/services/sheet";
 import { toast } from "react-toastify";
 import DeleteModal from "@/src/component/config/modalDelete";
 import { useRouter } from "next/navigation";
 
-export interface dataSheetModal {
+export interface DataSheetModal {
   id?: number;
   name: string;
   linkUrl: string;
   notes: string;
 }
 
-interface filterRole {
+interface FilterRole {
   Name: string;
   Value: string;
 }
+
+type DataTypeWithKey = DataSheetModal & { key: React.Key };
 
 const Sheet = () => {
   const router = useRouter();
@@ -32,10 +34,10 @@ const Sheet = () => {
   }, []);
 
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [currentSheet, setCurrentSheet] = useState<dataSheetModal | null>(null);
-  const [dataSheet, setDataSheet] = useState<dataSheetModal[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [currentSheet, setCurrentSheet] = useState<DataSheetModal | null>(null);
+  const [dataSheet, setDataSheet] = useState<DataSheetModal[]>([]);
   const [globalTerm, setGlobalTerm] = useState("");
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
@@ -51,7 +53,7 @@ const Sheet = () => {
   }, []);
 
   const fetchSheet = async (globalTerm?: string) => {
-    const arr: filterRole[] = [];
+    const arr: FilterRole[] = [];
     const addedParams = new Set<string>();
     arr.push({
       Name: localStorage.getItem("key")!,
@@ -61,7 +63,7 @@ const Sheet = () => {
     try {
       const response = await getListSheet(pageIndex, pageSize, globalTerm, arr);
       const formattedData =
-        response?.data?.source?.map((x: dataSheetModal) => ({
+        response?.data?.source?.map((x: DataSheetModal) => ({
           id: x.id?.toString() || Date.now().toString(),
           name: x.name,
           linkUrl: x.linkUrl,
@@ -70,6 +72,8 @@ const Sheet = () => {
       setDataSheet(formattedData);
     } catch (error) {
       console.error("Error fetching:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,7 +85,7 @@ const Sheet = () => {
     try {
       await form.validateFields();
       setIsAddSheet(isAddSheet);
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       const formData = form.getFieldsValue();
       setLoading(true);
       if (currentSheet) {
@@ -102,7 +106,7 @@ const Sheet = () => {
         toast.success("Thêm mới thành công!");
       }
 
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       form.resetFields();
       setCurrentSheet(null);
       setLoading(false);
@@ -115,7 +119,7 @@ const Sheet = () => {
     }
   };
 
-  const handleEditSheet = (x: dataSheetModal) => {
+  const handleEditSheet = (x: DataSheetModal) => {
     setCurrentSheet(x);
     form.setFieldsValue({
       id: x.id,
@@ -123,17 +127,17 @@ const Sheet = () => {
       linkUrl: x.linkUrl,
       notes: x.notes,
     });
-    setAddModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
-  const handleDeleteSheet = async (x: dataSheetModal) => {
+  const handleDeleteSheet = async (x: DataSheetModal) => {
     if (!x.id) {
       toast.error("ID không hợp lệ!");
       return;
     }
     setLoading(true);
     try {
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       await deleteSheet(x.id);
       await fetchSheet();
       toast.success("Xóa thành công!");
@@ -147,9 +151,9 @@ const Sheet = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAccountGroup, setSelectedAccountGroup] =
-    useState<dataSheetModal | null>(null);
+    useState<DataSheetModal | null>(null);
 
-  const handleDeleteClick = (tele: dataSheetModal) => {
+  const handleDeleteClick = (tele: DataSheetModal) => {
     setSelectedAccountGroup(tele);
     setIsDeleteModalOpen(true);
   };
@@ -172,7 +176,7 @@ const Sheet = () => {
       if (value.trim() === "") {
         const data = await getListSheet(1, 20);
         const formattedData =
-          data?.data?.source?.map((x: dataSheetModal) => ({
+          data?.data?.source?.map((x: DataSheetModal) => ({
             id: x.id,
             name: x.name,
             linkUrl: x.linkUrl,
@@ -184,7 +188,7 @@ const Sheet = () => {
         // Nếu có giá trị tìm kiếm, gọi API với giá trị đó
         const data = await getListSheet(1, 20, value);
         const formattedData =
-          data?.data?.source?.map((x: dataSheetModal) => ({
+          data?.data?.source?.map((x: DataSheetModal) => ({
             id: x.id,
             name: x.name,
             linkUrl: x.linkUrl,
@@ -206,7 +210,7 @@ const Sheet = () => {
     {
       title: "Chức năng",
       key: "action",
-      render: (record: dataSheetModal) => (
+      render: (record: DataSheetModal) => (
         <Space size="middle">
           <Button
             icon={<EditOutlined />}
@@ -257,22 +261,44 @@ const Sheet = () => {
             onClick={() => {
               setCurrentSheet(null);
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
           >
             Thêm mới
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} fullscreen />
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
         ) : (
-          <Table columns={columns} dataSource={dataSheet} />
+          <Table dataSource={dataSheet} columns={columns} />
         )}
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={
@@ -313,7 +339,7 @@ const Sheet = () => {
           </Form.Item>
           <div className="flex justify-end">
             <Button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               className="w-[189px] !h-10"
             >
               Đóng

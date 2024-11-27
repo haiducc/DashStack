@@ -3,7 +3,15 @@
 import React, { useEffect, useState } from "react";
 import Header from "@/src/component/Header";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Select, Space, Spin, Table } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Select,
+  Skeleton,
+  Space,
+  Table,
+} from "antd";
 import {
   addTelegramIntergration,
   deleteTelegramIntergration,
@@ -33,10 +41,12 @@ export interface ListTelegramIntegration {
   typeDescription: string;
 }
 
-interface filterTeleIntergration {
+interface FilterTeleIntergration {
   Name: string;
   Value: string;
 }
+
+type DataTypeWithKey = ListTelegramIntegration & { key: React.Key };
 
 const TelegramIntegration = () => {
   const router = useRouter();
@@ -51,12 +61,12 @@ const TelegramIntegration = () => {
   const [dataTelegramIntegration, setDataTelegramIntegration] = useState<
     ListTelegramIntegration[]
   >([]);
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [currentTelegram, setCurrentTelegram] =
     useState<ListTelegramIntegration | null>(null);
   const [banks, setBanks] = useState<Array<ListTelegramIntegration>>([]);
   const [telegram, setTelegram] = useState<Array<ListTelegramIntegration>>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [globalTerm, setGlobalTerm] = useState("");
   const [pageIndex] = useState(1);
   const [pageSize] = useState(50);
@@ -73,7 +83,7 @@ const TelegramIntegration = () => {
     globalTerm?: string,
     groupChat?: string
   ) => {
-    const arrTeleAccount: filterTeleIntergration[] = [];
+    const arrTeleAccount: FilterTeleIntergration[] = [];
     const addedParams = new Set<string>();
 
     if (groupChat && !addedParams.has("bankAccountId")) {
@@ -197,7 +207,7 @@ const TelegramIntegration = () => {
 
     try {
       await form.validateFields();
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       setLoading(true);
 
       const formData = form.getFieldsValue();
@@ -238,7 +248,7 @@ const TelegramIntegration = () => {
         console.log("Dữ liệu đã được thêm mới:", response);
       }
 
-      setAddModalOpen(false); // Đóng popup sau khi thành công
+      setIsAddModalOpen(false); // Đóng popup sau khi thành công
       form.resetFields();
       setCurrentTelegram(null);
       fetchListTelegramIntegration();
@@ -263,13 +273,13 @@ const TelegramIntegration = () => {
       chatName: record.chatName,
       typeDescription: record.typeDescription,
     });
-    setAddModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
   const handleDelete = async (x: ListTelegramIntegration) => {
     setLoading(true);
     try {
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       await deleteTelegramIntergration(x.id);
       await fetchListTelegramIntegration();
     } catch (error) {
@@ -411,20 +421,17 @@ const TelegramIntegration = () => {
     }));
   };
 
-  const handleFilterGroupChat = async (groupChatId?: string) => {
-    const arr: filterTeleIntergration[] = [];
-    const addedParams = new Set<string>();
-    if (groupChatId && !addedParams.has("groupChatId")) {
-      arr.push({
-        Name: "groupChatId",
-        Value: groupChatId,
-      });
-    }
-    arr.push({
-      Name: localStorage.getItem("key")!,
-      Value: localStorage.getItem("value")!,
-    });
-    addedParams.add(keys!);
+  const handleFilterGroupChat = async (groupChat?: string) => {
+    const arr: FilterTeleIntergration[] = [];
+    const groupChatFilter: FilterTeleIntergration = {
+      Name: "groupChatId",
+      Value: groupChat!,
+    };
+    const obj: FilterTeleIntergration = {
+      Name: keys!,
+      Value: values!,
+    };
+    arr.push(obj, groupChatFilter);
     try {
       const fetchBankAccountAPI = await getListTelegram(
         pageIndex,
@@ -522,13 +529,40 @@ const TelegramIntegration = () => {
             onClick={() => {
               setCurrentTelegram(null);
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
           >
             Thêm mới
           </Button>
         </div>
         {loading ? (
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
+        ) : (
+          <Table dataSource={dataTelegramIntegration} columns={columns} />
+        )}
+        {/* {loading ? (
           <Spin spinning={loading} fullscreen />
         ) : (
           <Table
@@ -537,12 +571,12 @@ const TelegramIntegration = () => {
             rowKey="id"
             // pagination={false}
           />
-        )}
+        )} */}
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={
@@ -679,7 +713,7 @@ const TelegramIntegration = () => {
           </Form.Item>
           <div className="flex justify-end">
             <Button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               className="w-[189px] !h-10"
             >
               Đóng

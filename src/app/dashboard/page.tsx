@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { DatePicker, Select, Space, Spin, Table } from "antd";
+import { DatePicker, Select, Skeleton, Space, Spin, Table } from "antd";
 import type { TableProps } from "antd/es/table";
 import Header from "@/src/component/Header";
 import BarChart from "../products/BarChartMoney";
@@ -65,11 +65,13 @@ interface TransactionData {
   transaction: Transaction;
 }
 
-interface filterProducts {
+interface FilterProducts {
   Name: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Value: any;
 }
+
+type DataTypeWithKey = DataType & { key: React.Key };
 
 const Dashboard = () => {
   useEffect(() => {
@@ -119,7 +121,7 @@ const Dashboard = () => {
     startDate?: string,
     endDate?: string
   ) => {
-    const arrFilter: filterProducts[] = [];
+    const arrFilter: FilterProducts[] = [];
     const addedParams = new Set<string>();
 
     if (bankAccount && !addedParams.has("bankAccountId")) {
@@ -320,7 +322,7 @@ const Dashboard = () => {
   //   { value: "2", label: "Tài khoản marketing" },
   // ];
   const fetchBankData = async (bankAccount?: string) => {
-    const arr: filterProducts[] = [];
+    const arr: FilterProducts[] = [];
     const addedParams = new Set<string>();
     if (bankAccount && !addedParams.has("bankAccount")) {
       arr.push({
@@ -365,7 +367,7 @@ const Dashboard = () => {
   };
 
   const fetchListTelegram = async (groupChat?: string) => {
-    const arr: filterProducts[] = [];
+    const arr: FilterProducts[] = [];
     const addedParams = new Set<string>();
     if (groupChat && !addedParams.has("groupChat")) {
       arr.push({
@@ -622,11 +624,33 @@ const Dashboard = () => {
           </Space>
         </div>
         <div className="mt-5 mx-[35px]">
-          <Table<DataType>
-            columns={columns}
-            dataSource={dataStatistics}
-            loading={loading}
-          />
+          {loading ? (
+            <Table
+              rowKey="key"
+              pagination={false}
+              loading={loading}
+              dataSource={
+                [...Array(10)].map((_, index) => ({
+                  key: `key${index}`,
+                })) as DataTypeWithKey[]
+              }
+              columns={columns.map((column) => ({
+                ...column,
+                render: function renderPlaceholder() {
+                  return (
+                    <Skeleton
+                      key={column.key as React.Key}
+                      title
+                      active={false}
+                      paragraph={false}
+                    />
+                  );
+                },
+              }))}
+            />
+          ) : (
+            <Table dataSource={dataStatistics} columns={columns} />
+          )}
         </div>
       </div>
       <BaseModal

@@ -1,19 +1,25 @@
 "use client";
 
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Select, Space, Table } from "antd";
+import { Button, Form, Input, Select, Skeleton, Space, Table } from "antd";
 import { useEffect, useState, startTransition } from "react";
 
 import ModalAddNew from "@/src/module/listTransaction/modalAddNew";
 import { apiClient } from "@/src/services/base_api";
 import { DeatailIcon } from "@/public/icon/detail";
 import { getBank } from "@/src/services/bankAccount";
+import { DataTransactionType } from "@/src/common/type";
+
+type DataTypeWithKey = DataTransactionType & { key: React.Key };
 
 const ListTransactionPage = () => {
   const [form] = Form.useForm();
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [dataTransaction, setDataTransaction] = useState([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [dataTransaction, setDataTransaction] = useState<DataTransactionType[]>(
+    []
+  );
   const [banks, setBanks] = useState([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const fetchBankData = async () => {
     try {
@@ -81,9 +87,13 @@ const ListTransactionPage = () => {
       const responsive = await apiClient.get(
         "/asset-api/find?searchTerms[0].Name=isAdmin&searchTerms[0].Value=1&pageIndex=1&pageSize=20"
       );
+      console.log("responsive.data.data.source", responsive.data.data.source);
+
       setDataTransaction(responsive.data.data.source);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -160,7 +170,33 @@ const ListTransactionPage = () => {
             Thêm mới
           </Button>
         </div>
-        <Table columns={columns} dataSource={dataTransaction} />
+        {loading ? (
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
+        ) : (
+          <Table dataSource={dataTransaction} columns={columns} />
+        )}
       </div>
 
       <ModalAddNew

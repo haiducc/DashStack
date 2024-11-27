@@ -81,11 +81,11 @@ const items: MenuItem[] = [
     ],
   },
   {
-    key: "sheet_setting",
+    key: "sheet-setting",
     label: "Cấu hình trang tính",
     items: [
       {
-        key: "group_sheet",
+        key: "sheet",
         label: "Nhóm trang tính",
         path: "/sheet",
       },
@@ -105,11 +105,11 @@ const items: MenuItem[] = [
     key: "asset-management",
     label: "Quản lý tài sản",
     items: [
-      // {
-      //   key: "asset_report",
-      //   label: "Báo cáo quản lý tài sản",
-      //   path: "/pages/asset-report",
-      // },
+      {
+        key: "asset-report",
+        label: "Báo cáo quản lý tài sản",
+        path: "/asset-report",
+      },
       {
         key: "list-transaction",
         label: "Danh sách giao dịch",
@@ -153,7 +153,11 @@ const SideMenu = () => {
           {renderMenuItems(item.items)}
         </AntMenu.SubMenu>
       ) : (
-        <AntMenu.Item key={item.key} icon={item.icon}>
+        <AntMenu.Item
+          key={item.key}
+          icon={item.icon}
+          className="custom-link-item"
+        >
           <Link href={item.path ?? "/"}>{item.label}</Link>
         </AntMenu.Item>
       )

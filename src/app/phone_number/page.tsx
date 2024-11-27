@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Space, Table, Spin } from "antd";
+import { Button, Form, Input, Space, Table, Skeleton } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
 import BaseModal from "@/src/component/config/BaseModal";
@@ -15,10 +15,12 @@ import { toast } from "react-toastify";
 import DeleteModal from "@/src/component/config/modalDelete";
 import { useRouter } from "next/navigation";
 
-interface filterRole {
+interface FilterRole {
   Name: string;
   Value: string;
 }
+
+type DataTypeWithKey = PhoneNumberModal & { key: React.Key };
 
 const PhoneNumber: React.FC = () => {
   const router = useRouter();
@@ -30,13 +32,13 @@ const PhoneNumber: React.FC = () => {
   }, []);
 
   const [form] = Form.useForm();
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [currentPhoneNumber, setCurrentPhoneNumber] =
     useState<PhoneNumberModal | null>(null);
   const [dataPhoneNumber, setDataPhoneNumber] = useState<PhoneNumberModal[]>(
     []
   );
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [globalTerm, setGlobalTerm] = useState("");
   const [pageIndex] = useState(1);
@@ -57,7 +59,7 @@ const PhoneNumber: React.FC = () => {
   }, []);
 
   const fetchListPhone = async (globalTerm?: string) => {
-    const arr: filterRole[] = [];
+    const arr: FilterRole[] = [];
     const addedParams = new Set<string>();
     arr.push({
       Name: localStorage.getItem("key")!,
@@ -91,7 +93,7 @@ const PhoneNumber: React.FC = () => {
       await form.validateFields();
       setIsAddPhoneNumber(isAddPhoneNumber);
       const formData = form.getFieldsValue();
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       setLoading(true);
       const response = await addPhoneNumber({
         number: formData.number,
@@ -105,7 +107,7 @@ const PhoneNumber: React.FC = () => {
         return;
       }
       form.resetFields();
-      // setAddModalOpen(false);
+      // setIsAddModalOpen(false);
       setCurrentPhoneNumber(null);
       setCurrentTelegram(null);
       toast.success(
@@ -135,13 +137,13 @@ const PhoneNumber: React.FC = () => {
       notes: phone.notes,
       id: phone.id,
     });
-    setAddModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
   const handleDeletePhoneNumber = async (phone: PhoneNumberModal) => {
     setLoading(true);
     try {
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       const response = await deletePhone(phone.id);
       // Kiểm tra phản hồi từ API
       if (response.success === false) {
@@ -280,22 +282,44 @@ const PhoneNumber: React.FC = () => {
             onClick={() => {
               setCurrentPhoneNumber(null);
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
           >
             Thêm mới
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} fullscreen />
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
         ) : (
-          <Table columns={columns} dataSource={dataPhoneNumber} />
+          <Table dataSource={dataPhoneNumber} columns={columns} />
         )}
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={
@@ -334,7 +358,7 @@ const PhoneNumber: React.FC = () => {
           </Form.Item>
           <div className="flex justify-end">
             <Button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               className="w-[189px] !h-10"
             >
               Đóng

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { EditOutlined } from "@ant-design/icons";
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Skeleton, Space, Table } from "antd";
 import { editSettings, getSettings } from "@/src/services/settings";
 import BaseModal from "@/src/component/config/BaseModal";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,8 @@ export interface SettingsModal {
   description: string;
 }
 
+type DataTypeWithKey = SettingsModal & { key: React.Key };
+
 const Settings = () => {
   const router = useRouter();
   useEffect(() => {
@@ -25,16 +27,15 @@ const Settings = () => {
   }, []);
 
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [dataSettings, setDataSheetIntegration] = useState<SettingsModal[]>([]);
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [dataSettings, setDataSettings] = useState<SettingsModal[]>([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [editingRecord, setEditingRecord] = useState<SettingsModal | null>(
     null
   );
 
   const genSettings = async () => {
-    setLoading(true);
     try {
       const response = await getSettings();
       const formattedData =
@@ -45,7 +46,7 @@ const Settings = () => {
           stringValue: item.stringValue,
           description: item.description,
         })) || [];
-      setDataSheetIntegration(formattedData);
+      setDataSettings(formattedData);
     } catch (error) {
       console.error("Error fetching:", error);
     } finally {
@@ -62,7 +63,7 @@ const Settings = () => {
     setLoading(true);
     try {
       await form.validateFields();
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       const formData = form.getFieldsValue();
       await editSettings({
         id: formData.id,
@@ -71,7 +72,7 @@ const Settings = () => {
         description: formData.description,
       });
 
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       setLoading(false);
       await genSettings();
     } catch (error) {
@@ -94,7 +95,7 @@ const Settings = () => {
             onClick={() => {
               form.setFieldsValue(record); // Đặt giá trị của form từ record
               setEditingRecord(record); // Lưu record đang chỉnh sửa
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
             icon={<EditOutlined />}
           >
@@ -113,15 +114,37 @@ const Settings = () => {
           Danh sách cấu hình trang tính
         </div>
         {loading ? (
-          <Spin spinning={loading} />
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(15)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
         ) : (
-          <Table columns={columns} dataSource={dataSettings} rowKey="id" />
+          <Table dataSource={dataSettings} columns={columns} />
         )}
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={"Chỉnh sửa cấu hình hệ thống"}
@@ -154,7 +177,7 @@ const Settings = () => {
           </Form.Item>
           <div className="flex justify-end">
             <Button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               className="w-[189px] !h-10"
             >
               Đóng

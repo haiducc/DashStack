@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Select, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Select, Skeleton, Space, Table } from "antd";
 import BaseModal from "@/src/component/config/BaseModal";
 import { toast } from "react-toastify"; // Import toast
 import DeleteModal from "@/src/component/config/modalDelete";
@@ -28,6 +28,8 @@ interface FilterRole {
   Value: string;
 }
 
+type DataTypeWithKey = DataBranchModal & { key: React.Key };
+
 const GroupBranchPage = () => {
   const router = useRouter();
   useEffect(() => {
@@ -39,7 +41,7 @@ const GroupBranchPage = () => {
 
   const [form] = Form.useForm();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [currentBranch, setCurrentBranch] = useState<DataBranchModal | null>(
     null
   );
@@ -86,6 +88,8 @@ const GroupBranchPage = () => {
       setDataBranch(formattedData);
     } catch (error) {
       console.error("Error fetching:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -318,9 +322,31 @@ const GroupBranchPage = () => {
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} fullscreen />
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
         ) : (
-          <Table columns={columns} dataSource={dataBranch} />
+          <Table dataSource={dataBranch} columns={columns} />
         )}
       </div>
       <BaseModal

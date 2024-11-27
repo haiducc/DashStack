@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Select, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Select, Skeleton, Space, Table } from "antd";
 import {
   addSheetIntergration,
   deleteSheetIntergration,
@@ -30,10 +30,12 @@ export interface ListSheetIntegration {
   typeDescription: string;
 }
 
-interface filterSheetIntergration {
+interface FilterSheetIntergration {
   Name: string;
   Value: string;
 }
+
+type DataTypeWithKey = ListSheetIntegration & { key: React.Key };
 
 const SheetIntergration = () => {
   const router = useRouter();
@@ -48,10 +50,10 @@ const SheetIntergration = () => {
   const [dataSheetIntegration, setDataSheetIntegration] = useState<
     ListSheetIntegration[]
   >([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [globalTerm, setGlobalTerm] = useState("");
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [currentSheet, setCurrentSheet] = useState<ListSheetIntegration | null>(
     null
   );
@@ -74,7 +76,7 @@ const SheetIntergration = () => {
     globalTerm?: string,
     sheetId?: string
   ) => {
-    const arrSheet: filterSheetIntergration[] = [];
+    const arrSheet: FilterSheetIntergration[] = [];
     const addedParams = new Set<string>();
 
     if (sheetId && !addedParams.has("bankAccountId")) {
@@ -185,7 +187,7 @@ const SheetIntergration = () => {
   const handleAddConfirm = async (isAddSheetInter: boolean) => {
     try {
       await form.validateFields();
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       setIsAddSheetInter(isAddSheetInter);
       const formData = form.getFieldsValue();
       setLoading(true);
@@ -219,7 +221,7 @@ const SheetIntergration = () => {
         console.log("Dữ liệu đã được thêm mới:", response);
       }
 
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       form.resetFields();
       setCurrentSheet(null);
       fetchSheetIntegration();
@@ -249,13 +251,13 @@ const SheetIntergration = () => {
       sheetName: record.name,
       typeDescription: record.typeDescription,
     });
-    setAddModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
   const handleDelete = async (x: ListSheetIntegration) => {
     setLoading(true);
     try {
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       await deleteSheetIntergration(x.id);
       await fetchSheetIntegration();
     } catch (error) {
@@ -501,26 +503,44 @@ const SheetIntergration = () => {
             onClick={() => {
               setCurrentSheet(null);
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
           >
             Thêm mới
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} fullscreen />
-        ) : (
           <Table
-            columns={columns}
-            dataSource={dataSheetIntegration}
-            rowKey="id"
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
           />
+        ) : (
+          <Table dataSource={dataSheetIntegration} columns={columns} />
         )}
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={
@@ -655,7 +675,7 @@ const SheetIntergration = () => {
           </Form.Item>
           <div className="flex justify-end">
             <Button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               className="w-[189px] !h-10"
             >
               Đóng

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Space, Spin, Table } from "antd";
+import { Button, Form, Input, Skeleton, Space, Table } from "antd";
 import BaseModal from "@/src/component/config/BaseModal";
 import { toast } from "react-toastify"; // Import toast
 import DeleteModal from "@/src/component/config/modalDelete";
@@ -14,16 +14,18 @@ import {
 } from "@/src/services/groupSystem";
 import { useRouter } from "next/navigation";
 
-export interface dataSystemModal {
+export interface DataSystemModal {
   id: number;
   name: string;
   note: string;
 }
 
-interface filterRole {
+interface FilterRole {
   Name: string;
   Value: string;
 }
+
+type DataTypeWithKey = DataSystemModal & { key: React.Key };
 
 const GroupSystemPage = () => {
   const router = useRouter();
@@ -35,12 +37,12 @@ const GroupSystemPage = () => {
   }, []);
 
   const [form] = Form.useForm();
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [currentSystem, setCurrentSystem] = useState<dataSystemModal | null>(
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [currentSystem, setCurrentSystem] = useState<DataSystemModal | null>(
     null
   );
-  const [dataSystem, setDataSystem] = useState<dataSystemModal[]>([]);
+  const [dataSystem, setDataSystem] = useState<DataSystemModal[]>([]);
   const [, setGlobalTerm] = useState("");
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
@@ -56,7 +58,7 @@ const GroupSystemPage = () => {
   }, []);
 
   const fetchGroupSystem = async (globalTerm?: string) => {
-    const arrRole: filterRole[] = [];
+    const arrRole: FilterRole[] = [];
     const addedParams = new Set<string>();
     arrRole.push({
       Name: localStorage.getItem("key")!,
@@ -71,7 +73,7 @@ const GroupSystemPage = () => {
         arrRole
       );
       const formattedData =
-        response?.data?.source?.map((x: dataSystemModal) => ({
+        response?.data?.source?.map((x: DataSystemModal) => ({
           id: x.id,
           name: x.name,
           note: x.note,
@@ -79,6 +81,8 @@ const GroupSystemPage = () => {
       setDataSystem(formattedData);
     } catch (error) {
       console.error("Error fetching:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,7 +95,7 @@ const GroupSystemPage = () => {
       await form.validateFields();
       setIsAddGroupSystem(isAddGroupSystem);
       const formData = form.getFieldsValue();
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       setLoading(true);
       const response = await addGroupSystem({
         id: formData.id,
@@ -104,7 +108,7 @@ const GroupSystemPage = () => {
         setIsAddGroupSystem(false);
         return;
       }
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       form.resetFields();
       setCurrentSystem(null);
       toast.success(
@@ -133,20 +137,20 @@ const GroupSystemPage = () => {
     }
   };
 
-  const handleEditTele = (x: dataSystemModal) => {
+  const handleEditTele = (x: DataSystemModal) => {
     setCurrentSystem(x);
     form.setFieldsValue({
       id: x.id,
       name: x.name,
       note: x.note,
     });
-    setAddModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
-  const handleDeleteTele = async (x: dataSystemModal) => {
+  const handleDeleteTele = async (x: DataSystemModal) => {
     setLoading(true);
     try {
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       await deleteGroupSystem(x.id);
       toast.success("Xóa nhóm hệ thống thành công!");
       await fetchGroupSystem();
@@ -164,7 +168,7 @@ const GroupSystemPage = () => {
       if (value.trim() === "") {
         const data = await getGroupSystem(1, 20);
         const formattedData =
-          data?.data?.source?.map((x: dataSystemModal) => ({
+          data?.data?.source?.map((x: DataSystemModal) => ({
             id: x.id,
             name: x.name,
             note: x.note,
@@ -174,7 +178,7 @@ const GroupSystemPage = () => {
       } else {
         const data = await getGroupSystem(1, 20, value);
         const formattedData =
-          data?.data?.source?.map((x: dataSystemModal) => ({
+          data?.data?.source?.map((x: DataSystemModal) => ({
             id: x.id,
             name: x.name,
             note: x.note,
@@ -190,9 +194,9 @@ const GroupSystemPage = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAccountGroup, setSelectedAccountGroup] =
-    useState<dataSystemModal | null>(null);
+    useState<DataSystemModal | null>(null);
 
-  const handleDeleteClick = (tele: dataSystemModal) => {
+  const handleDeleteClick = (tele: DataSystemModal) => {
     setSelectedAccountGroup(tele);
     setIsDeleteModalOpen(true);
   };
@@ -216,7 +220,7 @@ const GroupSystemPage = () => {
     {
       title: "Chức năng",
       key: "action",
-      render: (record: dataSystemModal) => (
+      render: (record: DataSystemModal) => (
         <Space size="middle">
           <Button
             icon={<EditOutlined />}
@@ -271,22 +275,44 @@ const GroupSystemPage = () => {
             onClick={() => {
               setCurrentSystem(null);
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
           >
             Thêm mới
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} fullscreen />
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
         ) : (
-          <Table columns={columns} dataSource={dataSystem} />
+          <Table dataSource={dataSystem} columns={columns} />
         )}
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={currentSystem ? "Chỉnh sửa hệ thống" : "Thêm mới hệ thống"}
@@ -312,7 +338,7 @@ const GroupSystemPage = () => {
           </Form.Item>
           <div className="flex justify-end">
             <Button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               className="w-[189px] !h-10"
             >
               Đóng

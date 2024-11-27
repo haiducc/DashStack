@@ -8,8 +8,8 @@ import {
   Form,
   Input,
   Select,
+  Skeleton,
   Space,
-  Spin,
   Table,
 } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -22,7 +22,7 @@ import { toast } from "react-toastify";
 import DeleteModal from "@/src/component/config/modalDelete";
 import { useRouter } from "next/navigation";
 
-export interface dataRole {
+export interface DataRole {
   id: number;
   userName: string;
   email: string;
@@ -35,10 +35,12 @@ export interface dataRole {
   groupTeamId?: number;
 }
 
-interface filterRole {
+interface FilterRole {
   Name: string;
   Value: string;
 }
+
+type DataTypeWithKey = DataRole & { key: React.Key };
 
 const Role = () => {
   const router = useRouter();
@@ -50,11 +52,11 @@ const Role = () => {
   }, []);
 
   const [form] = Form.useForm();
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [loading, setLoading] = useState(false);
-  const [dataRole, setDataRole] = useState<dataRole[]>([]);
-  const [currentRole, setCurrentRole] = useState<dataRole | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [dataRole, setDataRole] = useState<DataRole[]>([]);
+  const [currentRole, setCurrentRole] = useState<DataRole | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [globalTerm, setGlobalTerm] = useState("");
   const [groupSystem, setGroupSystem] = useState([]);
@@ -78,7 +80,7 @@ const Role = () => {
   }, []);
 
   const fetchListRole = async (globalTerm?: string) => {
-    const arrRole: filterRole[] = [];
+    const arrRole: FilterRole[] = [];
     const addedParams = new Set<string>();
     arrRole.push({
       Name: localStorage.getItem("key")!,
@@ -90,7 +92,7 @@ const Role = () => {
       const response = await getRole(pageIndex, pageSize, globalTerm, arrRole);
       console.log(response, "Role");
       const formattedData =
-        response?.data?.source?.map((x: dataRole) => ({
+        response?.data?.source?.map((x: DataRole) => ({
           id: x.id,
           userName: x.userName,
           role: x.role,
@@ -105,6 +107,8 @@ const Role = () => {
       setDataRole(formattedData);
     } catch (error) {
       console.error("Error fetching:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -156,11 +160,10 @@ const Role = () => {
 
   const handleAddConfirm = async (isAddRole: boolean) => {
     // const formData = form.getFieldsValue();
-    setLoading(true);
     try {
       await form.validateFields();
       setIsAddRole(isAddRole);
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       const formData = form.getFieldsValue();
       const roleData = {
         id: currentRole ? currentRole.id : formData.id,
@@ -184,7 +187,7 @@ const Role = () => {
         throw new Error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
       }
 
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       form.resetFields();
       setCurrentRole(null);
       await fetchListRole();
@@ -204,7 +207,7 @@ const Role = () => {
   };
 
   // sửa
-  const handleEdit = (record: dataRole) => {
+  const handleEdit = (record: DataRole) => {
     console.log("data edit", record);
     setCurrentRole(record);
     form.setFieldsValue({
@@ -219,13 +222,13 @@ const Role = () => {
       groupTeamId: record.groupTeamId,
       password: record.password,
     });
-    setAddModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
-  const handleDeleteRole = async (role: dataRole) => {
+  const handleDeleteRole = async (role: DataRole) => {
     setLoading(true);
     try {
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       await deleteRole(role.id);
       await fetchListRole();
     } catch (error) {
@@ -242,7 +245,7 @@ const Role = () => {
       if (value.trim() === "") {
         const data = await getRole(1, 20);
         const formattedData =
-          data?.data?.source?.map((x: dataRole) => ({
+          data?.data?.source?.map((x: DataRole) => ({
             id: x.id,
             userName: x.userName,
             fullName: x.fullName,
@@ -253,7 +256,7 @@ const Role = () => {
         // Nếu có giá trị tìm kiếm, gọi API với giá trị đó
         const data = await getRole(1, 20, value);
         const formattedData =
-          data?.data?.source?.map((x: dataRole) => ({
+          data?.data?.source?.map((x: DataRole) => ({
             id: x.id,
             userName: x.userName,
             fullName: x.fullName,
@@ -273,9 +276,9 @@ const Role = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAccountGroup, setSelectedAccountGroup] =
-    useState<dataRole | null>(null);
+    useState<DataRole | null>(null);
 
-  const handleDeleteClick = (tele: dataRole) => {
+  const handleDeleteClick = (tele: DataRole) => {
     setSelectedAccountGroup(tele);
     setIsDeleteModalOpen(true);
   };
@@ -319,7 +322,7 @@ const Role = () => {
       title: "Chức năng",
       key: "action",
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      render: (record: dataRole) => (
+      render: (record: DataRole) => (
         <Space size="middle">
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>
             Chỉnh sửa
@@ -362,22 +365,44 @@ const Role = () => {
             onClick={() => {
               setCurrentRole(null);
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
           >
             Thêm mới
           </Button>
         </div>
         {loading ? (
-          <Spin spinning={loading} fullscreen />
+          <Table
+            rowKey="key"
+            pagination={false}
+            loading={loading}
+            dataSource={
+              [...Array(13)].map((_, index) => ({
+                key: `key${index}`,
+              })) as DataTypeWithKey[]
+            }
+            columns={columns.map((column) => ({
+              ...column,
+              render: function renderPlaceholder() {
+                return (
+                  <Skeleton
+                    key={column.key as React.Key}
+                    title
+                    active={false}
+                    paragraph={false}
+                  />
+                );
+              },
+            }))}
+          />
         ) : (
-          <Table columns={columns} dataSource={dataRole} />
+          <Table dataSource={dataRole} columns={columns} />
         )}
       </div>
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={currentRole ? "Chỉnh sửa quyền" : "Thêm mới quyền"}
@@ -467,7 +492,7 @@ const Role = () => {
 
           <div className="flex justify-end">
             <Button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               className="w-[189px] !h-10"
             >
               Đóng

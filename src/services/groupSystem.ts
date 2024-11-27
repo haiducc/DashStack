@@ -1,4 +1,4 @@
-import { dataSystemModal } from "../app/group_system/page";
+import { DataSystemModal } from "../app/group_system/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -28,7 +28,7 @@ export const getGroupSystem = async (
   }
 };
 
-export const addGroupSystem = async (system: dataSystemModal) => {
+export const addGroupSystem = async (system: DataSystemModal) => {
   try {
     const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(

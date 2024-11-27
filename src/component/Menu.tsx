@@ -90,9 +90,9 @@ const items: MenuItem[] = [
         path: "/sheet",
       },
       {
-        key: "sheet-integration",
+        key: "sheet_integration",
         label: "Danh sách tích hợp trang tính",
-        path: "/sheet-intergration",
+        path: "/sheet_intergration",
       },
     ],
   },

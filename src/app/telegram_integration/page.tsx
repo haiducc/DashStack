@@ -62,6 +62,7 @@ const TelegramIntegration = () => {
   const [pageSize] = useState(50);
 
   const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
@@ -410,17 +411,20 @@ const TelegramIntegration = () => {
     }));
   };
 
-  const handleFilterGroupChat = async (groupChat?: string) => {
+  const handleFilterGroupChat = async (groupChatId?: string) => {
     const arr: filterTeleIntergration[] = [];
-    const groupChatFilter: filterTeleIntergration = {
-      Name: "groupChatId",
-      Value: groupChat!,
-    };
-    const obj: filterTeleIntergration = {
-      Name: keys!,
-      Value: values!,
-    };
-    arr.push(obj, groupChatFilter);
+    const addedParams = new Set<string>();
+    if (groupChatId && !addedParams.has("groupChatId")) {
+      arr.push({
+        Name: "groupChatId",
+        Value: groupChatId,
+      });
+    }
+    arr.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const fetchBankAccountAPI = await getListTelegram(
         pageIndex,
@@ -494,6 +498,7 @@ const TelegramIntegration = () => {
             />
             <Space direction="horizontal" size="middle">
               <Select
+                mode="multiple"
                 options={teleGroupChatFilter}
                 placeholder="Nhóm tài khoản"
                 style={{ width: 245 }}

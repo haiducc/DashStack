@@ -475,7 +475,7 @@ const Dashboard = () => {
       <div>
         <Header />
         <div className="dashboard mt-7">
-          <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "20px", alignItems: "center", justifyContent:"space-between" }}>
             <BarChart />
             <BarChartType />
             <Statistics />
@@ -516,19 +516,22 @@ const Dashboard = () => {
               }}
             />
             <Select
+              mode="multiple"
               options={groupChatFilter}
               placeholder="Nhóm chat telegram"
               style={{ width: 245 }}
               allowClear
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
+                const parsedValue = Array.isArray(value)
+                  ? value
+                  : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    value.split(",").map((item: any) => item.trim());
                 setChatFilter(value);
-                // console.log(value, "value");
-
                 if (!value) {
                   handleSelectChange(
                     bankFilter,
-                    value,
+                    parsedValue,
                     transTypeFilter,
                     startDateFilter
                   );
@@ -536,7 +539,7 @@ const Dashboard = () => {
                 } else {
                   fetchListStatistics(
                     bankFilter,
-                    value,
+                    parsedValue,
                     transTypeFilter,
                     startDateFilter
                   );

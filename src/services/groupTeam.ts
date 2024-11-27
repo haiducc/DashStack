@@ -9,6 +9,8 @@ export const getGroupTeam = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
+    console.log(globalTerm, searchTerms, "filter");
+
     const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,

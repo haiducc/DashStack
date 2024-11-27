@@ -398,6 +398,7 @@ const SheetIntergration = () => {
   };
   const [pageIndex] = useState(1);
   const [pageSize] = useState(50);
+  
   const handleFilterSheet = async () => {
     try {
       const { groupChatId } = filterParams;
@@ -477,6 +478,7 @@ const SheetIntergration = () => {
             />
             <Space direction="horizontal" size="middle">
               <Select
+                mode="multiple"
                 options={sheetFilter}
                 placeholder="Nhóm trang tính"
                 style={{ width: 245 }}

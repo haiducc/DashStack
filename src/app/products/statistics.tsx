@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import BaseModal from "@/src/component/config/BaseModal";
-import { Table } from "antd";
+import { Spin, Table, Tooltip } from "antd";
 import {
   getDataGenaral,
   getDetailCurentBalance,
@@ -21,6 +21,7 @@ const Statistics = () => {
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setKeys(localStorage.getItem("key"));
@@ -95,8 +96,10 @@ const Statistics = () => {
   ];
 
   const showModal = async () => {
-    await fetchListStatistics();
+    setLoading(true);
     setIsModalOpen(true);
+    await fetchListStatistics();
+    setLoading(false);
   };
   const handleOk = () => {
     setIsModalOpen(false);
@@ -132,7 +135,7 @@ const Statistics = () => {
         style={statBoxStyles}
         className="flex justify-center flex-col items-center relative"
       >
-        <h3 className="font-bold text-lg">Số Dư Hiện Tại</h3>
+        <div className="font-bold text-lg">Số Dư Hiện Tại</div>
         <h1 className="font-bold text-3xl">
           {databalance !== undefined
             ? new Intl.NumberFormat("vi-VN", {
@@ -142,9 +145,11 @@ const Statistics = () => {
             : "0 ₫"}
         </h1>
 
-        <div className="absolute right-2 top-2">
-          <ExclamationCircleOutlined onClick={showModal} />
-        </div>
+        <Tooltip placement="bottom" title={"Chi tiết số dư hiện tại"}>
+          <div className="absolute right-2 top-2">
+            <ExclamationCircleOutlined onClick={showModal} />
+          </div>
+        </Tooltip>
         <BaseModal
           title="Chi tiết số dư hiện tại"
           open={isModalOpen}
@@ -152,7 +157,13 @@ const Statistics = () => {
           onCancel={handleCancel}
           offPadding
         >
-          <Table columns={columns} dataSource={dataDetailCurentBalance} />
+          {loading ? (
+            <Spin size="default">
+              <div style={{ minHeight: 200 }} />
+            </Spin>
+          ) : (
+            <Table columns={columns} dataSource={dataDetailCurentBalance} />
+          )}
         </BaseModal>
       </div>
     </div>

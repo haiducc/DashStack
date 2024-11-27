@@ -63,6 +63,7 @@ const Account = () => {
   const [accountGroup, setAccountGroup] = useState<Array<BankAccounts>>([]);
   //
   const [keys, setKeys] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
 
   const [groupSystemName, setGroupSystemName] = useState<string | null>(null);
@@ -127,26 +128,12 @@ const Account = () => {
   ) => {
     const arrBankAccount: filterGroupAccount[] = [];
     const addedParams = new Set();
-    if (Array.isArray(searchTerms)) {
-      searchTerms.forEach((term) => {
-        if (term.Value && !addedParams.has(term.Name)) {
-          arrBankAccount.push({
-            Name: term.Name,
-            Value: term.Value,
-          });
-          addedParams.add(term.Name);
-        }
+    if (searchTerms && !addedParams.has("groupAccountId")) {
+      arrBankAccount.push({
+        Name: "groupAccountId",
+        Value: searchTerms,
       });
-    } else if (searchTerms) {
-      if (!addedParams.has("groupAccountId")) {
-        // console.log(96);
-
-        arrBankAccount.push({
-          Name: "groupAccountId",
-          Value: searchTerms,
-        });
-        addedParams.add("groupAccountId");
-      }
+      addedParams.add("bankAccountId");
     }
     if (system && !addedParams.has("groupSystemId")) {
       arrBankAccount.push({
@@ -505,10 +492,6 @@ const Account = () => {
       bankName: account.bankName,
       typeGroupAccountString: arr,
     });
-    console.log(
-      typeof account.typeGroupAccountString,
-      "account.typeGroupAccountString"
-    );
     setAddModalOpen(true);
   };
 
@@ -662,23 +645,26 @@ const Account = () => {
   const [groupTeamFilter, setGroupTeamFilter] = useState();
 
   // call api lấy dsach filter nhóm tài khoản
-  const handleFilter = async (searchTerms?: string) => {
-    const arrAccountGroup: filterGroupAccount[] = [];
-    const groupAccount: filterGroupAccount = {
-      Name: "groupAccountId",
-      Value: searchTerms!,
-    };
-    const obj: filterGroupAccount = {
-      Name: keys!,
-      Value: values!,
-    };
-    arrAccountGroup.push(obj, groupAccount);
+  const handleFilter = async (bankAccount?: string) => {
+    const arr: filterGroupAccount[] = [];
+    const addedParams = new Set<string>();
+    if (bankAccount && !addedParams.has("bankAccount")) {
+      arr.push({
+        Name: "bankAccount",
+        Value: bankAccount,
+      });
+    }
+    arr.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const fetchBankAccountAPI = await getAccountGroup(
         pageIndex,
         pageSize,
         globalTerm,
-        arrAccountGroup
+        arr
       );
       if (
         fetchBankAccountAPI &&
@@ -784,17 +770,36 @@ const Account = () => {
     }
   };
 
-  const handleFilterBranch = async (groupBranchId?: string) => {
+  const handleFilterBranch = async (
+    // groupSystemId?: string,
+    groupBranchId?: string
+  ) => {
     const arr: filterGroupAccount[] = [];
-    const branch: filterGroupAccount = {
-      Name: "groupBranchId",
-      Value: groupBranchId!,
-    };
-    const obj: filterGroupAccount = {
-      Name: keys!,
-      Value: values!,
-    };
-    arr.push(obj, branch);
+    const addedParams = new Set<string>();
+    if (!addedParams.has("groupBranchId")) {
+      if (groupBranchId) {
+        arr.push({
+          Name: "groupBranchId",
+          Value: groupBranchId,
+        });
+      } else {
+        arr.push({
+          Name: "groupBranchId",
+          Value: "0",
+        });
+      }
+    }
+    // if (groupSystemId && !addedParams.has("groupSystemId")) {
+    //   arr.push({
+    //     Name: "groupSystemId",
+    //     Value: groupSystemId,
+    //   });
+    // }
+    arr.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const fetchBankAccountAPI = await getBranchSystem(
         pageIndex,
@@ -823,19 +828,25 @@ const Account = () => {
 
   const handleFilterTeam = async (groupTeamId?: string) => {
     const arr: filterGroupAccount[] = [];
-    const system: filterGroupAccount = {
-      Name: "groupSystemId",
-      Value: groupSystemId!,
-    };
-    const team: filterGroupAccount = {
-      Name: "groupTeamId",
-      Value: groupTeamId!,
-    };
-    const obj: filterGroupAccount = {
-      Name: keys!,
-      Value: values!,
-    };
-    arr.push(obj, team, system);
+    const addedParams = new Set<string>();
+    if (!addedParams.has("groupTeamId")) {
+      if (groupTeamId) {
+        arr.push({
+          Name: "groupTeamId",
+          Value: groupTeamId,
+        });
+      } else {
+        arr.push({
+          Name: "groupTeamId",
+          Value: "0",
+        });
+      }
+    }
+    arr.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
     try {
       const fetchBankAccountAPI = await getGroupTeam(
         pageIndex,
@@ -864,6 +875,46 @@ const Account = () => {
     }
   };
 
+  const GetListGroupBranch = async () => {
+    try {
+      const arr: filterGroupAccount[] = [];
+      arr.push({
+        Name: "groupSystemId",
+        Value: groupSystemFilter || "0",
+      });
+
+      const res = await getBranchSystem(pageIndex, pageSize, globalTerm, arr);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = res.data.source.map((x: any) => ({
+        value: x.id,
+        label: x.name || "Không xác định",
+      }));
+      setBranchFilter(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const GetListGroupTeam = async () => {
+    try {
+      const arr: filterGroupAccount[] = [];
+      arr.push({
+        Name: "groupBranchId",
+        Value: groupBranchFilter || "0",
+      });
+
+      const res = await getGroupTeam(pageIndex, pageSize, globalTerm, arr);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = res.data.source.map((x: any) => ({
+        value: x.id,
+        label: x.name || "Không xác định",
+      }));
+      setTeamFilter(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       await handleFilter();
@@ -871,7 +922,6 @@ const Account = () => {
       await handleFilterBranch();
       await handleFilterTeam();
     };
-
     fetchData();
   }, [filterParams]);
 
@@ -979,16 +1029,23 @@ const Account = () => {
             />
             <Space direction="horizontal" size="middle">
               <Select
+                mode="multiple"
                 options={accountGroupFilter}
                 placeholder="Nhóm tài khoản"
                 style={{ width: 245 }}
                 allowClear
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
+                  console.log(value, "value");
+
+                  const parsedValue = Array.isArray(value)
+                    ? value
+                    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      value.split(",").map((item: any) => item.trim());
                   setGroupAccountFilter(value);
-                  if (!value) {
+                  if (!parsedValue.length) {
                     handleSelectChange(
-                      value,
+                      parsedValue,
                       groupSystemFilter,
                       groupBranchFilter,
                       groupTeamFilter
@@ -997,7 +1054,7 @@ const Account = () => {
                   } else {
                     fetchAccounts(
                       globalTerm,
-                      value,
+                      parsedValue,
                       groupSystemFilter,
                       groupBranchFilter,
                       groupTeamFilter
@@ -1061,7 +1118,10 @@ const Account = () => {
                         }
                       : undefined
                   }
-                  onFocus={() => handleFilterBranch()}
+                  onFocus={() => GetListGroupBranch()}
+                  // onFocus={() => {
+                  //   handleFilterBranch(undefined, groupSystemFilter);
+                  // }}
                   options={branchFilter}
                   placeholder="Chi nhánh"
                   style={{ width: 245 }}
@@ -1104,7 +1164,7 @@ const Account = () => {
                         }
                       : undefined
                   }
-                  onFocus={() => handleFilterTeam()}
+                  onFocus={() => GetListGroupTeam()}
                   options={TeamFilter}
                   placeholder="Đội nhóm"
                   style={{ width: 245 }}
@@ -1455,7 +1515,11 @@ const Account = () => {
               }}
             />
           </Form.Item>
-          <Form.Item hidden label="Chọn nhóm tài khoản 2" name="selectedAccountGroups">
+          <Form.Item
+            hidden
+            label="Chọn nhóm tài khoản 2"
+            name="selectedAccountGroups"
+          >
             <Select mode="multiple" />
           </Form.Item>
           <Form.Item label="Ghi chú" name="notes">

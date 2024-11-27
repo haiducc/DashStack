@@ -1,4 +1,5 @@
-import { dataSheetModal } from "../app/sheet/page";
+
+import { DataSheetModal } from "../app/sheet/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -28,7 +29,7 @@ export const getListSheet = async (
   }
 };
 
-export const addSheet = async (tele: dataSheetModal) => {
+export const addSheet = async (tele: DataSheetModal) => {
   try {
     const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(`/sheet-api/add-or-update`, tele, {

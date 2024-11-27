@@ -1,4 +1,5 @@
-import { dataTeamModal } from "../app/group_team/page";
+
+import { DataTeamModal } from "../app/group_team/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -30,7 +31,7 @@ export const getGroupTeam = async (
   }
 };
 
-export const addGroupTeam = async (team: dataTeamModal) => {
+export const addGroupTeam = async (team: DataTeamModal) => {
   try {
     const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(`/group-team-api/add-or-update`, team, {

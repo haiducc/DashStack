@@ -1,4 +1,5 @@
-import { dataTelegramModal } from "../app/telegram/page";
+
+import { DataTelegramModal } from "../app/telegram/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -28,7 +29,7 @@ export const getListTelegram = async (
   }
 };
 
-export const addTelegram = async (tele: dataTelegramModal) => {
+export const addTelegram = async (tele: DataTelegramModal) => {
   try {
     const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(`/group-chat-api/add-or-update`, tele, {

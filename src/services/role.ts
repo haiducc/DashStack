@@ -1,4 +1,5 @@
-import { dataRole } from "../app/role/page";
+
+import { DataRole } from "../app/role/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -28,7 +29,7 @@ export const getRole = async (
   }
 };
 
-export const addRole = async (x: dataRole) => {
+export const addRole = async (x: DataRole) => {
   try {
     const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(`/account/add-or-update`, x, {

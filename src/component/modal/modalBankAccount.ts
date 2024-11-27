@@ -14,12 +14,12 @@ export interface BankAccounts {
     id?: number;
   };
   phone?: {
-    number: string;
-    com: string;
-    id: number;
+    number?: string;
+    com?: string;
+    id?: number;
   };
   typeGroupAccount?: [];
-  typeGroupAccountString?: string[];
+  typeGroupAccountString?: string;
   typeAccountDescription?: string;
   id: number;
   selectedAccountGroups?: number[];

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
-import BarChart from "./BarChart";
+import BarChart from "./BarChartMoney";
+import BarChartType from "./BarChartType";
 import Statistics from "./statistics";
 import { useRouter } from "next/navigation";
 
@@ -16,6 +17,7 @@ export default function Home() {
     <div style={{ display: "flex", gap: "20px" }}>
       <div style={{ flex: 3 }}>
         <BarChart />
+        <BarChartType/>
       </div>
       <div style={{ flex: 1 }}>
         <Statistics />

@@ -117,6 +117,7 @@ const Dashboard = () => {
     bankAccount?: string,
     groupChat?: number,
     transType?: string,
+    typeAccount?: string,
     // transDate?: string | Date[]
     startDate?: string,
     endDate?: string
@@ -142,6 +143,13 @@ const Dashboard = () => {
       arrFilter.push({
         Name: "transType",
         Value: transType,
+      });
+      addedParams.add("transType");
+    }
+    if (typeAccount && !addedParams.has("typeAccount")) {
+      arrFilter.push({
+        Name: "typeAccount",
+        Value: typeAccount,
       });
       addedParams.add("transType");
     }
@@ -310,6 +318,7 @@ const Dashboard = () => {
     Array<{ value: string; label: string }>
   >([]);
   const [transTypeFilter, setTransTypeFilter] = useState();
+  const [transTypeCompanyFilter, setTransTypeCompanyFilter] = useState();
   const [startDateFilter, setTranDateFilter] = useState();
 
   const options = [
@@ -317,10 +326,10 @@ const Dashboard = () => {
     { value: "2", label: "Tiền ra" },
     // { value: "1", label: "Cả hai" },
   ];
-  // const optionCompany = [
-  //   { value: "1", label: "Tài khoản công ty" },
-  //   { value: "2", label: "Tài khoản marketing" },
-  // ];
+  const optionCompany = [
+    { value: "1", label: "Tài khoản công ty" },
+    { value: "2", label: "Tài khoản marketing" },
+  ];
   const fetchBankData = async (bankAccount?: string) => {
     const arr: FilterProducts[] = [];
     const addedParams = new Set<string>();
@@ -413,6 +422,7 @@ const Dashboard = () => {
     bankAccountId?: string;
     groupChatId?: number;
     transType?: string;
+    typeAccount?: string;
     tranDate?: string;
   }>({});
 
@@ -420,6 +430,7 @@ const Dashboard = () => {
     bankAccount?: string,
     groupChat?: number,
     transType?: string,
+    typeAccount?: string,
     startDate?: string,
     endDate?: string
   ) => {
@@ -428,6 +439,7 @@ const Dashboard = () => {
       bankAccountId: bankAccount,
       groupChatId: groupChat,
       transType: transType,
+      typeAccount: typeAccount,
       startDate: startDate,
       endDate: endDate,
     }));
@@ -477,7 +489,14 @@ const Dashboard = () => {
       <div>
         <Header />
         <div className="dashboard mt-7">
-          <div style={{ display: "flex", gap: "20px", alignItems: "center", justifyContent:"space-between" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "20px",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <BarChart />
             <BarChartType />
             <Statistics />
@@ -504,6 +523,7 @@ const Dashboard = () => {
                     parsedValue,
                     chatFilter,
                     transTypeFilter,
+                    transTypeCompanyFilter,
                     startDateFilter
                   );
                   setCheckFilter(!checkFilter);
@@ -512,6 +532,7 @@ const Dashboard = () => {
                     parsedValue,
                     chatFilter,
                     transTypeFilter,
+                    transTypeCompanyFilter,
                     startDateFilter
                   );
                 }
@@ -535,6 +556,7 @@ const Dashboard = () => {
                     bankFilter,
                     parsedValue,
                     transTypeFilter,
+                    transTypeCompanyFilter,
                     startDateFilter
                   );
                   setCheckFilter(!checkFilter);
@@ -543,6 +565,7 @@ const Dashboard = () => {
                     bankFilter,
                     parsedValue,
                     transTypeFilter,
+                    transTypeCompanyFilter,
                     startDateFilter
                   );
                 }
@@ -562,6 +585,7 @@ const Dashboard = () => {
                     bankFilter,
                     chatFilter,
                     value,
+                    transTypeCompanyFilter,
                     startDateFilter
                   );
                   setCheckFilter(!checkFilter);
@@ -570,17 +594,41 @@ const Dashboard = () => {
                     bankFilter,
                     chatFilter,
                     value,
+                    transTypeCompanyFilter,
                     startDateFilter
                   );
                 }
               }}
             />
-            {/* <Select
+            <Select
+              allowClear
               options={optionCompany}
               placeholder="Loại công ty"
               style={{ width: 245 }}
-              allowClear
-            /> */}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={(value: any) => {
+                // console.log(value, "value");
+                setTransTypeCompanyFilter(value);
+                if (!value) {
+                  handleSelectChange(
+                    bankFilter,
+                    chatFilter,
+                    transTypeFilter,
+                    value,
+                    startDateFilter
+                  );
+                  setCheckFilter(!checkFilter);
+                } else {
+                  fetchListStatistics(
+                    bankFilter,
+                    chatFilter,
+                    transTypeFilter,
+                    value,
+                    startDateFilter
+                  );
+                }
+              }}
+            />
             <RangePicker
               id={{
                 start: "startInput",

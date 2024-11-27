@@ -3,15 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Header from "@/src/component/Header";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import {
-  Button,
-  Form,
-  Input,
-  Select,
-  Skeleton,
-  Space,
-  Table,
-} from "antd";
+import { Button, Form, Input, Select, Skeleton, Space, Table } from "antd";
 import {
   addTelegramIntergration,
   deleteTelegramIntergration,
@@ -81,7 +73,8 @@ const TelegramIntegration = () => {
 
   const fetchListTelegramIntegration = async (
     globalTerm?: string,
-    groupChat?: string
+    groupChat?: string,
+    transType?: string
   ) => {
     const arrTeleAccount: FilterTeleIntergration[] = [];
     const addedParams = new Set<string>();
@@ -93,7 +86,13 @@ const TelegramIntegration = () => {
       });
       addedParams.add("groupChatId");
     }
-
+    if (transType && !addedParams.has("transType")) {
+      arrTeleAccount.push({
+        Name: "transType",
+        Value: transType,
+      });
+      addedParams.add("groupChatId");
+    }
     arrTeleAccount.push({
       Name: localStorage.getItem("key")!,
       Value: localStorage.getItem("value")!,
@@ -404,20 +403,30 @@ const TelegramIntegration = () => {
     }
   };
 
+  const options = [
+    { value: "3", label: "Tiền vào" },
+    { value: "2", label: "Tiền ra" },
+    { value: "1", label: "Cả hai" },
+  ];
+
   const [teleGroupChatFilter, setTeleGroupChatFilter] = useState<
     Array<{ value: string; label: string }>
   >([]);
-
+  // const [transTypeFilter, setTransTypeFilter] = useState<
+  //   Array<{ value: string; label: string }>
+  // >([]);
   const [groupChatFilter, setGroupChatFilter] = useState();
+  const [transTypeFilter, setTransTypeFilter] = useState();
 
   const [filterParams, setFilterParams] = useState<{
     groupChatId?: string;
   }>({});
 
-  const handleSelectChange = (groupChat?: string) => {
+  const handleSelectChange = (groupChat?: string, transType?: string) => {
     setFilterParams((prevParams) => ({
       ...prevParams,
       groupChatId: groupChat,
+      transType: transType,
     }));
   };
 
@@ -508,16 +517,43 @@ const TelegramIntegration = () => {
                 mode="multiple"
                 options={teleGroupChatFilter}
                 placeholder="Nhóm tài khoản"
-                style={{ width: 245 }}
+                style={{ width: 245, marginRight:"10px" }}
                 allowClear
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
                   setGroupChatFilter(value);
                   if (!value) {
-                    handleSelectChange(value);
+                    handleSelectChange(value, transTypeFilter);
                     setCheckFilter(!checkFilter);
                   } else {
-                    fetchListTelegramIntegration(globalTerm, value);
+                    fetchListTelegramIntegration(
+                      globalTerm,
+                      value,
+                      transTypeFilter
+                    );
+                  }
+                }}
+              />
+            </Space>
+            <Space direction="horizontal" size="middle">
+              <Select
+                options={options}
+                placeholder="Loại giao dịch"
+                style={{ width: 245 }}
+                allowClear
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={(value: any) => {
+                  // console.log(value, "value");
+                  setTransTypeFilter(value);
+                  if (!value) {
+                    handleSelectChange(groupChatFilter, value);
+                    setCheckFilter(!checkFilter);
+                  } else {
+                    fetchListTelegramIntegration(
+                      globalTerm,
+                      groupChatFilter,
+                      value
+                    );
                   }
                 }}
               />

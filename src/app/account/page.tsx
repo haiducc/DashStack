@@ -1003,10 +1003,10 @@ const Account = () => {
                 handleSearch(e.currentTarget.value);
               }}
               style={{
-                width: 253,
+                width: 250,
                 borderRadius: 10,
                 height: 38,
-                marginRight: 15,
+                marginRight: 10,
               }}
             />
             <Space direction="horizontal" size="middle">

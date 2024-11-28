@@ -82,7 +82,7 @@ const Settings = () => {
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
+    { title: "ID", dataIndex: "id", key: "id", hidden: true },
     { title: "Tên loại cấu hình", dataIndex: "name", key: "name" },
     { title: "Giá trị", dataIndex: "stringValue", key: "stringValue" },
     { title: "Ghi chú", dataIndex: "description", key: "description" },

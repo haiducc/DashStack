@@ -182,7 +182,7 @@ const PhoneNumber: React.FC = () => {
   };
 
   const columns = [
-    { title: "id", dataIndex: "id", key: "id" },
+    { title: "id", dataIndex: "id", key: "id", hidden: true },
     { title: "Tên nhóm tài khoản", dataIndex: "fullName", key: "fullName" },
     { title: "Ghi chú", dataIndex: "notes", key: "notes" },
     {

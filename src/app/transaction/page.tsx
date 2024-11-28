@@ -93,19 +93,19 @@ const Transaction = () => {
 
   const fetchTransaction = async (
     globalTerm?: string,
-    purpose?: string,
+    // purpose?: string,
     startDate?: string,
     endDate?: string
   ) => {
     const arrRole: FilterRole[] = [];
     const addedParams = new Set<string>();
-    if (purpose && !addedParams.has("purpose")) {
-      arrRole.push({
-        Name: "purpose",
-        Value: purpose,
-      });
-      addedParams.add("purpose");
-    }
+    // if (purpose && !addedParams.has("purpose")) {
+    //   arrRole.push({
+    //     Name: "purpose",
+    //     Value: purpose,
+    //   });
+    //   addedParams.add("purpose");
+    // }
     if (startDate && endDate) {
       arrRole.push({
         Name: "startDate",
@@ -447,11 +447,11 @@ const Transaction = () => {
         </>
       ),
     },
-    {
-      title: "Mục đích",
-      dataIndex: "purposeDescription",
-      key: "purposeDescription",
-    },
+    // {
+    //   title: "Mục đích",
+    //   dataIndex: "purposeDescription",
+    //   key: "purposeDescription",
+    // },
     { title: "Lý do", dataIndex: "reason", key: "reason" },
     {
       title: "Số tiền",
@@ -525,11 +525,11 @@ const Transaction = () => {
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
   };
 
-  const options = [
-    { value: "1", label: "Rút tiền mặt" },
-    { value: "2", label: "Mua tài sản" },
-    { value: "3", label: "Bổ sung giao dịch lỗi" },
-  ];
+  // const options = [
+  //   { value: "1", label: "Rút tiền mặt" },
+  //   { value: "2", label: "Mua tài sản" },
+  //   { value: "3", label: "Bổ sung giao dịch lỗi" },
+  // ];
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filterParams, setFilterParams] = useState<{
@@ -556,6 +556,10 @@ const Transaction = () => {
   const [checkFilter, setCheckFilter] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectBankId, setSelectBankId] = useState(0);
+
+  useEffect(() => {
+    fetchTransaction(globalTerm, startDateFilter, startDateFilter);
+  }, [checkFilter]);
 
   return (
     <>
@@ -585,7 +589,7 @@ const Transaction = () => {
                 handleSearch(e.currentTarget.value);
               }}
             />
-            <Space direction="horizontal" size="middle">
+            {/* <Space direction="horizontal" size="middle">
               <Select
                 options={options}
                 placeholder="Mục đích"
@@ -603,7 +607,7 @@ const Transaction = () => {
                   }
                 }}
               />
-            </Space>
+            </Space> */}
             <RangePicker
               id={{
                 start: "startInput",
@@ -620,7 +624,7 @@ const Transaction = () => {
                   handleSelectChange(startDate, endDate);
                   fetchTransaction(
                     globalTerm,
-                    purposeDescription,
+                    // purposeDescription,
                     startDate,
                     endDate
                   );
@@ -786,7 +790,7 @@ const Transaction = () => {
                 }}
               />
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               className="w-[45%]"
               label="Mục đích giao dịch"
               name="purposeDescription"
@@ -804,9 +808,7 @@ const Transaction = () => {
                   console.log(value);
                 }}
               />
-            </Form.Item>
-          </div>
-          <div className="flex justify-between items-center">
+            </Form.Item> */}
             <Form.Item
               className="w-[45%]"
               label="Ngày giao dịch"
@@ -835,6 +837,8 @@ const Transaction = () => {
                 />
               </Space>
             </Form.Item>
+          </div>
+          <div className="flex justify-between items-center">
             <Form.Item
               className="w-[45%]"
               label="Số dư trước giao dịch"
@@ -864,8 +868,6 @@ const Transaction = () => {
                 parser={(value: any) => value.replace(/\s?VND|(,*)/g, "")}
               />
             </Form.Item>
-          </div>
-          <div className="flex justify-between">
             <Form.Item
               className="w-[45%]"
               label="Số tiền giao dịch"
@@ -895,6 +897,8 @@ const Transaction = () => {
                 parser={(value: any) => value.replace(/\s?VND|(,*)/g, "")}
               />
             </Form.Item>
+          </div>
+          <div className="flex justify-between">
             <Form.Item
               className="w-[45%]"
               label="Số dư sau giao dịch"
@@ -924,8 +928,6 @@ const Transaction = () => {
                 parser={(value: any) => value.replace(/\s?VND|(,*)/g, "")}
               />
             </Form.Item>
-          </div>
-          <div className="flex justify-between">
             <Form.Item
               className="w-[45%]"
               label="Nhập chi phí phát sinh"
@@ -955,6 +957,8 @@ const Transaction = () => {
                 parser={(value: any) => value.replace(/\s?VND|(,*)/g, "")}
               />
             </Form.Item>
+          </div>
+          <div className="flex justify-between">
             <Form.Item
               className="w-[45%]"
               label="Nhập lý do"

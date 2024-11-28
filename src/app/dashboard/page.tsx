@@ -653,6 +653,7 @@ const Dashboard = () => {
                     bankFilter,
                     chatFilter,
                     transTypeFilter,
+                    transTypeCompanyFilter,
                     startDate,
                     endDate
                   );
@@ -660,6 +661,7 @@ const Dashboard = () => {
                     bankFilter,
                     chatFilter,
                     transTypeFilter,
+                    transTypeCompanyFilter,
                     startDate,
                     endDate
                   );

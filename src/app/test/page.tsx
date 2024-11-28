@@ -1,65 +1,123 @@
 "use client"
-import React, { useState } from "react";
-import { Select } from "antd";
-import { buildSearchParams } from "@/src/utils/buildQueryParams";
+
+import React, { useState, useEffect } from "react";
+import { Input, Select } from "antd";
+import { useFilter } from "@/src/utils/handleChange";
+import { getListTelegram } from "@/src/services/telegram";
+import { fetchBankAccounts } from "@/src/services/bankAccount";
 
 const { Option } = Select;
 
 const FilterComponent: React.FC = () => {
-  const [searchTerms, setSearchTerms] = useState<
-    { Name: string; Value: string | string[] }[]
+  const { handleChange } = useFilter();
+  const [globalTerm, setGlobalTerm] = useState<string>('');
+  const [teleGroupChatFilter, setTeleGroupChatFilter] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [bankFilter, setBankFilter] = useState<
+    { value: string; label: string }[]
   >([]);
 
-  // Xử lý khi người dùng chọn giá trị trong Select
-  const handleChange = (value: string | string[], name: string) => {
-    const updatedTerms = [...searchTerms];
-    const existingIndex = updatedTerms.findIndex((term) => term.Name === name);
-
-    if (existingIndex > -1) {
-      updatedTerms[existingIndex].Value = value;
-    } else {
-      updatedTerms.push({ Name: name, Value: value });
+  const handleFilterGroupChat = async () => {
+    try {
+      const { data } = await getListTelegram(1, 20);
+      const res =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data?.source?.map((x: any) => ({
+          value: x.id,
+          label: x.name || "Không xác định",
+        })) || [];
+      setTeleGroupChatFilter(res);
+    } catch (error) {
+      console.error("Lỗi khi lấy nhóm chat Telegram:", error);
     }
+  };
 
-    setSearchTerms(updatedTerms);
+  const bankAccountFilterAPI = async () => {
+    try {
+      const { data } = await fetchBankAccounts(1, 20);
+      const res =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data?.source?.map((bank: any) => ({
+          value: bank.id,
+          label: bank.bank.code,
+        })) || [];
+      setBankFilter(res);
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách ngân hàng:", error);
+    }
+  };
 
-    // Chuyển đổi dữ liệu để truyền vào hàm buildSearchParams
-    const formattedTerms = updatedTerms.map((term) => ({
-      Name: term.Name,
-      Value: Array.isArray(term.Value) ? term.Value.join(",") : term.Value,
-    }));
+  useEffect(() => {
+    Promise.all([handleFilterGroupChat(), bankAccountFilterAPI()]);
+  }, []);
 
-    const params = buildSearchParams(formattedTerms, {
+  const handleSearch = (value: string) => {
+    setGlobalTerm(value);
+    const params = {
       pageIndex: 1,
-      pageSize: 10,
-    }); // Ví dụ thêm tham số bổ sung
-    console.log("Params:", params); // Gọi API hoặc cập nhật dữ liệu ở đây
+      pageSize: 20,
+      globalTerm: value,
+    };
+    console.log(params);
+    // Ở đây có thể gọi API với params nếu cần
+    // apiCall(params);
   };
 
   return (
-    <div>
-      <Select
-      
-        mode="multiple"
-        placeholder="Chọn danh mục"
-        style={{ width: 200, marginRight: 10 }}
-        onChange={(value) => handleChange(value, "category")}
-      >
-        <Option value="electronics">Điện tử</Option>
-        <Option value="fashion">Thời trang</Option>
-        <Option value="books">Sách</Option>
-      </Select>
-
-      <Select
-        placeholder="Chọn trạng thái"
-        style={{ width: 200 }}
-        onChange={(value) => handleChange(value, "status")}
-      >
-        <Option value="new">Mới</Option>
-        <Option value="popular">Phổ biến</Option>
-        <Option value="sale">Giảm giá</Option>
-      </Select>
-    </div>
+    <>
+      <div>
+        <Input
+          placeholder="Tìm kiếm toàn cầu ..."
+          style={{
+            width: 253,
+            borderRadius: 10,
+            height: 38,
+            marginRight: 15,
+          }}
+          value={globalTerm}
+          onChange={(e) => {
+            const value = e.target.value;
+            setGlobalTerm(value);
+          }}
+          onPressEnter={async (e) => {
+            handleSearch(e.currentTarget.value);
+          }}
+        />
+      </div>
+      <div>
+        <Select
+          allowClear
+          mode="multiple"
+          placeholder="Chọn danh mục"
+          style={{ width: 200, marginRight: 10 }}
+          onChange={(value) => handleChange(value, "category")}
+        >
+          <Option value="electronics">Điện tử</Option>
+          <Option value="fashion">Thời trang</Option>
+          <Option value="books">Sách</Option>
+        </Select>
+      </div>
+      <div>
+        <Select
+          allowClear
+          placeholder="Chọn nhóm chat Telegram"
+          style={{ width: 200, marginTop: 10 }}
+          onChange={(value) => handleChange(value, "groupChatId")}
+          options={teleGroupChatFilter}
+        />
+      </div>
+      <div>
+        <Select
+          mode="multiple"
+          allowClear
+          placeholder="Chọn ngân hàng"
+          style={{ width: 200, marginTop: 10 }}
+          onChange={(value) => handleChange(value, "bankAccountId")}
+          options={bankFilter}
+        />
+      </div>
+    </>
   );
 };
 

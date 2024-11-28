@@ -74,17 +74,33 @@ const SheetIntergration = () => {
 
   const fetchSheetIntegration = async (
     globalTerm?: string,
-    sheetId?: string
+    sheetId?: string,
+    transType?: string,
+    bankAccount?: string
   ) => {
     const arrSheet: FilterSheetIntergration[] = [];
     const addedParams = new Set<string>();
 
-    if (sheetId && !addedParams.has("bankAccountId")) {
+    if (sheetId && !addedParams.has("sheetId")) {
       arrSheet.push({
         Name: "sheetId",
         Value: sheetId,
       });
       addedParams.add("sheetId");
+    }
+    if (transType && !addedParams.has("transType")) {
+      arrSheet.push({
+        Name: "transType",
+        Value: transType,
+      });
+      addedParams.add("transType");
+    }
+    if (bankAccount && !addedParams.has("bankAccountId")) {
+      arrSheet.push({
+        Name: "bankAccountId",
+        Value: bankAccount,
+      });
+      addedParams.add("bankAccountId");
     }
 
     arrSheet.push({
@@ -382,25 +398,42 @@ const SheetIntergration = () => {
     },
   ];
 
+  const options = [
+    { value: "3", label: "Tiền vào" },
+    { value: "2", label: "Tiền ra" },
+    { value: "1", label: "Cả hai" },
+  ];
+
   const [sheetFilter, setSheetFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [bankFilter, setBankFilter] = useState<
     Array<{ value: string; label: string }>
   >([]);
 
   const [sheetIdFilter, setSheetIdFilter] = useState();
+  const [transTypeFilter, setTransTypeFilter] = useState();
+  const [bankAccountFilter, setBankAccountFilter] = useState();
 
   const [filterParams, setFilterParams] = useState<{
     groupChatId?: string;
   }>({});
 
-  const handleSelectChange = (groupChat?: string) => {
+  const handleSelectChange = (
+    groupChat?: string,
+    transType?: string,
+    bankAccount?: string
+  ) => {
     setFilterParams((prevParams) => ({
       ...prevParams,
       groupChatId: groupChat,
+      transType: transType,
+      bankAccountId: bankAccount,
     }));
   };
   const [pageIndex] = useState(1);
   const [pageSize] = useState(50);
-  
+
   const handleFilterSheet = async () => {
     try {
       const { groupChatId } = filterParams;
@@ -432,11 +465,44 @@ const SheetIntergration = () => {
     }
   };
 
-  useEffect(() => {
-    // const { groupAccountId } = filterParams;
+  const bankAccountFilterAPI = async (bankAccount?: string) => {
+    const arr: FilterSheetIntergration[] = [];
+    const bankAccountFilter: FilterSheetIntergration = {
+      Name: "bankAccountId",
+      Value: bankAccount!,
+    };
+    const obj: FilterSheetIntergration = {
+      Name: keys!,
+      Value: values!,
+    };
+    arr.push(obj, bankAccountFilter);
+    try {
+      const fetchBankAccountAPI = await fetchBankAccounts(pageIndex, pageSize);
+      if (
+        fetchBankAccountAPI &&
+        fetchBankAccountAPI.data &&
+        fetchBankAccountAPI.data.source
+      ) {
+        const res =
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          fetchBankAccountAPI?.data?.source?.map((bank: any) => ({
+            value: bank.id,
+            label: bank.bank.code,
+            bankAccountId: bank.id,
+          })) || [];
+        setBankFilter(res);
+      } else {
+        setBankFilter([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  };
 
+  useEffect(() => {
     const fetchData = async () => {
       await handleFilterSheet();
+      await bankAccountFilterAPI();
     };
 
     fetchData();
@@ -489,10 +555,67 @@ const SheetIntergration = () => {
                 onChange={(value: any) => {
                   setSheetIdFilter(value);
                   if (!value) {
-                    handleSelectChange(value);
+                    handleSelectChange(
+                      value,
+                      transTypeFilter,
+                      bankAccountFilter
+                    );
                     setCheckFilter(!checkFilter);
                   } else {
-                    fetchSheetIntegration(globalTerm, value);
+                    fetchSheetIntegration(
+                      globalTerm,
+                      value,
+                      transTypeFilter,
+                      bankAccountFilter
+                    );
+                  }
+                }}
+              />
+            </Space>
+            <Space direction="horizontal" size="middle">
+              <Select
+                options={options}
+                placeholder="Loại giao dịch"
+                style={{ width: 245, margin: "0 10px", height: 40 }}
+                allowClear
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={(value: any) => {
+                  // console.log(value, "value");
+                  setTransTypeFilter(value);
+                  if (!value) {
+                    handleSelectChange(sheetIdFilter, value, bankAccountFilter);
+                    setCheckFilter(!checkFilter);
+                  } else {
+                    fetchSheetIntegration(
+                      globalTerm,
+                      sheetIdFilter,
+                      value,
+                      bankAccountFilter
+                    );
+                  }
+                }}
+              />
+            </Space>
+            <Space direction="horizontal" size="middle">
+              <Select
+                mode="multiple"
+                options={bankFilter}
+                placeholder="Tên ngân hàng"
+                style={{ width: 245, marginRight: "10px" }}
+                allowClear
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={(value: any) => {
+                  setBankAccountFilter(value);
+                  if (!value) {
+                    handleSelectChange(sheetIdFilter, transTypeFilter, value);
+                    setCheckFilter(!checkFilter);
+                  } else {
+                    fetchSheetIntegration(
+                      globalTerm,
+                      sheetIdFilter,
+                      transTypeFilter,
+                      value
+                    );
                   }
                 }}
               />

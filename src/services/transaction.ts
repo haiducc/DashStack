@@ -28,18 +28,6 @@ export const getTransaction = async (
   }
 };
 
-// id: item.id?.toString() || Date.now().toString(), // id
-// bankName: item.bankName, // Mã ngân hàng
-// bankAccount: item.bankAccount, // stk
-// fullName: item.fullName, // tên chủ tk
-// transDateString: item.transDateString, // Ngày giao dịch
-// transType: item.transType, // Giao dịch
-// purposeDescription: item.purposeDescription, // Mục đích
-// reason: item.reason, // lý do
-// balanceBeforeTrans: item.balanceBeforeTrans, // Số dư
-// currentBalance: item.currentBalance, // số dư hiện tại
-// notes: item.notes, // ghi chú
-
 export const addTransaction = async (trans: TransactionModal) => {
   try {
     const token = localStorage.getItem("accessToken");

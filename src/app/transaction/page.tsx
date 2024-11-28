@@ -54,13 +54,14 @@ interface FilterRole {
 type DataTypeWithKey = TransactionModal & { key: React.Key };
 
 const Transaction = () => {
-  const router = useRouter();
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
       router.push("/login");
     }
   }, []);
+  const router = useRouter();
+  const { RangePicker } = DatePicker;
 
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(true);
@@ -75,7 +76,7 @@ const Transaction = () => {
   const [banks, setBanks] = useState<Array<TransactionModal>>([]);
   const [bankAccount, setBankAccount] = useState<Array<TransactionModal>>([]);
   const [pageIndex] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(50);
 
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -91,11 +92,30 @@ const Transaction = () => {
   }, []);
 
   const fetchTransaction = async (
-    globalTerm?: string
-    // searchTerms?: string
+    globalTerm?: string,
+    purpose?: string,
+    startDate?: string,
+    endDate?: string
   ) => {
     const arrRole: FilterRole[] = [];
     const addedParams = new Set<string>();
+    if (purpose && !addedParams.has("purpose")) {
+      arrRole.push({
+        Name: "purpose",
+        Value: purpose,
+      });
+      addedParams.add("purpose");
+    }
+    if (startDate && endDate) {
+      arrRole.push({
+        Name: "startDate",
+        Value: formatDate(startDate),
+      });
+      arrRole.push({
+        Name: "endDate",
+        Value: formatDate(endDate),
+      });
+    }
     arrRole.push({
       Name: localStorage.getItem("key")!,
       Value: localStorage.getItem("value")!,
@@ -151,7 +171,7 @@ const Transaction = () => {
           bankId: bank.id,
         })) || [];
       setBanks(formattedBanks);
-      console.log(formattedBanks, "formattedBanks");
+      // console.log(formattedBanks, "formattedBanks");
     } catch (error) {
       console.error("Error fetching banks:", error);
     }
@@ -274,29 +294,6 @@ const Transaction = () => {
     }
   };
 
-  // const handleEdit = (record: TransactionModal) => {
-  //   console.log("data edit", record);
-  //   setCurrentTransaction(record);
-  //   form.setFieldsValue({
-  //     id: record.id,
-  //     bankName: record.bankName,
-  //     bankAccountId: record.bankAccountId,
-  //     fullName: record.fullName,
-  //     transDateString: record.transDateString,
-  //     transType: record.transType,
-  //     purposeDescription: record.purposeDescription,
-  //     reason: record.reason,
-  //     balanceBeforeTrans: record.balanceBeforeTrans,
-  //     currentBalance: record.currentBalance,
-  //     notes: record.notes,
-  //     transAmount: record.transAmount,
-  //     transDate: selectedDate,
-  //     feeIncurred: record.feeIncurred,
-  //     bankAccountName: record.bankAccount + " - " + record.fullName,
-  //   });
-  //   setIsAddModalOpen(true);
-  // };
-
   const handleDelete = async (x: TransactionModal) => {
     setLoading(true);
     try {
@@ -307,6 +304,63 @@ const Transaction = () => {
       console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSearch = async (value: string) => {
+    setGlobalTerm(value);
+    try {
+      if (value.trim() === "") {
+        const data = await getTransaction(pageIndex, pageSize);
+        const formattedData =
+          data?.data?.source?.map((item: TransactionModal) => ({
+            id: item.id, // id
+            bankName: item.bankName, // Mã ngân hàng
+            bankAccount: item.bankAccount, // stk
+            fullName: item.fullName, // tên chủ tk
+            transDateString: item.transDateString || new Date(), // Ngày giao dịch
+            transType: item.transType, // Giao dịch
+            purposeDescription: item.purposeDescription, // Mục đích
+            reason: item.reason, // lý do
+            balanceBeforeTrans: item.balanceBeforeTrans, // Số dư trc giao dịch
+            currentBalance: item.currentBalance, // số dư hiện tại
+            notes: item.notes, // ghi chú
+            bankAccountId: item.bankAccountId, // thêm trường id tài khoản
+            feeIncurred: item.feeIncurred,
+            transAmount: item.transAmount,
+            transDate: item.transDate
+              ? dayjs(item.transDate).format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+              : null,
+          })) || [];
+
+        setDataTransaction(formattedData);
+      } else {
+        const data = await getTransaction(pageIndex, pageSize, value);
+        const formattedData =
+          data?.data?.source?.map((item: TransactionModal) => ({
+            id: item.id, // id
+            bankName: item.bankName, // Mã ngân hàng
+            bankAccount: item.bankAccount, // stk
+            fullName: item.fullName, // tên chủ tk
+            transDateString: item.transDateString || new Date(), // Ngày giao dịch
+            transType: item.transType, // Giao dịch
+            purposeDescription: item.purposeDescription, // Mục đích
+            reason: item.reason, // lý do
+            balanceBeforeTrans: item.balanceBeforeTrans, // Số dư trc giao dịch
+            currentBalance: item.currentBalance, // số dư hiện tại
+            notes: item.notes, // ghi chú
+            bankAccountId: item.bankAccountId, // thêm trường id tài khoản
+            feeIncurred: item.feeIncurred,
+            transAmount: item.transAmount,
+            transDate: item.transDate
+              ? dayjs(item.transDate).format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+              : null,
+          })) || [];
+
+        setDataTransaction(formattedData);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm tài khoản ngân hàng:", error);
     }
   };
 
@@ -454,6 +508,52 @@ const Transaction = () => {
     },
   ];
 
+  const formatDate = (inputDate: string | Date): string => {
+    const date = new Date(inputDate);
+
+    if (isNaN(date.getTime())) {
+      throw new Error("Invalid date format");
+    }
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  };
+
+  const options = [
+    { value: "1", label: "Rút tiền mặt" },
+    { value: "2", label: "Mua tài sản" },
+    { value: "3", label: "Bổ sung giao dịch lỗi" },
+  ];
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [filterParams, setFilterParams] = useState<{
+    purpose?: string;
+    tranDate?: string;
+  }>({});
+  const handleSelectChange = (
+    purpose?: string,
+    startDate?: string,
+    endDate?: string
+  ) => {
+    setFilterParams((prevParams) => ({
+      ...prevParams,
+      purpose: purpose,
+      startDate: startDate,
+      endDate: endDate,
+    }));
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [purposeDescription, setPurposeDescription] = useState();
+  const [startDateFilter, setTranDateFilter] = useState();
+  //
+  const [checkFilter, setCheckFilter] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectBankId, setSelectBankId] = useState(0);
 
@@ -474,13 +574,61 @@ const Transaction = () => {
                 height: 38,
                 marginRight: 15,
               }}
-              // onChange={(e) => {
-              //   const value = e.target.value;
-              //   handleSearch(value);
-              // }}
-              // onPressEnter={async (e) => {
-              //   handleSearch(e.currentTarget.value);
-              // }}
+              onChange={(e) => {
+                const value = e.target.value;
+                setGlobalTerm(value);
+                if (!value) {
+                  setCheckFilter(!checkFilter);
+                }
+              }}
+              onPressEnter={async (e) => {
+                handleSearch(e.currentTarget.value);
+              }}
+            />
+            <Space direction="horizontal" size="middle">
+              <Select
+                options={options}
+                placeholder="Mục đích"
+                style={{ width: 245, margin: "0 10px", height: 40 }}
+                allowClear
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={(value: any) => {
+                  // console.log(value, "value");
+                  setPurposeDescription(value);
+                  if (!value) {
+                    handleSelectChange(value, startDateFilter);
+                    setCheckFilter(!checkFilter);
+                  } else {
+                    fetchTransaction(globalTerm, value, startDateFilter);
+                  }
+                }}
+              />
+            </Space>
+            <RangePicker
+              id={{
+                start: "startInput",
+                end: "endInput",
+              }}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={(value: any) => {
+                setTranDateFilter(value);
+                if (!value || value.length !== 2) {
+                  handleSelectChange(purposeDescription);
+                  setCheckFilter(!checkFilter);
+                } else {
+                  const [startDate, endDate] = value;
+                  handleSelectChange(startDate, endDate);
+                  fetchTransaction(
+                    globalTerm,
+                    purposeDescription,
+                    startDate,
+                    endDate
+                  );
+                }
+              }}
+              disabledDate={(current) =>
+                current && current > dayjs().endOf("day")
+              }
             />
           </div>
           <Button
@@ -650,12 +798,11 @@ const Transaction = () => {
               ]}
             >
               <Select
-                options={[
-                  { value: "1", label: "Rút tiền mặt" },
-                  { value: "2", label: "Mua tài sản" },
-                  { value: "3", label: "Bổ sung giao dịch lỗi" },
-                ]}
+                options={options}
                 placeholder="Chọn mục đích giao dịch"
+                onChange={(value) => {
+                  console.log(value);
+                }}
               />
             </Form.Item>
           </div>

@@ -74,7 +74,8 @@ const TelegramIntegration = () => {
   const fetchListTelegramIntegration = async (
     globalTerm?: string,
     groupChat?: string,
-    transType?: string
+    transType?: string,
+    bankAccount?: string
   ) => {
     const arrTeleAccount: FilterTeleIntergration[] = [];
     const addedParams = new Set<string>();
@@ -91,7 +92,14 @@ const TelegramIntegration = () => {
         Name: "transType",
         Value: transType,
       });
-      addedParams.add("groupChatId");
+      addedParams.add("transType");
+    }
+    if (bankAccount && !addedParams.has("bankAccount")) {
+      arrTeleAccount.push({
+        Name: "bankAccountId",
+        Value: bankAccount,
+      });
+      addedParams.add("bankAccountId");
     }
     arrTeleAccount.push({
       Name: localStorage.getItem("key")!,
@@ -154,6 +162,7 @@ const TelegramIntegration = () => {
         })) || [];
 
       setBanks(formattedBanks);
+      // setBankAccountFilter(formattedBanks);
     } catch (error) {
       console.error("Error fetching banks:", error);
     }
@@ -412,21 +421,27 @@ const TelegramIntegration = () => {
   const [teleGroupChatFilter, setTeleGroupChatFilter] = useState<
     Array<{ value: string; label: string }>
   >([]);
-  // const [transTypeFilter, setTransTypeFilter] = useState<
-  //   Array<{ value: string; label: string }>
-  // >([]);
+  const [bankFilter, setBankFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
   const [groupChatFilter, setGroupChatFilter] = useState();
   const [transTypeFilter, setTransTypeFilter] = useState();
+  const [bankAccountFilter, setBankAccountFilter] = useState();
 
   const [filterParams, setFilterParams] = useState<{
     groupChatId?: string;
   }>({});
 
-  const handleSelectChange = (groupChat?: string, transType?: string) => {
+  const handleSelectChange = (
+    groupChat?: string,
+    transType?: string,
+    bankAccount?: string
+  ) => {
     setFilterParams((prevParams) => ({
       ...prevParams,
       groupChatId: groupChat,
       transType: transType,
+      bankAccount: bankAccount,
     }));
   };
 
@@ -467,11 +482,44 @@ const TelegramIntegration = () => {
     }
   };
 
-  useEffect(() => {
-    // const { groupAccountId } = filterParams;
+  const bankAccountFilterAPI = async (bankAccount?: string) => {
+    const arr: FilterTeleIntergration[] = [];
+    const bankAccountFilter: FilterTeleIntergration = {
+      Name: "bankAccountId",
+      Value: bankAccount!,
+    };
+    const obj: FilterTeleIntergration = {
+      Name: keys!,
+      Value: values!,
+    };
+    arr.push(obj, bankAccountFilter);
+    try {
+      const fetchBankAccountAPI = await fetchBankAccounts(pageIndex, pageSize);
+      if (
+        fetchBankAccountAPI &&
+        fetchBankAccountAPI.data &&
+        fetchBankAccountAPI.data.source
+      ) {
+        const res =
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          fetchBankAccountAPI?.data?.source?.map((bank: any) => ({
+            value: bank.id,
+            label: bank.bank.code,
+            bankAccountId: bank.id,
+          })) || [];
+        setBankFilter(res);
+      } else {
+        setBankFilter([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  };
 
+  useEffect(() => {
     const fetchData = async () => {
       await handleFilterGroupChat();
+      await bankAccountFilterAPI();
     };
 
     fetchData();
@@ -517,7 +565,7 @@ const TelegramIntegration = () => {
                 mode="multiple"
                 options={teleGroupChatFilter}
                 placeholder="Nhóm tài khoản"
-                style={{ width: 245, marginRight:"10px" }}
+                style={{ width: 245 }}
                 allowClear
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
@@ -529,7 +577,8 @@ const TelegramIntegration = () => {
                     fetchListTelegramIntegration(
                       globalTerm,
                       value,
-                      transTypeFilter
+                      transTypeFilter,
+                      bankAccountFilter
                     );
                   }
                 }}
@@ -539,7 +588,7 @@ const TelegramIntegration = () => {
               <Select
                 options={options}
                 placeholder="Loại giao dịch"
-                style={{ width: 245 }}
+                style={{ width: 245, margin: "0 10px", height: 40 }}
                 allowClear
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
@@ -552,6 +601,31 @@ const TelegramIntegration = () => {
                     fetchListTelegramIntegration(
                       globalTerm,
                       groupChatFilter,
+                      value,
+                      bankAccountFilter
+                    );
+                  }
+                }}
+              />
+            </Space>
+            <Space direction="horizontal" size="middle">
+              <Select
+                mode="multiple"
+                options={bankFilter}
+                placeholder="Tên ngân hàng"
+                style={{ width: 245, marginRight: "10px" }}
+                allowClear
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onChange={(value: any) => {
+                  setBankAccountFilter(value);
+                  if (!value) {
+                    handleSelectChange(groupChatFilter, transTypeFilter, value);
+                    setCheckFilter(!checkFilter);
+                  } else {
+                    fetchListTelegramIntegration(
+                      globalTerm,
+                      groupChatFilter,
+                      transTypeFilter,
                       value
                     );
                   }
@@ -559,7 +633,6 @@ const TelegramIntegration = () => {
               />
             </Space>
           </div>
-
           <Button
             className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
             onClick={() => {

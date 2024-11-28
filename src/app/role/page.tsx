@@ -296,7 +296,7 @@ const Role = () => {
   };
 
   const columns = [
-    { title: "id", dataIndex: "id", key: "id" },
+    { title: "id", dataIndex: "id", key: "id", hidden: true },
     { title: "Email đăng nhập", dataIndex: "userName", key: "userName" },
     { title: "Họ và tên", dataIndex: "fullName", key: "fullName" },
     { title: "Vai trò", dataIndex: "role", key: "role" },

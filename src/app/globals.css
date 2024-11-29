@@ -147,13 +147,14 @@ body {
   margin-bottom: 5px;
 }
 
-/* .ant-table-cell {
-  background-color: #4B5CB8;
-} */
-
 .modal-list-transaction-tabs .ant-tabs-nav-list {
   width: 100%;
   justify-content: space-around;
+}
+.modal-list-transaction-tabs > div > .ant-tabs-nav-wrap {
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
+  margin-left: -24px;
+  margin-right: -24px;
 }
 .modal-list-transaction-tabs .ant-tabs-tab-btn {
   font-size: 16px;
@@ -176,13 +177,21 @@ body {
   width: 100%;
 }
 .input-number-custom .ant-input-number-handler-wrap,
-.input-number-custom-total .ant-input-number-handler-wrap {
-  display: none;
+.input-number-custom-total .ant-input-number-handler-wrap,
+.input-number-price-custom .ant-input-number-handler-wrap {
+  display: none !important;
 }
 
 .input-number-custom .ant-input-number-input,
-.input-number-custom-total .ant-input-number-input {
-  /* text-align: center; */
+.input-number-price-custom .ant-input-number-input {
+  text-align: center !important;
+}
+/* .input-number-custom-total .ant-input-number-input */
+.input-number-custom {
+  width: 70px !important;
+}
+.input-number-price-custom {
+  width: 150px !important;
 }
 
 .ant-table-thead th {
@@ -194,4 +203,58 @@ body {
 
 .custom-link-item:hover {
   background-color: #1677ff !important;
+}
+
+/* css margin tab global */
+.ant-tabs .ant-tabs-tab + .ant-tabs-tab {
+  margin: 0 !important;
+}
+.tabs-gold .ant-tabs-nav-list {
+  width: auto;
+  margin: 20px auto;
+  box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 50px;
+  background-color: transparent;
+  display: block !important;
+}
+.tabs-gold .ant-tabs-nav-list .ant-tabs-tab:nth-child(1) {
+  padding: 12px 16px;
+  border-bottom-left-radius: 50px;
+  border-top-left-radius: 50px;
+}
+.tabs-gold .ant-tabs-nav-list .ant-tabs-tab:nth-child(2) {
+  padding: 12px 16px;
+  border-bottom-right-radius: 50px;
+  border-top-right-radius: 50px;
+}
+.ant-tabs-top > .ant-tabs-nav::before {
+  border-bottom: none !important;
+}
+
+.tabs-gold .ant-tabs-tab-active {
+  background-color: #4b5cb8 !important;
+  color: white;
+}
+.tabs-gold .ant-tabs-tab-btn {
+  color: #666666;
+  font-size: 16px;
+  font-weight: 500;
+}
+.tabs-gold .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: white !important;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.tabs-gold .ant-tabs-ink-bar.ant-tabs-ink-bar-animated {
+  display: none;
+}
+
+/* custom chart */
+.custom-chart canvas {
+  height: 550px !important;
+}
+
+.custom-chart-transaction canvas {
+  height: 600px !important;
 }

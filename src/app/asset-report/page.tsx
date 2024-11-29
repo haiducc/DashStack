@@ -2,9 +2,9 @@
 "use client";
 
 import Header from "@/src/component/Header";
-import { Col, DatePicker, Row, Select } from "antd";
+import { Col, DatePicker, Row, Select, Spin } from "antd";
 import type { DatePickerProps } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import type { Dayjs } from "dayjs";
 
 import { ChartAssetType, DataAseet, TransactionType } from "@/src/common/type";
@@ -28,6 +28,7 @@ export interface ListOptionsTransactionType {
 }
 
 const AssetPage = () => {
+  const [isPending, startTransition] = useTransition();
   const [active, setActive] = useState<number>(1);
   const [asset, setAsset] = useState<DataAseet>();
   const [chart, setChart] = useState<ChartAssetType>();
@@ -142,32 +143,58 @@ const AssetPage = () => {
   };
 
   useEffect(() => {
-    getListSystem();
-    getListTeamAccount();
-    getListAccount();
-  }, []);
+    if (active === 0) {
+      startTransition(() => {
+        Promise.all([getListSystem(), getListTeamAccount(), getListAccount()]);
+      });
+    }
+  }, [active]);
 
   const handleClick = (type: number) => {
     if (type === 0) {
       getListTransaction({});
     }
     if (type === 1) {
-      getListChart({
-        type: "1",
-        typeChart: "1",
+      startTransition(() => {
+        Promise.all([
+          getListChart({
+            type: "1",
+            typeChart: "1",
+          }),
+          getLisChartProgress({
+            type: "1",
+            typeChart: "1",
+          }),
+        ]);
       });
     }
     if (type === 2) {
-      getListChart({
-        type: "1",
-        typeChart: "2",
+      startTransition(() => {
+        Promise.all([
+          getListChart({
+            type: "1",
+            typeChart: "2",
+          }),
+          getLisChartProgress({
+            type: "1",
+            typeChart: "2",
+          }),
+        ]);
       });
     }
 
     if (type === 3) {
-      getListChart({
-        type: "1",
-        typeChart: "3",
+      startTransition(() => {
+        Promise.all([
+          getListChart({
+            type: "1",
+            typeChart: "3",
+          }),
+          getLisChartProgress({
+            type: "1",
+            typeChart: "3",
+          }),
+        ]);
       });
     }
     setActive(type);
@@ -351,14 +378,18 @@ const AssetPage = () => {
   };
 
   useEffect(() => {
-    getListSummary();
-    getListChart({
-      type: "1",
-      typeChart: "1",
-    });
-    getLisChartProgress({
-      type: "1",
-      typeChart: "1",
+    startTransition(() => {
+      Promise.all([
+        getListSummary(),
+        getListChart({
+          type: "1",
+          typeChart: "1",
+        }),
+        getLisChartProgress({
+          type: "1",
+          typeChart: "1",
+        }),
+      ]);
     });
   }, []);
 
@@ -367,8 +398,14 @@ const AssetPage = () => {
       setYear(dateString);
       getListChart({
         type: "1",
-        typeChart: "1",
+        typeChart: `${active}`,
         year: dateString,
+      });
+    } else {
+      setYear("");
+      getListChart({
+        type: "1",
+        typeChart: `${active}`,
       });
     }
   };
@@ -376,16 +413,16 @@ const AssetPage = () => {
   const handleChangeMonth = (e: number) => {
     getListChart({
       type: "1",
-      typeChart: "1",
+      typeChart: `${active}`,
       year: year,
       month: `${e}`,
     });
   };
 
-  const handleChangeMonthProgress = (e: number) => {
+  const handleChangeMonthProgress = (e: number, typeChart: string) => {
     getLisChartProgress({
       type: "1",
-      typeChart: "1",
+      typeChart: typeChart,
       month: `${e}`,
     });
   };
@@ -582,33 +619,41 @@ const AssetPage = () => {
             )}
 
             <div>
-              {transaction && transaction.length > 0 && active === 0 ? (
-                <ChartTransaction transaction={transaction} />
+              {isPending ? (
+                <Spin />
               ) : (
-                <p className="text-base text-center italic pt-40">
-                  Không có dữ liệu!
-                </p>
-              )}
-              {chart?.cashChart && active === 1 && (
-                <ChartMoney
-                  moneyChart={chart.cashChart}
-                  progress={progress ? progress.cashChart : null}
-                  handleChangeMonthProgress={handleChangeMonthProgress}
-                />
-              )}
-              {chart?.goldChart && active === 2 && (
-                <ChartGold
-                  goldChart={chart.goldChart}
-                  progress={progress ? progress.cashChart : null}
-                  handleChangeMonthProgress={handleChangeMonthProgress}
-                />
-              )}
-              {chart?.realEstateChart && active === 3 && (
-                <ChartRealEstate
-                  realEstate={chart.realEstateChart}
-                  progress={progress ? progress.realEstateChart : null}
-                  handleChangeMonthProgress={handleChangeMonthProgress}
-                />
+                <>
+                  {transaction &&
+                    active === 0 &&
+                    (transaction.length > 0 ? (
+                      <ChartTransaction transaction={transaction} />
+                    ) : (
+                      <p className="text-base text-center italic pt-40">
+                        Không có dữ liệu!
+                      </p>
+                    ))}
+                  {chart?.cashChart && active === 1 && (
+                    <ChartMoney
+                      moneyChart={chart.cashChart}
+                      progress={progress ? progress.cashChart : null}
+                      handleChangeMonthProgress={handleChangeMonthProgress}
+                    />
+                  )}
+                  {chart?.goldChart && active === 2 && (
+                    <ChartGold
+                      goldChart={chart.goldChart}
+                      progress={progress ? progress.goldChart : null}
+                      handleChangeMonthProgress={handleChangeMonthProgress}
+                    />
+                  )}
+                  {chart?.realEstateChart && active === 3 && (
+                    <ChartRealEstate
+                      realEstate={chart.realEstateChart}
+                      progress={progress ? progress.realEstateChart : null}
+                      handleChangeMonthProgress={handleChangeMonthProgress}
+                    />
+                  )}
+                </>
               )}
             </div>
           </Col>

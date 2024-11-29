@@ -29,3 +29,28 @@ export const buildSearchParams = (
 
   return params;
 };
+
+export const parseLabelToNumber = (label: string) => {
+  const number = parseFloat(label.replace(/[$.]/g, ""));
+  return isNaN(number) ? 0 : number;
+};
+
+export const formatCurrencyVN = (value: string): string => {
+  if (!value) return "";
+  const numericValue = value.replace(/\D/g, "");
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(Number(numericValue));
+};
+
+export const formatCurrencyUSD = (value: string): string => {
+  if (!value) return "";
+  const numericValue = value.replace(/\D/g, "");
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(Number(numericValue));
+};

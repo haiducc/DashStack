@@ -1,12 +1,12 @@
-import { ModalAddNewType } from "@/src/common/type";
-import BaseModal from "@/src/component/config/BaseModal";
-
 import React from "react";
 import type { TabsProps } from "antd";
 import { Tabs } from "antd";
-import { FormMoney } from "./FormMoney";
-import { FormGold } from "./FormGold";
-import { FormRealEstate } from "./FormRealEstate";
+
+import { ModalAddNewType } from "@/src/common/type";
+import BaseModal from "@/src/component/config/BaseModal";
+import { FormMoney } from "../FormMoney";
+import { FormGold } from "../FormGold";
+import { FormRealEstate } from "../FormRealEstate";
 
 const ModalAddNew = ({
   isAddModalOpen = false,
@@ -47,11 +47,10 @@ const ModalAddNew = ({
       open={isAddModalOpen}
       onCancel={() => {
         onCancel();
-        // form.resetFields();
       }}
       title="Thêm mới giao dịch quản lý tài sản"
       offPadding
-      className="!w-[1000px]"
+      className="!w-[1100px]"
     >
       <Tabs
         defaultActiveKey="1"

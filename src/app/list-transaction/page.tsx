@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Select, Skeleton, Space, Table } from "antd";
+import { Button, Form, Select, Skeleton, Table } from "antd";
 import { useEffect, useState, startTransition } from "react";
 
 import ModalAddNew from "@/src/module/listTransaction/modalAddNew";
@@ -87,7 +87,6 @@ const ListTransactionPage = () => {
       const responsive = await apiClient.get(
         "/asset-api/find?searchTerms[0].Name=isAdmin&searchTerms[0].Value=1&pageIndex=1&pageSize=20"
       );
-      console.log("responsive.data.data.source", responsive.data.data.source);
 
       setDataTransaction(responsive.data.data.source);
     } catch (error) {
@@ -119,47 +118,17 @@ const ListTransactionPage = () => {
       <div className="px-[30px]">
         <div className="text-[32px] font-bold py-5">Danh sách giao dịch</div>
         <div className="flex justify-between items-center mb-7">
-          <div className="flex items-center">
-            <Input
-              placeholder="Số tài khoản, tên tài khoản ..."
-              style={{
-                width: 253,
-                borderRadius: 10,
-                height: 38,
-                marginRight: 15,
-              }}
+          <div className="flex items-center gap-2">
+            <Select
+              placeholder="Loại giao dịch"
+              style={{ width: 245 }}
+              allowClear
             />
-            <Space direction="horizontal" size="middle">
-              <Select
-                placeholder="Nhóm tài khoản"
-                style={{ width: 245 }}
-                allowClear
-              />
-            </Space>
-            <div className="w-2" />
-            <Space direction="horizontal" size="middle">
-              <Select
-                placeholder="Hệ thống"
-                style={{ width: 245 }}
-                allowClear
-              />
-            </Space>
-            <div className="w-2" />
-            <Space direction="horizontal" size="middle">
-              <Select
-                placeholder="Chi nhánh"
-                style={{ width: 245 }}
-                allowClear
-              />
-            </Space>
-            <div className="w-2" />
-            <Space direction="horizontal" size="middle">
-              <Select
-                placeholder="Đội nhóm"
-                style={{ width: 245 }}
-                allowClear
-              />
-            </Space>
+            <Select
+              placeholder="Kiểu giao dịch"
+              style={{ width: 245 }}
+              allowClear
+            />
           </div>
           <Button
             className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"

@@ -11,7 +11,7 @@ const ChartGold = ({
 }: {
   goldChart: TypeAsset[];
   progress: TypeAsset[] | null;
-  handleChangeMonthProgress: (e: number) => void;
+  handleChangeMonthProgress: (e: number, typeChart: string) => void;
 }) => {
   const listGoldChart = goldChart?.filter(
     (item: TypeAsset) => item.value !== 0
@@ -20,7 +20,13 @@ const ChartGold = ({
   return (
     <Row>
       <Col span={16}>
-        <BarChart goldChart={listGoldChart} />
+        {listGoldChart.length > 0 ? (
+          <BarChart goldChart={listGoldChart} />
+        ) : (
+          <p className="text-base text-center italic pt-20">
+            Không có dữ liệu!
+          </p>
+        )}
       </Col>
       <Col span={8}>
         <ProgressGold

@@ -11,7 +11,7 @@ const ChartRealEstate = ({
 }: {
   realEstate: TypeAsset[];
   progress: TypeAsset[] | null;
-  handleChangeMonthProgress: (e: number) => void;
+  handleChangeMonthProgress: (e: number, typeChart: string) => void;
 }) => {
   const listRealEstateChart = realEstate?.filter(
     (item: TypeAsset) => item.value !== 0

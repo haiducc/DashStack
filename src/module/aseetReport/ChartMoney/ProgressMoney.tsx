@@ -9,7 +9,7 @@ const ProgressMoney = ({
   handleChangeMonthProgress,
 }: {
   progress: TypeAsset[] | null;
-  handleChangeMonthProgress: (e: number) => void;
+  handleChangeMonthProgress: (e: number, typeChart: string) => void;
 }) => {
   let listMoneyPercentage: any[] = [];
   if (progress) {
@@ -57,7 +57,7 @@ const ProgressMoney = ({
           allowClear
           options={options}
           className="w-[120px]"
-          onChange={(e) => handleChangeMonthProgress(e)}
+          onChange={(e) => handleChangeMonthProgress(e, "1")}
         />
       </div>
       {listMoneyPercentage.length > 0 ? (

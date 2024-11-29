@@ -116,7 +116,10 @@ export default function BarChartTransaction({
   };
 
   return (
-    <div style={{ width: "80%", margin: "0 auto", height: "600px" }}>
+    <div
+      style={{ width: "80%", margin: "0 auto" }}
+      className="custom-chart-transaction"
+    >
       <Bar data={data} options={options} />
     </div>
   );

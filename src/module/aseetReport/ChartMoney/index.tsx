@@ -11,7 +11,7 @@ const ChartMoney = ({
 }: {
   moneyChart: TypeAsset[];
   progress: TypeAsset[] | null;
-  handleChangeMonthProgress: (e: number) => void;
+  handleChangeMonthProgress: (e: number, typeChart: string) => void;
 }) => {
   const listMoneyChart = moneyChart?.filter(
     (item: TypeAsset) => item.value !== 0

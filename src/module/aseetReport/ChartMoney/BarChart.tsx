@@ -107,7 +107,10 @@ export default function BarChartMoney({
   };
 
   return (
-    <div style={{ width: "80%", height: "550px", margin: "0" }}>
+    <div
+      style={{ width: "80%", height: "550px", margin: "0" }}
+      className="custom-chart"
+    >
       <Bar data={data} options={options} />
     </div>
   );

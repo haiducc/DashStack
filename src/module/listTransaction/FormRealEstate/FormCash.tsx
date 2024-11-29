@@ -23,6 +23,8 @@ import {
 } from "antd";
 import { Dayjs } from "dayjs";
 import { useEffect, useState, useTransition } from "react";
+import { toast } from "react-toastify";
+import type { InputNumberProps } from "antd";
 
 export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
   const [form] = Form.useForm();
@@ -203,12 +205,20 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
       };
       try {
         setIsCreateRealCash(isCreateRealCash);
-        await apiClient.post("/asset-api/add-or-update", params, {
-          timeout: 30000,
-        });
-        fetchData();
-        onCancel();
-        form.resetFields();
+        const responsive = await apiClient.post(
+          "/asset-api/add-or-update",
+          params
+        );
+        if (responsive.data.success) {
+          toast.success(
+            responsive.data.message || "Thêm mới giao dịch vàng thành công!"
+          );
+          fetchData({});
+          onCancel();
+          form.resetFields();
+        } else {
+          toast.error(responsive.data.message || "Giao dịch bị lỗi!");
+        }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
       } finally {
@@ -340,6 +350,18 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
                         setRealEstateChoose(newList);
                       };
 
+                      const onChangeQuantityReal: InputNumberProps["onChange"] =
+                        (value) => {
+                          const newList = [...realEstateChoose];
+                          if ((value as number) > 1) {
+                            newList[index].quantity = value as number;
+                            setRealEstateChoose(newList);
+                          } else {
+                            newList[index].quantity = 1;
+                            setRealEstateChoose(newList);
+                          }
+                        };
+
                       return (
                         <div
                           key={itemFaceValue.value}
@@ -393,6 +415,7 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
                               max={100000}
                               value={itemFaceValue.quantity}
                               className="input-number-custom !h-10 w-8"
+                              onChange={onChangeQuantityReal}
                             />
                             <Button
                               onClick={() => handleClickAsc(index)}
@@ -506,6 +529,17 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
                         newList[index].quantity += 1;
                         setFaceValueChoose(newList);
                       };
+                      const onChangeQuantityMoney: InputNumberProps["onChange"] =
+                        (value) => {
+                          const newList = [...faceValueChoose];
+                          if ((value as number) > 1) {
+                            newList[index].quantity = value as number;
+                            setFaceValueChoose(newList);
+                          } else {
+                            newList[index].quantity = 1;
+                            setFaceValueChoose(newList);
+                          }
+                        };
 
                       return (
                         <div
@@ -525,9 +559,9 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
                             </Button>
                             <InputNumber
                               min={1}
-                              max={100000}
                               value={itemFaceValue.quantity}
                               className="input-number-custom !h-10 w-8"
+                              onChange={onChangeQuantityMoney}
                             />
                             <Button
                               onClick={() => handleClickAsc(index)}
@@ -544,7 +578,9 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
               </Form.Item>
             )}
             {notification.isCompare && (
-              <p className="text-[#ff4d4f] text-sm">{notification?.message}</p>
+              <p className="text-[#ff4d4f] text-sm mb-4 -mt-3">
+                {notification?.message}
+              </p>
             )}
 
             <Form.Item
@@ -557,6 +593,7 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
               <InputNumber
                 className="input-number-custom-total"
                 placeholder="Tổng tiền:"
+                readOnly
               />
             </Form.Item>
 

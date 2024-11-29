@@ -49,13 +49,12 @@ export type Transaction1Props = {
 export interface ModalAddNewType {
   isAddModalOpen: boolean;
   onCancel: () => void;
-  fetchData: () => void;
-  banks?: any;
+  fetchData: ({}) => void;
 }
 
 export interface FormMoneyType {
   onCancel: () => void;
-  fetchData: () => void;
+  fetchData: ({}) => void;
   banks?: any;
 }
 

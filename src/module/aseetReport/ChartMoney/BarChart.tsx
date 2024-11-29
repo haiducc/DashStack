@@ -24,26 +24,51 @@ ChartJS.register(
 
 export default function BarChartMoney({
   moneyChart,
-}: Readonly<{ moneyChart: TypeAsset[] }>) {
-  const listLabelConvert = moneyChart?.map((item2) => {
-    return `${item2.key.split(".")[0]}k`;
-  });
+  moneyType,
+}: Readonly<{ moneyChart: TypeAsset[]; moneyType: string }>) {
+  let listLabelConvert: string[] = [];
+  let listDataCovert: number[] = [];
+  let listBackground: (string | undefined)[] = [];
+  if (moneyType === "1") {
+    listLabelConvert = moneyChart?.map((item2) => {
+      return `${item2.key.split(".")[0]}k`;
+    });
 
-  const listDataCovert = moneyChart.map((item2) => {
-    return Math.abs(item2.value);
-  });
+    listDataCovert = moneyChart.map((item2) => {
+      return Math.abs(item2.value);
+    });
 
-  const listBackground = moneyChart.map((item2) => {
-    if (item2.key === "1.000") return "#979797";
-    if (item2.key === "2.000") return "#FFB759";
-    if (item2.key === "5.000") return "#3749A6";
-    if (item2.key === "10.000") return "#FFD56D";
-    if (item2.key === "20.000") return "#4393FF";
-    if (item2.key === "50.000") return "#FF5DA0";
-    if (item2.key === "100.000") return "#07C751";
-    if (item2.key === "200.000") return "#FF0000";
-    if (item2.key === "500.000") return "#44BED3";
-  });
+    listBackground = moneyChart.map((item2) => {
+      if (item2.key === "1.000") return "#979797";
+      if (item2.key === "2.000") return "#FFB759";
+      if (item2.key === "5.000") return "#3749A6";
+      if (item2.key === "10.000") return "#FFD56D";
+      if (item2.key === "20.000") return "#4393FF";
+      if (item2.key === "50.000") return "#FF5DA0";
+      if (item2.key === "100.000") return "#07C751";
+      if (item2.key === "200.000") return "#FF0000";
+      if (item2.key === "500.000") return "#44BED3";
+    });
+  }
+  if (moneyType === "2") {
+    listLabelConvert = moneyChart?.map((item2) => {
+      return `${item2.key}`;
+    });
+
+    listDataCovert = moneyChart.map((item2) => {
+      return Math.abs(item2.value);
+    });
+
+    listBackground = moneyChart.map((item2) => {
+      if (item2.key === "$1") return "#979797";
+      if (item2.key === "$2") return "#FFB759";
+      if (item2.key === "$5") return "#3749A6";
+      if (item2.key === "$10") return "#FFD56D";
+      if (item2.key === "$20") return "#4393FF";
+      if (item2.key === "$50") return "#FF5DA0";
+      if (item2.key === "$100") return "#07C751";
+    });
+  }
 
   const data = {
     labels: listLabelConvert,

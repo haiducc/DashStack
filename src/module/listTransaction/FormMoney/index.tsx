@@ -25,6 +25,7 @@ import {
 import { Dayjs } from "dayjs";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "react-toastify";
+import type { InputNumberProps } from "antd";
 
 export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
   const [form] = Form.useForm();
@@ -148,7 +149,7 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
         addedBy: formData.addedBy,
         managerBy: formData.managerBy,
         departmentManager: formData.departmentManager,
-        totalQuantity: total,
+        totalAmount: total,
         assetInventories: faceValueChoose.map((item) => {
           if (formData.type === "2") {
             return {
@@ -165,23 +166,22 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
       };
       const responsiove = await apiClient.post(
         "/asset-api/add-or-update",
-        params,
-        {
-          timeout: 30000,
-        }
+        params
       );
 
       if (responsiove.data.message && !responsiove.data.success) {
         toast.error(responsiove.data.message);
-        setIsCreateMoney(false);
       } else {
-        fetchData();
+        fetchData({});
         onCancel();
         toast.success(responsiove.data.message || "Thêm mới thành công!");
         form.resetFields();
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {}
+    } catch (error) {
+    } finally {
+      setIsCreateMoney(false);
+    }
   };
 
   return (
@@ -217,11 +217,23 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
                 name="exchange-rate"
                 rules={[{ required: true, message: "Vui lòng chọn tỷ giá!" }]}
               >
-                <InputNumber
+                <InputNumber<number>
                   placeholder="Chọn tỷ giá"
                   min={1}
                   onChange={(value) => setExchangeRate(value ?? 0)}
-                  className="w-full"
+                  className="w-full input-number-rate-custom"
+                  formatter={(value) =>
+                    value
+                      ? `${new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                          maximumFractionDigits: 0,
+                        }).format(Number(value))}`
+                      : ""
+                  }
+                  parser={(value) =>
+                    value?.replace(/\D/g, "") as unknown as number
+                  }
                 />
               </Form.Item>
             )}
@@ -301,6 +313,18 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
                         setFaceValueChoose(newList);
                       };
 
+                      const onChangeQuantityMoney: InputNumberProps["onChange"] =
+                        (value) => {
+                          const newList = [...faceValueChoose];
+                          if ((value as number) > 1) {
+                            newList[index].quantity = value as number;
+                            setFaceValueChoose(newList);
+                          } else {
+                            newList[index].quantity = 1;
+                            setFaceValueChoose(newList);
+                          }
+                        };
+
                       return (
                         <div
                           key={itemFaceValue.value}
@@ -319,9 +343,9 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
                             </Button>
                             <InputNumber
                               min={1}
-                              max={100000}
                               value={itemFaceValue.quantity}
                               className="input-number-custom"
+                              onChange={onChangeQuantityMoney}
                             />
                             <Button
                               onClick={() => handleClickAsc(index)}
@@ -359,7 +383,7 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
                 { required: true, message: "Vui lòng chọn người rút tiền!" },
               ]}
             >
-              <Input />
+              <Input placeholder="Nhập tên người rút tiền" />
             </Form.Item>
             <Form.Item
               label="Người quản lý"
@@ -368,7 +392,7 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
                 { required: true, message: "Vui lòng chọn người quản lý!" },
               ]}
             >
-              <Input />
+              <Input placeholder="Nhập tên người quản lý" />
             </Form.Item>
 
             <Form.Item
@@ -381,7 +405,7 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
               <Input placeholder="Bộ phận quản lý" />
             </Form.Item>
             <Form.Item label="Tổng tiền" name="totalAmount">
-              <InputNumber className="input-number-custom-total" />
+              <InputNumber className="input-number-custom-total" readOnly />
             </Form.Item>
             <Form.Item label="Ghi chú" name="descriptionTransType">
               <Input.TextArea

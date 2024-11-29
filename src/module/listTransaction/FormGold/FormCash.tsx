@@ -12,6 +12,7 @@ import {
 } from "antd";
 import { Dayjs } from "dayjs";
 import { useEffect, useState, useTransition } from "react";
+import type { InputNumberProps } from "antd";
 
 import {
   FormMoneyType,
@@ -24,6 +25,7 @@ import {
   formatCurrencyVN,
   parseLabelToNumber,
 } from "@/src/utils/buildQueryParams";
+import { toast } from "react-toastify";
 
 export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
   const [form] = Form.useForm();
@@ -191,7 +193,7 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
       setNotification((prev) => ({
         ...prev,
         isCompare: true,
-        message: "Tổng số tiền lớn nhỏ hơn tổng giá trị mua!",
+        message: "Tổng số tiền nhỏ hơn tổng giá trị mua!",
       }));
     } else {
       setNotification((prev) => ({
@@ -227,12 +229,21 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
       };
       try {
         setIsCreateGoldCash(isCreateGoldCash);
-        await apiClient.post("/asset-api/add-or-update", params, {
-          timeout: 30000,
-        });
-        fetchData();
-        onCancel();
-        form.resetFields();
+        const responsive = await apiClient.post(
+          "/asset-api/add-or-update",
+          params
+        );
+
+        if (responsive.data.success) {
+          toast.success(
+            responsive.data.message || "Thêm mới giao dịch vàng thành công!"
+          );
+          fetchData({});
+          onCancel();
+          form.resetFields();
+        } else {
+          toast.error(responsive.data.message || "Giao dịch bị lỗi!");
+        }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
       } finally {
@@ -350,6 +361,7 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
               <InputNumber
                 defaultValue={0}
                 className="input-number-custom-total"
+                readOnly
               />
             </Form.Item>
             {goldTypeChoose.length > 0 && (
@@ -386,6 +398,18 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
                         newList[index].price = value;
                         setGoldTypeChoose(newList);
                       };
+
+                      const onChangeQuantityGold: InputNumberProps["onChange"] =
+                        (value) => {
+                          const newList = [...goldTypeChoose];
+                          if ((value as number) > 1) {
+                            newList[index].quantity = value as number;
+                            setGoldTypeChoose(newList);
+                          } else {
+                            newList[index].quantity = 1;
+                            setGoldTypeChoose(newList);
+                          }
+                        };
 
                       return (
                         <div
@@ -436,11 +460,14 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
                             </Button>
                             <InputNumber
                               min={1}
-                              max={100000}
                               value={itemGold.quantity}
-                              className="input-number-custom w-10 !h-10"
+                              className="input-number-custom w-8 !h-10"
+                              onChange={onChangeQuantityGold}
                             />
-                            <Button onClick={() => handleClickAsc(index)}>
+                            <Button
+                              className="w-10 !h-10"
+                              onClick={() => handleClickAsc(index)}
+                            >
                               +
                             </Button>
                           </div>
@@ -542,6 +569,17 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
                         newList[index].quantity += 1;
                         setFaceValueChoose(newList);
                       };
+                      const onChangeQuantityMoney: InputNumberProps["onChange"] =
+                        (value) => {
+                          const newList = [...faceValueChoose];
+                          if ((value as number) > 1) {
+                            newList[index].quantity = value as number;
+                            setFaceValueChoose(newList);
+                          } else {
+                            newList[index].quantity = 1;
+                            setFaceValueChoose(newList);
+                          }
+                        };
 
                       return (
                         <div
@@ -564,6 +602,7 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
                               max={100000}
                               value={itemFaceValue.quantity}
                               className="input-number-custom !h-10 w-8"
+                              onChange={onChangeQuantityMoney}
                             />
                             <Button
                               onClick={() => handleClickAsc(index)}
@@ -580,7 +619,9 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
               </Form.Item>
             )}
             {notification.isCompare && (
-              <p className="text-[#ff4d4f] text-sm">{notification?.message}</p>
+              <p className="text-[#ff4d4f] text-sm mb-4 -mt-3">
+                {notification?.message}
+              </p>
             )}
 
             <Form.Item label="Ghi chú" name="note">
@@ -590,16 +631,11 @@ export const FormCash = ({ onCancel, fetchData }: FormMoneyType) => {
               />
             </Form.Item>
 
-            <Form.Item
-              label="Tổng tiền"
-              name="totalAmount"
-              rules={[
-                { required: true, message: "Vui lòng chọn người tổng tiền!" },
-              ]}
-            >
+            <Form.Item label="Tổng tiền" name="totalAmount">
               <InputNumber
                 className="input-number-custom-total"
                 placeholder="Tổng tiền:"
+                readOnly
               />
             </Form.Item>
 

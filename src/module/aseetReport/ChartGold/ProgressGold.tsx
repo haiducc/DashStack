@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TypeAsset } from "@/src/common/type";
-import { Progress, Select } from "antd";
+import { options } from "@/src/utils/buildQueryParams";
+import { Progress, Select, Spin } from "antd";
 import React from "react";
-import { options } from "../constants";
 
 const ProgressGold = ({
   progress,
   handleChangeMonthProgress,
+  isLoading2,
 }: {
   progress: TypeAsset[] | null;
-  handleChangeMonthProgress: (e: number, typeChart: string) => void;
+  handleChangeMonthProgress: (e: string) => void;
+  isLoading2: boolean;
 }) => {
   let listMoneyPercentage: any[] = [];
   if (progress) {
@@ -44,29 +46,35 @@ const ProgressGold = ({
           allowClear
           options={options}
           className="w-[120px]"
-          onChange={(e) => handleChangeMonthProgress(e, "2")}
+          onChange={(e) => handleChangeMonthProgress(e)}
         />
       </div>
-      {listMoneyPercentage.length > 0 ? (
-        listMoneyPercentage?.map((item) => {
-          if (item.percentage === 0) return null;
-          return (
-            <div key={item.key}>
-              <div className="flex justify-between">
-                <p>{item.title}</p>
-                <span>{`${item.percentage}%`}</span>
-              </div>
-              <Progress
-                percent={item.percentage}
-                strokeColor={item.color}
-                showInfo={false}
-                className="pt-2 aseet-progress"
-              />
-            </div>
-          );
-        })
+      {isLoading2 ? (
+        <Spin />
       ) : (
-        <p className="text-base text-center italic">Không có dữ liệu!</p>
+        <>
+          {listMoneyPercentage.length > 0 ? (
+            listMoneyPercentage?.map((item) => {
+              if (item.percentage === 0) return null;
+              return (
+                <div key={item.key}>
+                  <div className="flex justify-between">
+                    <p>{item.title}</p>
+                    <span>{`${item.percentage}%`}</span>
+                  </div>
+                  <Progress
+                    percent={item.percentage}
+                    strokeColor={item.color}
+                    showInfo={false}
+                    className="pt-2 aseet-progress"
+                  />
+                </div>
+              );
+            })
+          ) : (
+            <p className="text-base text-center italic">Không có dữ liệu!</p>
+          )}
+        </>
       )}
     </div>
   );

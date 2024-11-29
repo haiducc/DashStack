@@ -1,40 +1,81 @@
 "use client";
 
-import Header from "@/src/component/Header";
-import { Button, Form, Select, Skeleton, Table } from "antd";
-import { useEffect, useState, startTransition } from "react";
+import { Button, DatePicker, Form, Select, Skeleton, Table } from "antd";
+import { useEffect, useState } from "react";
+import dayjs, { Dayjs } from "dayjs";
 
+import Header from "@/src/component/Header";
 import ModalAddNew from "@/src/module/listTransaction/modalAddNew";
 import { apiClient } from "@/src/services/base_api";
 import { DeatailIcon } from "@/public/icon/detail";
-import { getBank } from "@/src/services/bankAccount";
 import { DataTransactionType } from "@/src/common/type";
+import { buildSearchParams, formatDate } from "@/src/utils/buildQueryParams";
 
 type DataTypeWithKey = DataTransactionType & { key: React.Key };
 
+export interface TransactionFilter {
+  label: string;
+  key: string;
+}
+
+export interface ListOptionType {
+  typeTransaction: TransactionFilter[];
+  kindTransaction: TransactionFilter[];
+}
+
 const ListTransactionPage = () => {
+  const { RangePicker } = DatePicker;
+
   const [form] = Form.useForm();
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [dataTransaction, setDataTransaction] = useState<DataTransactionType[]>(
     []
   );
-  const [banks, setBanks] = useState([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [listOption, setListOption] = useState<ListOptionType>({
+    typeTransaction: [],
+    kindTransaction: [],
+  });
 
-  const fetchBankData = async () => {
-    try {
-      const bankData = await getBank(1, 20);
-      const formattedBanks =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        bankData?.data?.source?.map((bank: any) => ({
-          value: bank.id,
-          label: bank.fullName || bank.code || "Không xác định",
-        })) || [];
-      setBanks(formattedBanks);
-    } catch (error) {
-      console.error("Error fetching banks:", error);
-    }
+  const [dataFilter, setDataFilter] = useState({
+    dataTypeTransaction: "",
+    dataKindTransaction: "",
+    startDate: "",
+    endDate: "",
+  });
+
+  const getListTypeTransaction = async () => {
+    const responsive = await apiClient.get("/allcode-api/find", {
+      params: {
+        cdType: "TRANSACTION",
+        cdName: "TRANS_TYPE",
+      },
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dataConvert = responsive.data.data.map((item: any) => {
+      return { label: item.vnContent, value: item.cdVal };
+    });
+    setListOption((prev) => ({ ...prev, typeTransaction: dataConvert }));
   };
+
+  const getListKindTransaction = async () => {
+    const responsive = await apiClient.get("/allcode-api/find", {
+      params: {
+        cdType: "TRANSACTION",
+        cdName: "TRANS_KIND",
+      },
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dataConvert = responsive.data.data.map((item: any) => {
+      return { label: item.vnContent, value: item.cdVal };
+    });
+    setListOption((prev) => ({ ...prev, kindTransaction: dataConvert }));
+  };
+
+  useEffect(() => {
+    getListTypeTransaction();
+    getListKindTransaction();
+  }, []);
 
   const columns = [
     { title: "id", dataIndex: "id", key: "id", hidden: true },
@@ -48,6 +89,10 @@ const ListTransactionPage = () => {
       title: "Ngày giao dịch",
       dataIndex: "createdDate",
       key: "createdDate",
+      render: (date: string) => {
+        // Định dạng lại chuỗi thời gian
+        return dayjs(date).format("DD/MM/YYYY HH:mm:ss"); // Ví dụ định dạng ngày/tháng/năm giờ:phút:giây
+      },
     },
     {
       title: "Giao dịch",
@@ -66,11 +111,59 @@ const ListTransactionPage = () => {
     },
   ];
 
-  const fetchData = async () => {
-    try {
-      const responsive = await apiClient.get(
-        "/asset-api/find?searchTerms[0].Name=isAdmin&searchTerms[0].Value=1&pageIndex=1&pageSize=20"
+  const fetchData = async ({
+    transType,
+    transKind,
+    startDate,
+    endDate,
+  }: {
+    transType?: string;
+    transKind?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => {
+    const arr = [
+      {
+        Name: localStorage.getItem("key") ?? "",
+        Value: localStorage.getItem("value") ?? "",
+      },
+    ];
+    if (transType || dataFilter.dataTypeTransaction) {
+      arr.push({
+        Name: "transType",
+        Value: transType ?? dataFilter.dataTypeTransaction,
+      });
+    }
+    if (transKind || dataFilter.dataKindTransaction) {
+      arr.push({
+        Name: "transKind",
+        Value: transKind ?? dataFilter.dataKindTransaction,
+      });
+    }
+    if (
+      (startDate && endDate) ||
+      (dataFilter.startDate && dataFilter.endDate)
+    ) {
+      arr.push(
+        {
+          Name: "startDate",
+          Value: startDate ?? dataFilter.startDate,
+        },
+        {
+          Name: "endDate",
+          Value: endDate ?? dataFilter.endDate,
+        }
       );
+    }
+
+    const params = buildSearchParams(arr, {
+      pageIndex: 1,
+      pageSize: 20,
+    });
+
+    try {
+      setLoading(true);
+      const responsive = await apiClient.get("/asset-api/find", { params });
 
       setDataTransaction(responsive.data.data.source);
     } catch (error) {
@@ -81,7 +174,7 @@ const ListTransactionPage = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData({});
   }, []);
 
   const handleCancel = () => {
@@ -91,9 +184,46 @@ const ListTransactionPage = () => {
   const handleCreateAdd = () => {
     form.resetFields();
     setIsAddModalOpen(true);
-    startTransition(() => {
-      fetchBankData();
+  };
+
+  const handleChangeType = (e: string | undefined) => {
+    setDataFilter((prev) => ({ ...prev, dataTypeTransaction: e ?? "" }));
+    fetchData({
+      transType: e ?? "",
     });
+  };
+  const handleChangeKind = (e: string | undefined) => {
+    setDataFilter((prev) => ({ ...prev, dataKindTransaction: e ?? "" }));
+    fetchData({
+      transKind: e ?? "",
+    });
+  };
+
+  const onRangeChange = (
+    dates: null | (Dayjs | null)[],
+    dateStrings: string[]
+  ) => {
+    console.log(
+      "formatDate(dateStrings[0])",
+      formatDate(dateStrings[0]),
+      typeof formatDate(dateStrings[0])
+    );
+
+    // if (dateStrings[0] && dateStrings[1]) {
+    console.log("11111", dateStrings);
+    setDataFilter((prev) => ({
+      ...prev,
+      startDate: dateStrings[0] ? formatDate(dateStrings[0]) : "",
+      endDate: dateStrings[1] ? formatDate(dateStrings[1]) : "",
+    }));
+    if (dateStrings[0] && dateStrings[1]) {
+      fetchData({
+        startDate: formatDate(dateStrings[0]),
+        endDate: formatDate(dateStrings[1]),
+      });
+    } else {
+      fetchData({});
+    }
   };
 
   return (
@@ -107,11 +237,27 @@ const ListTransactionPage = () => {
               placeholder="Loại giao dịch"
               style={{ width: 245 }}
               allowClear
+              options={listOption.typeTransaction}
+              onChange={(e) => handleChangeType(e)}
             />
             <Select
               placeholder="Kiểu giao dịch"
               style={{ width: 245 }}
               allowClear
+              options={listOption.kindTransaction}
+              onChange={(e) => handleChangeKind(e)}
+            />
+            <RangePicker
+              id={{
+                start: "startInput",
+                end: "endInput",
+              }}
+              showTime
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={onRangeChange}
+              disabledDate={(current) =>
+                current && current > dayjs().endOf("day")
+              }
             />
           </div>
           <Button
@@ -156,7 +302,6 @@ const ListTransactionPage = () => {
         isAddModalOpen={isAddModalOpen}
         onCancel={handleCancel}
         fetchData={fetchData}
-        banks={banks}
       />
     </>
   );

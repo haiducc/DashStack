@@ -15,6 +15,7 @@ import { fetchBankAccounts } from "@/src/services/bankAccount";
 import { getListSheet } from "@/src/services/sheet";
 import DeleteModal from "@/src/component/config/modalDelete";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 export interface ListSheetIntegration {
   id: number;
@@ -273,7 +274,7 @@ const SheetIntergration = () => {
     setLoading(true);
     try {
       setIsAddModalOpen(false);
-      await deleteSheetIntergration(x.id);
+      await deleteSheetIntergration([x.id]);
       await fetchSheetIntegration();
     } catch (error) {
       console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
@@ -518,6 +519,48 @@ const SheetIntergration = () => {
 
   const [bankAccountIdSelect, setBankAccountIdSelect] = useState();
 
+  //...........................................................................//
+
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  const dataSource = dataSheetIntegration.map((item) => ({
+    ...item,
+    key: item.id,
+  }));
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleDeletes = async () => {
+    setLoading(true);
+    try {
+      const idsToDelete = selectedRowKeys.map((key) => Number(key));
+      await deleteSheetIntergration(idsToDelete);
+      toast.success("Xóa các mục thành công!");
+      await fetchSheetIntegration();
+      setSelectedRowKeys([]);
+    } catch (error) {
+      console.error("Lỗi khi xóa:", error);
+      toast.error("Có lỗi xảy ra khi xóa!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmDeletes = () => {
+    handleDeletes();
+    setIsModalVisible(false);
+  };
+
+  const handleDeleteConfirmation = () => {
+    setIsModalVisible(true);
+  };
+
   return (
     <>
       <Header />
@@ -620,16 +663,27 @@ const SheetIntergration = () => {
               />
             </Space>
           </div>
-          <Button
-            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
-            onClick={() => {
-              setCurrentSheet(null);
-              form.resetFields();
-              setIsAddModalOpen(true);
-            }}
-          >
-            Thêm mới
-          </Button>
+          <div className="flex">
+            {selectedRowKeys.length > 0 && (
+              <Button
+                className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+                onClick={handleDeleteConfirmation}
+              >
+                Xóa nhiều
+              </Button>
+            )}
+            <div className="w-2" />
+            <Button
+              className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+              onClick={() => {
+                setCurrentSheet(null);
+                form.resetFields();
+                setIsAddModalOpen(true);
+              }}
+            >
+              Thêm mới
+            </Button>
+          </div>
         </div>
         {loading ? (
           <Table
@@ -656,7 +710,13 @@ const SheetIntergration = () => {
             }))}
           />
         ) : (
-          <Table dataSource={dataSheetIntegration} columns={columns} />
+          <Table
+            rowKey="key"
+            dataSource={dataSource}
+            columns={columns}
+            rowSelection={rowSelection}
+            loading={loading}
+          />
         )}
       </div>
       <BaseModal
@@ -821,6 +881,15 @@ const SheetIntergration = () => {
         onCancel={handleCancel}
         onConfirm={handleConfirmDelete}
         handleDeleteSheetIntergration={selectedAccountGroup}
+      />
+      <DeleteModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onConfirm={handleConfirmDeletes}
+        handleDeleteTele={async () => {
+          await handleDeletes();
+          setIsModalVisible(false);
+        }}
       />
     </>
   );

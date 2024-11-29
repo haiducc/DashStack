@@ -49,15 +49,13 @@ export const addTelegramIntergration = async (
   }
 };
 
-export const deleteTelegramIntergration = async (id: number) => {
+export const deleteTelegramIntergration = async (ids: number[]) => {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await apiClient.get(`/group-chat-api/map/delete`, {
-      params: {
-        id: id,
-      },
+    const res = await apiClient.post(`/group-chat-api/map/delete`, ids, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
     return res.data;

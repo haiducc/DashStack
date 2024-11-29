@@ -1,4 +1,3 @@
-
 import { DataRole } from "../app/role/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
@@ -44,15 +43,13 @@ export const addRole = async (x: DataRole) => {
   }
 };
 
-export const deleteRole = async (id: number) => {
+export const deleteRole = async (ids: number[]) => {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await apiClient.get(`/account/delete`, {
-      params: {
-        id: id,
-      },
+    const res = await apiClient.post(`/account/delete`, ids, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
     return res.data;

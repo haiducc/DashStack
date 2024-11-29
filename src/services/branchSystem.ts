@@ -47,17 +47,19 @@ export const addGroupBranch = async (branch: DataBranchModal) => {
   }
 };
 
-export const deleteGroupBranch = async (id: number) => {
+export const deleteGroupBranch = async (ids: number[]) => {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await apiClient.get(`/group-branch-api/delete`, {
-      params: {
-        id: id,
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiClient.post(
+      `/group-branch-api/delete`,
+      ids,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

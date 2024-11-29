@@ -43,17 +43,19 @@ export const addSheetIntergration = async (sheet: ListSheetIntegration) => {
   }
 };
 
-export const deleteSheetIntergration = async (id: number) => {
+export const deleteSheetIntergration = async (ids: number[]) => {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await apiClient.get(`/sheet-api/map/delete`, {
-      params: {
-        id: id,
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiClient.post(
+      `/sheet-api/map/delete`,
+      ids,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

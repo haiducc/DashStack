@@ -141,19 +141,28 @@ const PhoneNumber: React.FC = () => {
     setLoading(true);
     try {
       setIsAddModalOpen(false);
-      const response = await deletePhone(phone.id);
-      // Kiểm tra phản hồi từ API
+      const response = await deletePhone([phone.id]);
       if (response.success === false) {
-        // Hiển thị thông báo lỗi nếu có vấn đề khi xóa
         toast.error(response.message || "Có lỗi xảy ra khi xóa số điện thoại.");
-      } else {
-        // Hiển thị thông báo thành công nếu không có lỗi
-        toast.success("Xóa số điện thoại thành công!");
-        await fetchListPhone();
+        return;
       }
-    } catch (error) {
+      toast.success("Xóa số điện thoại thành công!");
+      await fetchListPhone();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("Error deleting phone number:", error);
-      toast.error("Xảy ra lỗi khi xóa số điện thoại.");
+      if (error.isAxiosError && error.response) {
+        const { status, data } = error.response;
+        if (status === 400) {
+          toast.error(
+            data.message || "Yêu cầu không hợp lệ. Không thể xóa số điện thoại."
+          );
+        } else {
+          toast.error("Đã có lỗi xảy ra. Vui lòng thử lại.");
+        }
+      } else {
+        toast.error("Xảy ra lỗi khi xóa số điện thoại.");
+      }
     } finally {
       setLoading(false);
     }
@@ -247,6 +256,64 @@ const PhoneNumber: React.FC = () => {
     fetchListPhone();
   }, [checkFilter]);
 
+  // ........................................................................//
+
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  const dataSource = dataPhoneNumber.map((item) => ({
+    ...item,
+    key: item.id,
+  }));
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleDeletes = async () => {
+    setLoading(true);
+    try {
+      const idsToDelete = selectedRowKeys.map((key) => Number(key));
+      const response = await deletePhone(idsToDelete);
+      if (response.success === false) {
+        toast.error(response.message || "Có lỗi xảy ra khi xóa các mục.");
+        return;
+      }
+      toast.success("Xóa các mục thành công!");
+      await fetchListPhone();
+      setSelectedRowKeys([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("Lỗi khi xóa:", error);
+      if (error.isAxiosError && error.response) {
+        const { status, data } = error.response;
+        if (status === 400) {
+          toast.error(
+            data.message || "Yêu cầu không hợp lệ. Không thể xóa các mục."
+          );
+        } else {
+          toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+        }
+      } else {
+        toast.error("Có lỗi xảy ra khi xóa!");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmDeletes = () => {
+    handleDeletes();
+    setIsModalVisible(false);
+  };
+
+  const handleDeleteConfirmation = () => {
+    setIsModalVisible(true);
+  };
+
   return (
     <>
       <Header />
@@ -274,16 +341,27 @@ const PhoneNumber: React.FC = () => {
               handleSearch(e.currentTarget.value);
             }}
           />
-          <Button
-            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
-            onClick={() => {
-              setCurrentPhoneNumber(null);
-              form.resetFields();
-              setIsAddModalOpen(true);
-            }}
-          >
-            Thêm mới
-          </Button>
+          <div className="flex">
+            {selectedRowKeys.length > 0 && (
+              <Button
+                className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+                onClick={handleDeleteConfirmation}
+              >
+                Xóa nhiều
+              </Button>
+            )}
+            <div className="w-2" />
+            <Button
+              className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+              onClick={() => {
+                setCurrentPhoneNumber(null);
+                form.resetFields();
+                setIsAddModalOpen(true);
+              }}
+            >
+              Thêm mới
+            </Button>
+          </div>
         </div>
         {loading ? (
           <Table
@@ -310,7 +388,13 @@ const PhoneNumber: React.FC = () => {
             }))}
           />
         ) : (
-          <Table dataSource={dataPhoneNumber} columns={columns} />
+          <Table
+            rowKey="key"
+            dataSource={dataSource}
+            columns={columns}
+            rowSelection={rowSelection}
+            loading={loading}
+          />
         )}
       </div>
       <BaseModal
@@ -374,12 +458,20 @@ const PhoneNumber: React.FC = () => {
           </div>
         </Form>
       </BaseModal>
-
       <DeleteModal
         open={isDeleteModalOpen}
         onCancel={handleCancel}
         onConfirm={handleConfirmDelete}
         handleDeletePhoneNumber={selectedAccountGroup}
+      />
+      <DeleteModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onConfirm={handleConfirmDeletes}
+        handleDeleteTele={async () => {
+          await handleDeletes();
+          setIsModalVisible(false);
+        }}
       />
     </>
   );

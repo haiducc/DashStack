@@ -14,6 +14,7 @@ import { fetchBankAccounts } from "@/src/services/bankAccount";
 import { getListTelegram, getTransType } from "@/src/services/telegram";
 import DeleteModal from "@/src/component/config/modalDelete";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 export interface ListTelegramIntegration {
   chatName: string;
@@ -289,7 +290,7 @@ const TelegramIntegration = () => {
     setLoading(true);
     try {
       setIsAddModalOpen(false);
-      await deleteTelegramIntergration(x.id);
+      await deleteTelegramIntergration([x.id]);
       await fetchListTelegramIntegration();
     } catch (error) {
       console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
@@ -533,6 +534,48 @@ const TelegramIntegration = () => {
 
   const [bankAccountIdSelect, setBankAccountIdSelect] = useState();
 
+  // ......................................................................................//
+
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  const dataSource = dataTelegramIntegration.map((item) => ({
+    ...item,
+    key: item.id,
+  }));
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleDeletes = async () => {
+    setLoading(true);
+    try {
+      const idsToDelete = selectedRowKeys.map((key) => Number(key));
+      await deleteTelegramIntergration(idsToDelete);
+      toast.success("Xóa các mục thành công!");
+      await fetchListTelegramIntegration();
+      setSelectedRowKeys([]);
+    } catch (error) {
+      console.error("Lỗi khi xóa:", error);
+      toast.error("Có lỗi xảy ra khi xóa!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmDeletes = () => {
+    handleDeletes();
+    setIsModalVisible(false);
+  };
+
+  const handleDeleteConfirmation = () => {
+    setIsModalVisible(true);
+  };
+
   return (
     <>
       <Header />
@@ -634,16 +677,27 @@ const TelegramIntegration = () => {
               />
             </Space>
           </div>
-          <Button
-            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
-            onClick={() => {
-              setCurrentTelegram(null);
-              form.resetFields();
-              setIsAddModalOpen(true);
-            }}
-          >
-            Thêm mới
-          </Button>
+          <div className="flex">
+            {selectedRowKeys.length > 0 && (
+              <Button
+                className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+                onClick={handleDeleteConfirmation}
+              >
+                Xóa nhiều
+              </Button>
+            )}
+            <div className="w-2" />
+            <Button
+              className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+              onClick={() => {
+                setCurrentTelegram(null);
+                form.resetFields();
+                setIsAddModalOpen(true);
+              }}
+            >
+              Thêm mới
+            </Button>
+          </div>
         </div>
         {loading ? (
           <Table
@@ -670,7 +724,13 @@ const TelegramIntegration = () => {
             }))}
           />
         ) : (
-          <Table dataSource={dataTelegramIntegration} columns={columns} />
+          <Table
+            rowKey="key"
+            dataSource={dataSource}
+            columns={columns}
+            rowSelection={rowSelection}
+            loading={loading}
+          />
         )}
       </div>
       <BaseModal
@@ -838,6 +898,15 @@ const TelegramIntegration = () => {
         onCancel={handleCancel}
         onConfirm={handleConfirmDelete}
         handleDeleteTeleIntergration={selectedAccountGroup}
+      />
+      <DeleteModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onConfirm={handleConfirmDeletes}
+        handleDeleteTele={async () => {
+          await handleDeletes();
+          setIsModalVisible(false);
+        }}
       />
     </>
   );

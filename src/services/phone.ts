@@ -43,15 +43,13 @@ export const addPhoneNumber = async (phoneData: PhoneNumberModal) => {
   }
 };
 
-export const deletePhone = async (id: number) => {
+export const deletePhone = async (ids: number[]) => {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await apiClient.get(`/phone-api/delete`, {
-      params: {
-        id: id,
-      },
+    const res = await apiClient.post(`/phone-api/delete`, ids, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
     return res.data;

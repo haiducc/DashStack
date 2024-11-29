@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Modal, Skeleton, Space, Table } from "antd";
+import { Button, Form, Input, Skeleton, Space, Table } from "antd";
 import BaseModal from "@/src/component/config/BaseModal";
 import { toast } from "react-toastify"; // Import toast
 import DeleteModal from "@/src/component/config/modalDelete";
@@ -26,8 +26,6 @@ interface FilterRole {
 }
 
 type DataTypeWithKey = DataSystemModal & { key: React.Key };
-
-const { confirm } = Modal;
 
 const GroupSystemPage = () => {
   const router = useRouter();
@@ -155,7 +153,7 @@ const GroupSystemPage = () => {
     setLoading(true);
     try {
       setIsAddModalOpen(false);
-      await deleteGroupSystem(x.id);
+      await deleteGroupSystem([x.id]);
       toast.success("Xóa nhóm hệ thống thành công!");
       await fetchGroupSystem();
     } catch (error) {
@@ -252,28 +250,21 @@ const GroupSystemPage = () => {
     },
   };
 
-  const dataSource = dataSystem.map((item, index) => ({
+  const dataSource = dataSystem.map((item) => ({
     ...item,
-    key: `unique-key-${item.id || index}`,
+    key: item.id,
   }));
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleDeletes = async () => {
     setLoading(true);
     try {
-      for (const key of selectedRowKeys) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const itemToDelete = dataSystem.find((item: any) => item.key === key);
-        if (itemToDelete) {
-          await deleteGroupSystem(itemToDelete.id);
-        }
-      }
-      const newDataSource = dataSystem.filter(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (item: any) => !selectedRowKeys.includes(item.key)
-      );
-      setDataSystem(newDataSource);
+      const idsToDelete = selectedRowKeys.map((key) => Number(key));
+      await deleteGroupSystem(idsToDelete);
+      toast.success("Xóa các mục thành công!");
+      await fetchGroupSystem();
       setSelectedRowKeys([]);
-      toast.success("Xóa thành công!");
     } catch (error) {
       console.error("Lỗi khi xóa:", error);
       toast.error("Có lỗi xảy ra khi xóa!");
@@ -282,19 +273,13 @@ const GroupSystemPage = () => {
     }
   };
 
+  const handleConfirmDeletes = () => {
+    handleDeletes();
+    setIsModalVisible(false);
+  };
+
   const handleDeleteConfirmation = () => {
-    if (selectedRowKeys.length === 0) {
-      return;
-    }
-    confirm({
-      title: "Bạn có chắc chắn muốn xóa các mục đã chọn?",
-      onOk: async () => {
-        await handleDeletes();
-      },
-      onCancel() {
-        console.log("Đã hủy bỏ");
-      },
-    });
+    setIsModalVisible(true);
   };
 
   const [checkFilter, setCheckFilter] = useState(false);
@@ -327,15 +312,16 @@ const GroupSystemPage = () => {
               handleSearch(e.currentTarget.value);
             }}
           />
-          <div>
+          <div className="flex">
             {selectedRowKeys.length > 0 && (
               <Button
                 className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
                 onClick={handleDeleteConfirmation}
               >
-                Delete Selected
+                Xóa nhiều
               </Button>
             )}
+            <div className="w-2" />
             <Button
               className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
               onClick={() => {
@@ -375,11 +361,11 @@ const GroupSystemPage = () => {
           />
         ) : (
           <Table
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             rowKey="key"
             dataSource={dataSource}
             columns={columns}
             rowSelection={rowSelection}
+            loading={loading}
           />
         )}
       </div>
@@ -436,6 +422,15 @@ const GroupSystemPage = () => {
         onCancel={handleCancel}
         onConfirm={handleConfirmDelete}
         handleDeleteTele={selectedAccountGroup}
+      />
+      <DeleteModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onConfirm={handleConfirmDeletes}
+        handleDeleteTele={async () => {
+          await handleDeletes();
+          setIsModalVisible(false);
+        }}
       />
     </>
   );

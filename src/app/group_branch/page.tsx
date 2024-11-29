@@ -161,7 +161,7 @@ const GroupBranchPage = () => {
     setLoading(true);
     try {
       setIsAddModalOpen(false);
-      await deleteGroupBranch(x.id);
+      await deleteGroupBranch([x.id]);
       toast.success("Xóa nhóm chi nhánh thành công!");
       await fetchGroupSystem();
     } catch (error) {
@@ -279,6 +279,46 @@ const GroupBranchPage = () => {
     },
   ];
 
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  const dataSource = dataBranch.map((item) => ({
+    ...item,
+    key: item.id,
+  }));
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleDeletes = async () => {
+    setLoading(true);
+    try {
+      const idsToDelete = selectedRowKeys.map((key) => Number(key));
+      await deleteGroupBranch(idsToDelete);
+      toast.success("Xóa các mục thành công!");
+      await fetchGroupSystem();
+      setSelectedRowKeys([]);
+    } catch (error) {
+      console.error("Lỗi khi xóa:", error);
+      toast.error("Có lỗi xảy ra khi xóa!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmDeletes = () => {
+    handleDeletes();
+    setIsModalVisible(false);
+  };
+
+  const handleDeleteConfirmation = () => {
+    setIsModalVisible(true);
+  };
+
   const [checkFilter, setCheckFilter] = useState(false);
   useEffect(() => {
     fetchGroupSystem();
@@ -309,16 +349,27 @@ const GroupBranchPage = () => {
               handleSearch(e.currentTarget.value);
             }}
           />
-          <Button
-            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
-            onClick={() => {
-              setCurrentBranch(null);
-              form.resetFields();
-              setIsAddModalOpen(true);
-            }}
-          >
-            Thêm mới
-          </Button>
+          <div className="flex">
+            {selectedRowKeys.length > 0 && (
+              <Button
+                className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+                onClick={handleDeleteConfirmation}
+              >
+                Xóa nhiều
+              </Button>
+            )}
+            <div className="w-2" />
+            <Button
+              className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+              onClick={() => {
+                setCurrentBranch(null);
+                form.resetFields();
+                setIsAddModalOpen(true);
+              }}
+            >
+              Thêm mới
+            </Button>
+          </div>
         </div>
         {loading ? (
           <Table
@@ -345,7 +396,13 @@ const GroupBranchPage = () => {
             }))}
           />
         ) : (
-          <Table dataSource={dataBranch} columns={columns} />
+          <Table
+            rowKey="key"
+            columns={columns}
+            rowSelection={rowSelection}
+            loading={loading}
+            dataSource={dataSource}
+          />
         )}
       </div>
       <BaseModal
@@ -374,7 +431,11 @@ const GroupBranchPage = () => {
           >
             <Input placeholder="Tên nhóm chi nhánh" />
           </Form.Item>
-          <Form.Item label="Hệ thống" name="groupSystemId">
+          <Form.Item
+            label="Hệ thống"
+            name="groupSystemId"
+            rules={[{ required: true, message: "Vui lòng chọn hệ thống!" }]}
+          >
             <Select
               placeholder="Chọn hệ thống"
               onFocus={getGroupSystems}
@@ -416,6 +477,15 @@ const GroupBranchPage = () => {
         onCancel={handleCancel}
         onConfirm={handleConfirmDelete}
         handleDeleteTele={selectedAccountGroup}
+      />
+      <DeleteModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onConfirm={handleConfirmDeletes}
+        handleDeleteTele={async () => {
+          await handleDeletes();
+          setIsModalVisible(false);
+        }}
       />
     </>
   );

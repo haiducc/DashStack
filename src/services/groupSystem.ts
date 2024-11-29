@@ -47,17 +47,19 @@ export const addGroupSystem = async (system: DataSystemModal) => {
   }
 };
 
-export const deleteGroupSystem = async (id: number) => {
+export const deleteGroupSystem = async (ids: number[]) => {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await apiClient.get(`/group-system-api/delete`, {
-      params: {
-        id: id,
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiClient.post(
+      `/group-system-api/delete`,
+      ids,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

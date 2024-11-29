@@ -45,17 +45,19 @@ export const addTelegram = async (tele: DataTelegramModal) => {
   }
 };
 
-export const deleteTelegram = async (id: number) => {
+export const deleteTelegram = async (ids: number[]) => {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await apiClient.get(`/group-chat-api/delete`, {
-      params: {
-        id: id,
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiClient.post(
+      `/group-chat-api/delete`,
+      ids,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

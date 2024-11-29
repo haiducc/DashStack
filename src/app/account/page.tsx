@@ -66,7 +66,7 @@ const Account = () => {
   const [branchSystem, setBranchSystem] = useState<Array<BankAccounts>>([]);
   const [groupTeam, setGroupTeam] = useState<Array<BankAccounts>>([]);
   const [pageIndex] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(50);
   const [value, setValue] = useState("");
   const [globalTerm, setGlobalTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -512,7 +512,7 @@ const Account = () => {
     setLoading(true);
     try {
       setIsAddModalOpen(false);
-      const response = await deleteBankAccount(x.id);
+      const response = await deleteBankAccount([x.id]);
       if (response.success === false) {
         toast.error(response.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
         return;
@@ -979,6 +979,62 @@ const Account = () => {
     );
   }, [checkFilter]);
 
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  const dataSource = dataAccount.map((item) => ({
+    ...item,
+    key: item.id,
+  }));
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleDeletes = async () => {
+    setLoading(true);
+    try {
+      const idsToDelete = selectedRowKeys.map((key) => Number(key));
+      const response = await deleteBankAccount(idsToDelete);
+      if (response.success === false) {
+        toast.error(response.message || "Có lỗi xảy ra khi xóa các mục.");
+        return;
+      }
+      toast.success("Xóa các mục thành công!");
+      await fetchAccounts();
+      setSelectedRowKeys([]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("Lỗi khi xóa:", error);
+      if (error.isAxiosError && error.response) {
+        const { status, data } = error.response;
+        if (status === 400) {
+          toast.error(
+            data.message || "Yêu cầu không hợp lệ. Không thể xóa các mục."
+          );
+        } else {
+          toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
+        }
+      } else {
+        toast.error("Có lỗi xảy ra khi xóa!");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmDeletes = () => {
+    handleDeletes();
+    setIsModalVisible(false);
+  };
+
+  const handleDeleteConfirmation = () => {
+    setIsModalVisible(true);
+  };
+
   return (
     <>
       <Header />
@@ -1173,17 +1229,28 @@ const Account = () => {
               )}
             </Space>
           </div>
-          <Button
-            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
-            onClick={() => {
-              setCurrentAccount(null);
-              form.resetFields();
-              setIsAddModalOpen(true);
-              defaultModalAdd();
-            }}
-          >
-            Thêm mới
-          </Button>
+          <div className="flex">
+            {selectedRowKeys.length > 0 && (
+              <Button
+                className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+                onClick={handleDeleteConfirmation}
+              >
+                Xóa nhiều
+              </Button>
+            )}
+            <div className="w-2" />
+            <Button
+              className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+              onClick={() => {
+                setCurrentAccount(null);
+                form.resetFields();
+                setIsAddModalOpen(true);
+                defaultModalAdd();
+              }}
+            >
+              Thêm mới
+            </Button>
+          </div>
         </div>
         {loading ? (
           <Table
@@ -1210,7 +1277,13 @@ const Account = () => {
             }))}
           />
         ) : (
-          <Table dataSource={dataAccount} columns={columns} />
+          <Table
+            rowKey="key"
+            dataSource={dataSource}
+            columns={columns}
+            rowSelection={rowSelection}
+            loading={loading}
+          />
         )}
       </div>
       <BaseModal
@@ -1547,6 +1620,15 @@ const Account = () => {
         onCancel={handleCancel}
         onConfirm={handleConfirmDelete}
         selectedAccount={handleDeleteAccount}
+      />
+      <DeleteModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onConfirm={handleConfirmDeletes}
+        handleDeleteTele={async () => {
+          await handleDeletes();
+          setIsModalVisible(false);
+        }}
       />
     </>
   );

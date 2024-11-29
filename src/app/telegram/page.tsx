@@ -10,7 +10,7 @@ import {
   getListTelegram,
 } from "@/src/services/telegram";
 import BaseModal from "@/src/component/config/BaseModal";
-import { toast } from "react-toastify"; // Import toast
+import { toast } from "react-toastify";
 import DeleteModal from "@/src/component/config/modalDelete";
 import { useRouter } from "next/navigation";
 
@@ -152,7 +152,7 @@ const Telegram = () => {
     setLoading(true);
     try {
       setIsAddModalOpen(false);
-      await deleteTelegram(x.id);
+      await deleteTelegram([x.id]);
       toast.success("Xóa nhóm telegram thành công!");
       await fetchTelegram();
     } catch (error) {
@@ -244,6 +244,46 @@ const Telegram = () => {
     },
   ];
 
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  const dataSource = dataTelegram.map((item) => ({
+    ...item,
+    key: item.id,
+  }));
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleDeletes = async () => {
+    setLoading(true);
+    try {
+      const idsToDelete = selectedRowKeys.map((key) => Number(key));
+      await deleteTelegram(idsToDelete);
+      toast.success("Xóa các mục thành công!");
+      await fetchTelegram();
+      setSelectedRowKeys([]);
+    } catch (error) {
+      console.error("Lỗi khi xóa:", error);
+      toast.error("Có lỗi xảy ra khi xóa!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmDeletes = () => {
+    handleDeletes();
+    setIsModalVisible(false);
+  };
+
+  const handleDeleteConfirmation = () => {
+    setIsModalVisible(true);
+  };
+
   const [checkFilter, setCheckFilter] = useState(false);
   useEffect(() => {
     fetchTelegram();
@@ -276,16 +316,27 @@ const Telegram = () => {
               handleSearch(e.currentTarget.value);
             }}
           />
-          <Button
-            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
-            onClick={() => {
-              setCurrentTelegram(null);
-              form.resetFields();
-              setIsAddModalOpen(true);
-            }}
-          >
-            Thêm mới
-          </Button>
+          <div className="flex">
+            {selectedRowKeys.length > 0 && (
+              <Button
+                className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+                onClick={handleDeleteConfirmation}
+              >
+                Xóa nhiều
+              </Button>
+            )}
+            <div className="w-2" />
+            <Button
+              className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+              onClick={() => {
+                setCurrentTelegram(null);
+                form.resetFields();
+                setIsAddModalOpen(true);
+              }}
+            >
+              Thêm mới
+            </Button>
+          </div>
         </div>
         {loading ? (
           <Table
@@ -312,7 +363,13 @@ const Telegram = () => {
             }))}
           />
         ) : (
-          <Table dataSource={dataTelegram} columns={columns} />
+          <Table
+            rowKey="key"
+            dataSource={dataSource}
+            columns={columns}
+            rowSelection={rowSelection}
+            loading={loading}
+          />
         )}
       </div>
       <BaseModal
@@ -385,6 +442,15 @@ const Telegram = () => {
         onCancel={handleCancel}
         onConfirm={handleConfirmDelete}
         handleDeleteTele={selectedAccountGroup}
+      />
+      <DeleteModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onConfirm={handleConfirmDeletes}
+        handleDeleteTele={async () => {
+          await handleDeletes();
+          setIsModalVisible(false);
+        }}
       />
     </>
   );

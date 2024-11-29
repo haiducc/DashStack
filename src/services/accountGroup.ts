@@ -49,15 +49,13 @@ export const addAccountGroup = async (accountGroup: DataAccountGroup) => {
   }
 };
 
-export const deleteAccountGroup = async (id: number) => {
+export const deleteAccountGroup = async (ids: number[]) => {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await apiClient.get(`/group-account-api/delete`, {
-      params: {
-        id: id,
-      },
+    const res = await apiClient.post(`/group-account-api/delete`, ids, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
     return res.data;

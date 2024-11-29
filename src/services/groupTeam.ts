@@ -1,4 +1,3 @@
-
 import { DataTeamModal } from "../app/group_team/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
@@ -46,15 +45,13 @@ export const addGroupTeam = async (team: DataTeamModal) => {
   }
 };
 
-export const deleteGroupTeam = async (id: number) => {
+export const deleteGroupTeam = async (ids: number[]) => {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await apiClient.get(`/group-team-api/delete`, {
-      params: {
-        id: id,
-      },
+    const res = await apiClient.post(`/group-team-api/delete`, ids, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
     return res.data;

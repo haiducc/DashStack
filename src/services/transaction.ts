@@ -44,17 +44,19 @@ export const addTransaction = async (trans: TransactionModal) => {
   }
 };
 
-export const deleteTransaction = async (id: number) => {
+export const deleteTransaction = async (ids: number[]) => {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await apiClient.get(`/transaction-api/manual/delete`, {
-      params: {
-        id: id,
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiClient.post(
+      `/transaction-api/manual/delete`,
+      ids,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

@@ -170,7 +170,7 @@ const GroupTeamPage = () => {
     setLoading(true);
     try {
       setAddModalOpen(false);
-      await deleteGroupTeam(x.id);
+      await deleteGroupTeam([x.id]);
       toast.success("Xóa nhóm chi nhánh thành công!");
       await fetchGroupSystem();
     } catch (error) {
@@ -325,6 +325,46 @@ const GroupTeamPage = () => {
     },
   ];
 
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  const dataSource = dataTeam.map((item) => ({
+    ...item,
+    key: item.id,
+  }));
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleDeletes = async () => {
+    setLoading(true);
+    try {
+      const idsToDelete = selectedRowKeys.map((key) => Number(key));
+      await deleteGroupTeam(idsToDelete);
+      toast.success("Xóa các mục thành công!");
+      await fetchGroupSystem();
+      setSelectedRowKeys([]);
+    } catch (error) {
+      console.error("Lỗi khi xóa:", error);
+      toast.error("Có lỗi xảy ra khi xóa!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmDeletes = () => {
+    handleDeletes();
+    setIsModalVisible(false);
+  };
+
+  const handleDeleteConfirmation = () => {
+    setIsModalVisible(true);
+  };
+
   const [checkFilter, setCheckFilter] = useState(false);
   useEffect(() => {
     fetchGroupSystem();
@@ -355,16 +395,27 @@ const GroupTeamPage = () => {
               handleSearch(e.currentTarget.value);
             }}
           />
-          <Button
-            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
-            onClick={() => {
-              setCurrentTeam(null);
-              form.resetFields();
-              setAddModalOpen(true);
-            }}
-          >
-            Thêm mới
-          </Button>
+          <div className="flex">
+            {selectedRowKeys.length > 0 && (
+              <Button
+                className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+                onClick={handleDeleteConfirmation}
+              >
+                Xóa nhiều
+              </Button>
+            )}
+            <div className="w-2" />
+            <Button
+              className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+              onClick={() => {
+                setCurrentTeam(null);
+                form.resetFields();
+                setAddModalOpen(true);
+              }}
+            >
+              Thêm mới
+            </Button>
+          </div>
         </div>
         {loading ? (
           <Table
@@ -391,7 +442,13 @@ const GroupTeamPage = () => {
             }))}
           />
         ) : (
-          <Table dataSource={dataTeam} columns={columns} />
+          <Table
+            rowKey="key"
+            dataSource={dataSource}
+            columns={columns}
+            rowSelection={rowSelection}
+            loading={loading}
+          />
         )}
       </div>
       <BaseModal
@@ -418,7 +475,11 @@ const GroupTeamPage = () => {
           >
             <Input placeholder="Tên nhóm đội nhóm" />
           </Form.Item>
-          <Form.Item label="Hệ thống" name="groupSystemId">
+          <Form.Item
+            label="Hệ thống"
+            name="groupSystemId"
+            rules={[{ required: true, message: "Vui lòng chọn hệ thống!" }]}
+          >
             <Select
               placeholder="Chọn hệ thống"
               onFocus={getGroupSystems}
@@ -433,7 +494,11 @@ const GroupTeamPage = () => {
               allowClear
             />
           </Form.Item>
-          <Form.Item label="Chọn chi nhánh" name="groupBranchId">
+          <Form.Item
+            label="Chọn chi nhánh"
+            name="groupBranchId"
+            rules={[{ required: true, message: "Vui lòng chọn chi nhánh!" }]}
+          >
             <Select
               placeholder="Chọn chi nhánh"
               // onFocus={getBranchSystems}
@@ -479,6 +544,15 @@ const GroupTeamPage = () => {
         onCancel={handleCancel}
         onConfirm={handleConfirmDelete}
         handleDeleteTele={selectedAccountGroup}
+      />
+      <DeleteModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onConfirm={handleConfirmDeletes}
+        handleDeleteTele={async () => {
+          await handleDeletes();
+          setIsModalVisible(false);
+        }}
       />
     </>
   );

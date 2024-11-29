@@ -137,11 +137,11 @@ const Sheet = () => {
     setLoading(true);
     try {
       setIsAddModalOpen(false);
-      await deleteSheet(x.id);
+      await deleteSheet([x.id]);
       await fetchSheet();
       toast.success("Xóa thành công!");
     } catch (error) {
-      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+      console.error("Lỗi khi xóa:", error);
       toast.error("Có lỗi khi xóa, vui lòng thử lại!");
     } finally {
       setLoading(false);
@@ -233,6 +233,46 @@ const Sheet = () => {
     fetchSheet();
   }, [keys]);
 
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  const dataSource = dataSheet.map((item) => ({
+    ...item,
+    key: item.id,
+  }));
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleDeletes = async () => {
+    setLoading(true);
+    try {
+      const idsToDelete = selectedRowKeys.map((key) => Number(key));
+      await deleteSheet(idsToDelete);
+      toast.success("Xóa các mục thành công!");
+      await fetchSheet();
+      setSelectedRowKeys([]);
+    } catch (error) {
+      console.error("Lỗi khi xóa:", error);
+      toast.error("Có lỗi xảy ra khi xóa!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmDeletes = () => {
+    handleDeletes();
+    setIsModalVisible(false);
+  };
+
+  const handleDeleteConfirmation = () => {
+    setIsModalVisible(true);
+  };
+
   return (
     <>
       <Header />
@@ -255,16 +295,27 @@ const Sheet = () => {
               handleSearch(e.currentTarget.value);
             }}
           />
-          <Button
-            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
-            onClick={() => {
-              setCurrentSheet(null);
-              form.resetFields();
-              setIsAddModalOpen(true);
-            }}
-          >
-            Thêm mới
-          </Button>
+          <div className="flex">
+            {selectedRowKeys.length > 0 && (
+              <Button
+                className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+                onClick={handleDeleteConfirmation}
+              >
+                Xóa nhiều
+              </Button>
+            )}
+            <div className="w-2" />
+            <Button
+              className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+              onClick={() => {
+                setCurrentSheet(null);
+                form.resetFields();
+                setIsAddModalOpen(true);
+              }}
+            >
+              Thêm mới
+            </Button>
+          </div>
         </div>
         {loading ? (
           <Table
@@ -291,7 +342,13 @@ const Sheet = () => {
             }))}
           />
         ) : (
-          <Table dataSource={dataSheet} columns={columns} />
+          <Table
+            rowKey="key"
+            dataSource={dataSource}
+            columns={columns}
+            rowSelection={rowSelection}
+            loading={loading}
+          />
         )}
       </div>
       <BaseModal
@@ -362,6 +419,15 @@ const Sheet = () => {
         onCancel={handleCancel}
         onConfirm={handleConfirmDelete}
         handleDeleteSheet={selectedAccountGroup}
+      />
+      <DeleteModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onConfirm={handleConfirmDeletes}
+        handleDeleteTele={async () => {
+          await handleDeletes();
+          setIsModalVisible(false);
+        }}
       />
     </>
   );

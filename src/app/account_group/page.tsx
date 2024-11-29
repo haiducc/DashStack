@@ -137,7 +137,7 @@ const PhoneNumber: React.FC = () => {
     setLoading(true);
     try {
       setIsAddModalOpen(false);
-      const response = await deleteAccountGroup(x.id);
+      const response = await deleteAccountGroup([x.id]);
       if (response.success === false) {
         toast.error(response.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
         return;
@@ -211,6 +211,61 @@ const PhoneNumber: React.FC = () => {
     },
   ];
 
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  const dataSource = dataAccountGroup.map((item) => ({
+    ...item,
+    key: item.id,
+  }));
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleDeletes = async () => {
+    setLoading(true);
+    try {
+      const idsToDelete = selectedRowKeys.map((key) => Number(key));
+      const response = await deleteAccountGroup(idsToDelete);
+
+      if (!response.success || response.code !== 200) {
+        throw new Error(response.message || "Xóa không thành công");
+      }
+
+      toast.success("Xóa các mục thành công!");
+      await fetchAccountGroup();
+      setSelectedRowKeys([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("Lỗi khi xóa nhóm tài khoản:", error);
+      if (error.isAxiosError && error.response) {
+        const { status, data } = error.response;
+        if (status === 400 && data && data.message) {
+          toast.error(data.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+        } else {
+          toast.error(data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+        }
+      } else {
+        toast.error(error.message || "Đã có lỗi xảy ra. Vui lòng thử lại!");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmDeletes = () => {
+    handleDeletes();
+    setIsModalVisible(false);
+  };
+
+  const handleDeleteConfirmation = () => {
+    setIsModalVisible(true);
+  };
+
   const [checkFilter, setCheckFilter] = useState(false);
   useEffect(() => {
     fetchAccountGroup();
@@ -241,16 +296,27 @@ const PhoneNumber: React.FC = () => {
             }}
             onPressEnter={(e) => handleSearch(e.currentTarget.value)}
           />
-          <Button
-            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
-            onClick={() => {
-              setCurrentAccount(null);
-              form.resetFields();
-              setIsAddModalOpen(true);
-            }}
-          >
-            Thêm mới
-          </Button>
+          <div className="flex">
+            {selectedRowKeys.length > 0 && (
+              <Button
+                className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+                onClick={handleDeleteConfirmation}
+              >
+                Xóa nhiều
+              </Button>
+            )}
+            <div className="w-2" />
+            <Button
+              className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+              onClick={() => {
+                setCurrentAccount(null);
+                form.resetFields();
+                setIsAddModalOpen(true);
+              }}
+            >
+              Thêm mới
+            </Button>
+          </div>
         </div>
         {loading ? (
           <Table
@@ -277,15 +343,14 @@ const PhoneNumber: React.FC = () => {
             }))}
           />
         ) : (
-          <Table dataSource={dataAccountGroup} columns={columns} />
-        )}
-        {/* <Spin spinning={loading}>
           <Table
+            rowKey="key"
+            dataSource={dataSource}
             columns={columns}
-            dataSource={dataAccountGroup}
-            rowKey={"id"}
+            rowSelection={rowSelection}
+            loading={loading}
           />
-        </Spin> */}
+        )}
       </div>
       <BaseModal
         open={isAddModalOpen}
@@ -346,6 +411,15 @@ const PhoneNumber: React.FC = () => {
         onCancel={handleCancel}
         onConfirm={handleConfirmDelete}
         selectedAccountGroup={selectedAccountGroup}
+      />
+      <DeleteModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onConfirm={handleConfirmDeletes}
+        handleDeleteTele={async () => {
+          await handleDeletes();
+          setIsModalVisible(false);
+        }}
       />
     </>
   );

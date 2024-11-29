@@ -20,6 +20,8 @@ import {
 } from "antd";
 import { Dayjs } from "dayjs";
 import { useEffect, useState, useTransition } from "react";
+import { toast } from "react-toastify";
+import type { InputNumberProps } from "antd";
 
 export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
   const [form] = Form.useForm();
@@ -144,17 +146,29 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
         totalQuantity: total,
         totalAmount: totalAmount,
         assetInventories: faceValueChoose.map((item) => {
-          return { value: item.value, quantity: item.quantity };
+          return {
+            value: item.value,
+            quantity: item.quantity,
+            price: item.price,
+          };
         }),
         paymentType: "1",
         note: formData.note ?? "",
       };
-      await apiClient.post("/asset-api/add-or-update", params, {
-        timeout: 30000,
-      });
-      fetchData();
-      onCancel();
-      form.resetFields();
+      const responsive = await apiClient.post(
+        "/asset-api/add-or-update",
+        params
+      );
+      if (responsive.data.success) {
+        toast.success(
+          responsive.data.message || "Thêm mới giao dịch vàng thành công!"
+        );
+        fetchData({});
+        onCancel();
+        form.resetFields();
+      } else {
+        toast.error(responsive.data.message || "Giao dịch bị lỗi!");
+      }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
     } finally {
@@ -243,6 +257,7 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
               <InputNumber
                 defaultValue={0}
                 className="input-number-custom-total"
+                readOnly
               />
             </Form.Item>
             {faceValueChoose.length > 0 && (
@@ -279,6 +294,18 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
                         newList[index].price = value;
                         setFaceValueChoose(newList);
                       };
+
+                      const onChangeQuantityGold: InputNumberProps["onChange"] =
+                        (value) => {
+                          const newList = [...faceValueChoose];
+                          if ((value as number) > 1) {
+                            newList[index].quantity = value as number;
+                            setFaceValueChoose(newList);
+                          } else {
+                            newList[index].quantity = 1;
+                            setFaceValueChoose(newList);
+                          }
+                        };
 
                       return (
                         <div
@@ -333,6 +360,7 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
                               max={100000}
                               value={itemFaceValue.quantity}
                               className="input-number-custom !h-10 w-8"
+                              onChange={onChangeQuantityGold}
                             />
                             <Button
                               onClick={() => handleClickAsc(index)}
@@ -400,6 +428,7 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
               <InputNumber
                 className="input-number-custom-total"
                 placeholder="Tổng tiền:"
+                readOnly
               />
             </Form.Item>
 

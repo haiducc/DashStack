@@ -177,7 +177,7 @@ body {
 }
 .input-number-custom .ant-input-number-handler-wrap,
 .input-number-custom-total .ant-input-number-handler-wrap,
-.input-number-price-custom .ant-input-number-handler-wrap {
+.input-number-price-custom .ant-input-number-handler-wrap, .input-number-rate-custom .ant-input-number-handler-wrap {
   display: none !important;
 }
 

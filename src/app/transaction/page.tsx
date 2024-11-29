@@ -26,6 +26,7 @@ import { AxiosError } from "axios";
 import DeleteModal from "@/src/component/config/modalDelete";
 import dayjs, { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
+import { formatDate } from "@/src/utils/buildQueryParams";
 
 export interface TransactionModal {
   id: number;
@@ -502,30 +503,6 @@ const Transaction = () => {
       ),
     },
   ];
-
-  const formatDate = (inputDate: string | Date): string => {
-    const date = new Date(inputDate);
-
-    if (isNaN(date.getTime())) {
-      throw new Error("Invalid date format");
-    }
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const seconds = String(date.getSeconds()).padStart(2, "0");
-
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-  };
-
-  // const options = [
-  //   { value: "1", label: "Rút tiền mặt" },
-  //   { value: "2", label: "Mua tài sản" },
-  //   { value: "3", label: "Bổ sung giao dịch lỗi" },
-  // ];
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filterParams, setFilterParams] = useState<{
     purpose?: string;

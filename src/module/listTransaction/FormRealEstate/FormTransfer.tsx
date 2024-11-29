@@ -19,6 +19,9 @@ import {
 } from "antd";
 import { Dayjs } from "dayjs";
 import { useEffect, useState, useTransition } from "react";
+import type { InputNumberProps } from "antd";
+import { formatCurrencyVN } from "@/src/utils/buildQueryParams";
+import { toast } from "react-toastify";
 
 export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
   const [form] = Form.useForm();
@@ -92,10 +95,15 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
     setSelectedValues(value);
   };
 
-  const total = faceValueChoose.reduce((sum, item) => {
+  const totalAmount = faceValueChoose.reduce((sum, item) => {
+    const price = item.price ?? 0;
     const quantity = item.quantity || 0;
-    return sum + quantity;
+    return sum + price * quantity;
   }, 0);
+
+  form.setFieldsValue({
+    totalAmount: formatCurrencyVN(`${totalAmount}`),
+  });
 
   const handleSubmit = async (isCreateRealTransfer: boolean) => {
     try {
@@ -110,8 +118,7 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
         addedBy: formData.addedBy,
         managerBy: formData.managerBy,
         departmentManager: formData.departmentManager,
-        totalQuantity: total,
-        totalAmount: formData.totalAmount,
+        totalAmount: totalAmount,
         assetInventories: faceValueChoose.map((item) => {
           return {
             value: item.value,
@@ -122,13 +129,21 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
         paymentType: "1",
         note: formData.note ?? "",
       };
-      await apiClient.post("/asset-api/add-or-update", params, {
-        timeout: 30000,
-      });
+      const responsive = await apiClient.post(
+        "/asset-api/add-or-update",
+        params
+      );
 
-      fetchData();
-      onCancel();
-      form.resetFields();
+      if (responsive.data.success) {
+        toast.success(
+          responsive.data.message || "Thêm mới giao dịch vàng thành công!"
+        );
+        fetchData({});
+        onCancel();
+        form.resetFields();
+      } else {
+        toast.error(responsive.data.message || "Giao dịch bị lỗi!");
+      }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
     } finally {
@@ -248,6 +263,17 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
                         newList[index]["price"] = value;
                         setFaceValueChoose(newList);
                       };
+                      const onChangeQuantityReal: InputNumberProps["onChange"] =
+                        (value) => {
+                          const newList = [...faceValueChoose];
+                          if ((value as number) > 1) {
+                            newList[index].quantity = value as number;
+                            setFaceValueChoose(newList);
+                          } else {
+                            newList[index].quantity = 1;
+                            setFaceValueChoose(newList);
+                          }
+                        };
 
                       return (
                         <div
@@ -288,9 +314,9 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
                             </Button>
                             <InputNumber
                               min={1}
-                              max={100000}
                               value={itemFaceValue.quantity}
                               className="input-number-custom !h-10 w-8"
+                              onChange={onChangeQuantityReal}
                             />
                             <Button
                               onClick={() => handleClickAsc(index)}
@@ -353,18 +379,19 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
               <InputNumber
                 className="input-number-custom-total"
                 placeholder="Tổng tiền:"
-                formatter={(value) =>
-                  value
-                    ? `${new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                        maximumFractionDigits: 0,
-                      }).format(Number(value))}`
-                    : ""
-                }
-                parser={(value) =>
-                  value?.replace(/\D/g, "") as unknown as number
-                }
+                // formatter={(value) =>
+                //   value
+                //     ? `${new Intl.NumberFormat("vi-VN", {
+                //         style: "currency",
+                //         currency: "VND",
+                //         maximumFractionDigits: 0,
+                //       }).format(Number(value))}`
+                //     : ""
+                // }
+                // parser={(value) =>
+                //   value?.replace(/\D/g, "") as unknown as number
+                // }
+                readOnly
               />
             </Form.Item>
 

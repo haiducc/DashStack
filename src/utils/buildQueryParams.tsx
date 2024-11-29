@@ -1,3 +1,5 @@
+import type { Dayjs } from "dayjs";
+
 export const buildSearchParams = (
   searchTerms: Array<{ Name: string; Value: string }>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,3 +56,75 @@ export const formatCurrencyUSD = (value: string): string => {
     maximumFractionDigits: 0,
   }).format(Number(numericValue));
 };
+
+export const formatDate = (inputDate: string | Date): string => {
+  const date = new Date(inputDate);
+
+  if (isNaN(date.getTime())) {
+    throw new Error("Invalid date format");
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+};
+
+export const disabledDate = (current: Dayjs | null): boolean => {
+  return current ? current.year() > new Date().getFullYear() : false;
+};
+
+export const options = [
+  {
+    value: "1",
+    label: "Tháng 1",
+  },
+  {
+    value: "2",
+    label: "Tháng 2",
+  },
+  {
+    value: "3",
+    label: "Tháng 3",
+  },
+  {
+    value: "4",
+    label: "Tháng 4",
+  },
+  {
+    value: "5",
+    label: "Tháng 5",
+  },
+  {
+    value: "6",
+    label: "Tháng 6",
+  },
+  {
+    value: "7",
+    label: "Tháng 7",
+  },
+  {
+    value: "8",
+    label: "Tháng 8",
+  },
+  {
+    value: "9",
+    label: "Tháng 9",
+  },
+  {
+    value: "10",
+    label: "Tháng 10",
+  },
+  {
+    value: "11",
+    label: "Tháng 11",
+  },
+  {
+    value: "12",
+    label: "Tháng 12",
+  },
+];

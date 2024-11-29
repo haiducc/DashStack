@@ -12,33 +12,22 @@ const ModalAddNew = ({
   isAddModalOpen = false,
   onCancel,
   fetchData,
-  banks,
 }: ModalAddNewType) => {
   const items: TabsProps["items"] = [
     {
       key: "1",
       label: "Rút tiền mặt",
-      children: (
-        <FormMoney onCancel={onCancel} fetchData={fetchData} banks={banks} />
-      ),
+      children: <FormMoney onCancel={onCancel} fetchData={fetchData} />,
     },
     {
       key: "2",
       label: "Mua vàng",
-      children: (
-        <FormGold onCancel={onCancel} fetchData={fetchData} banks={banks} />
-      ),
+      children: <FormGold onCancel={onCancel} fetchData={fetchData} />,
     },
     {
       key: "3",
       label: "Mua bất động sản",
-      children: (
-        <FormRealEstate
-          onCancel={onCancel}
-          fetchData={fetchData}
-          banks={banks}
-        />
-      ),
+      children: <FormRealEstate onCancel={onCancel} fetchData={fetchData} />,
     },
   ];
 

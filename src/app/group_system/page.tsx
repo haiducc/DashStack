@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Header from "@/src/component/Header";
-import { Button, Form, Input, Skeleton, Space, Table } from "antd";
+import { Button, Form, Input, Modal, Skeleton, Space, Table } from "antd";
 import BaseModal from "@/src/component/config/BaseModal";
 import { toast } from "react-toastify"; // Import toast
 import DeleteModal from "@/src/component/config/modalDelete";
@@ -26,6 +26,8 @@ interface FilterRole {
 }
 
 type DataTypeWithKey = DataSystemModal & { key: React.Key };
+
+const { confirm } = Modal;
 
 const GroupSystemPage = () => {
   const router = useRouter();
@@ -93,10 +95,10 @@ const GroupSystemPage = () => {
   const handleAddConfirm = async (isAddGroupSystem: boolean) => {
     try {
       await form.validateFields();
+      setLoading(true);
       setIsAddGroupSystem(isAddGroupSystem);
       const formData = form.getFieldsValue();
       setIsAddModalOpen(false);
-      setLoading(true);
       const response = await addGroupSystem({
         id: formData.id,
         name: formData.name,
@@ -105,7 +107,7 @@ const GroupSystemPage = () => {
       if (response && response.success === false) {
         toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
         setLoading(false);
-        setIsAddGroupSystem(false);
+        // setIsAddGroupSystem(false);
         return;
       }
       setIsAddModalOpen(false);
@@ -134,6 +136,8 @@ const GroupSystemPage = () => {
       } else {
         toast.error("Có lỗi xảy ra, vui lòng thử lại!");
       }
+    } finally {
+      setIsAddGroupSystem(false);
     }
   };
 
@@ -196,8 +200,8 @@ const GroupSystemPage = () => {
   const [selectedAccountGroup, setSelectedAccountGroup] =
     useState<DataSystemModal | null>(null);
 
-  const handleDeleteClick = (tele: DataSystemModal) => {
-    setSelectedAccountGroup(tele);
+  const handleDeleteClick = (x: DataSystemModal) => {
+    setSelectedAccountGroup(x);
     setIsDeleteModalOpen(true);
   };
 
@@ -240,6 +244,59 @@ const GroupSystemPage = () => {
     },
   ];
 
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  const dataSource = dataSystem.map((item, index) => ({
+    ...item,
+    key: `unique-key-${item.id || index}`,
+  }));
+
+  const handleDeletes = async () => {
+    setLoading(true);
+    try {
+      for (const key of selectedRowKeys) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const itemToDelete = dataSystem.find((item: any) => item.key === key);
+        if (itemToDelete) {
+          await deleteGroupSystem(itemToDelete.id);
+        }
+      }
+      const newDataSource = dataSystem.filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (item: any) => !selectedRowKeys.includes(item.key)
+      );
+      setDataSystem(newDataSource);
+      setSelectedRowKeys([]);
+      toast.success("Xóa thành công!");
+    } catch (error) {
+      console.error("Lỗi khi xóa:", error);
+      toast.error("Có lỗi xảy ra khi xóa!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteConfirmation = () => {
+    if (selectedRowKeys.length === 0) {
+      return;
+    }
+    confirm({
+      title: "Bạn có chắc chắn muốn xóa các mục đã chọn?",
+      onOk: async () => {
+        await handleDeletes();
+      },
+      onCancel() {
+        console.log("Đã hủy bỏ");
+      },
+    });
+  };
+
   const [checkFilter, setCheckFilter] = useState(false);
   useEffect(() => {
     fetchGroupSystem();
@@ -270,16 +327,26 @@ const GroupSystemPage = () => {
               handleSearch(e.currentTarget.value);
             }}
           />
-          <Button
-            className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
-            onClick={() => {
-              setCurrentSystem(null);
-              form.resetFields();
-              setIsAddModalOpen(true);
-            }}
-          >
-            Thêm mới
-          </Button>
+          <div>
+            {selectedRowKeys.length > 0 && (
+              <Button
+                className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+                onClick={handleDeleteConfirmation}
+              >
+                Delete Selected
+              </Button>
+            )}
+            <Button
+              className="bg-[#4B5CB8] w-[136px] !h-10 text-white font-medium hover:bg-[#3A4A9D]"
+              onClick={() => {
+                setCurrentSystem(null);
+                form.resetFields();
+                setIsAddModalOpen(true);
+              }}
+            >
+              Thêm mới
+            </Button>
+          </div>
         </div>
         {loading ? (
           <Table
@@ -288,7 +355,8 @@ const GroupSystemPage = () => {
             loading={loading}
             dataSource={
               [...Array(13)].map((_, index) => ({
-                key: `key${index}`,
+                // key: `key${index}`,
+                key: `loading-${index}`,
               })) as DataTypeWithKey[]
             }
             columns={columns.map((column) => ({
@@ -306,7 +374,13 @@ const GroupSystemPage = () => {
             }))}
           />
         ) : (
-          <Table dataSource={dataSystem} columns={columns} />
+          <Table
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            rowKey="key"
+            dataSource={dataSource}
+            columns={columns}
+            rowSelection={rowSelection}
+          />
         )}
       </div>
       <BaseModal

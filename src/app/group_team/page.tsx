@@ -105,7 +105,6 @@ const GroupTeamPage = () => {
   const handleAddConfirm = async (isAddGroupTeam: boolean) => {
     try {
       await form.validateFields();
-      setAddModalOpen(false);
       setIsAddGroupTeam(isAddGroupTeam);
       const formData = form.getFieldsValue();
       setLoading(true);
@@ -121,7 +120,6 @@ const GroupTeamPage = () => {
       if (response && response.success === false) {
         toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
         setLoading(false);
-        setIsAddGroupTeam(false);
         return;
       }
       setAddModalOpen(false);
@@ -134,7 +132,6 @@ const GroupTeamPage = () => {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      setIsAddGroupTeam(false);
       console.error("Lỗi:", error);
       if (typeof error === "object" && error !== null && "response" in error) {
         const responseError = error as {
@@ -150,6 +147,8 @@ const GroupTeamPage = () => {
       } else {
         toast.error("Có lỗi xảy ra, vui lòng thử lại!");
       }
+    } finally {
+      setIsAddGroupTeam(false);
     }
   };
 
@@ -465,7 +464,9 @@ const GroupTeamPage = () => {
             <Button
               type="primary"
               onClick={() => handleAddConfirm(true)}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
+              className={`${
+                isAddGroupTeam && "pointer-events-none"
+              } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10`}
               loading={isAddGroupTeam}
             >
               {currentTeam ? "Cập nhật" : "Thêm mới"}

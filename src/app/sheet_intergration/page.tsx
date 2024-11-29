@@ -243,7 +243,6 @@ const SheetIntergration = () => {
       fetchSheetIntegration();
     } catch (error) {
       console.error("Lỗi:", error);
-      setIsAddSheetInter(false);
     } finally {
       setLoading(false);
       setIsAddSheetInter(false);
@@ -807,7 +806,9 @@ const SheetIntergration = () => {
             <Button
               type="primary"
               onClick={() => handleAddConfirm(true)}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
+              className={`${
+                isAddSheetInter && "pointer-events-none"
+              } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10`}
               loading={isAddSheetInter}
             >
               {currentSheet ? "Cập nhật" : "Thêm mới"}

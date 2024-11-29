@@ -40,6 +40,8 @@ const PhoneNumber: React.FC = () => {
   );
   const [loading, setLoading] = useState(true);
   const [, setGlobalTerm] = useState("");
+  const [isCreateAccountGroup, setIsCreateAccountGroup] = useState(false);
+
   const [pageIndex] = useState(1);
   const [pageSize] = useState(20);
 
@@ -88,14 +90,13 @@ const PhoneNumber: React.FC = () => {
     fetchAccountGroup();
   }, [keys]);
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isCreateAccountGroup: boolean) => {
     try {
-      await form.validateFields(); // Xác nhận form hợp lệ trước
+      await form.validateFields();
       const formData = form.getFieldsValue();
-      setIsAddModalOpen(false); // Đóng popup ngay lập tức
       setLoading(true);
+      setIsCreateAccountGroup(isCreateAccountGroup);
 
-      // Xử lý thêm mới
       await addAccountGroup({
         id: formData.id,
         fullName: formData.fullName,
@@ -105,6 +106,7 @@ const PhoneNumber: React.FC = () => {
       toast.success(
         currentAccount ? "Cập nhật thành công!" : "Thêm mới thành công!"
       );
+      setIsAddModalOpen(false);
       await fetchAccountGroup();
       form.resetFields();
       setCurrentAccount(null);
@@ -113,6 +115,7 @@ const PhoneNumber: React.FC = () => {
       toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
     } finally {
       setLoading(false);
+      setIsCreateAccountGroup(false);
     }
   };
 
@@ -327,9 +330,11 @@ const PhoneNumber: React.FC = () => {
             <div className="w-5" />
             <Button
               type="primary"
-              onClick={handleAddConfirm}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
-              loading={loading}
+              onClick={() => handleAddConfirm(true)}
+              className={`${
+                isCreateAccountGroup && "pointer-events-none"
+              } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10`}
+              loading={isCreateAccountGroup}
             >
               {currentAccount ? "Cập nhật" : "Thêm mới"}
             </Button>

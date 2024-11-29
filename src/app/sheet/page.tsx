@@ -85,7 +85,6 @@ const Sheet = () => {
     try {
       await form.validateFields();
       setIsAddSheet(isAddSheet);
-      setIsAddModalOpen(false);
       const formData = form.getFieldsValue();
       setLoading(true);
       if (currentSheet) {
@@ -96,6 +95,7 @@ const Sheet = () => {
           notes: formData.notes,
         });
         toast.success("Cập nhật thành công!");
+        setIsAddModalOpen(false);
       } else {
         await addSheet({
           // id: Date.now(),
@@ -104,18 +104,17 @@ const Sheet = () => {
           notes: formData.notes,
         });
         toast.success("Thêm mới thành công!");
+        setIsAddModalOpen(false);
       }
-
-      setIsAddModalOpen(false);
       form.resetFields();
       setCurrentSheet(null);
-      setLoading(false);
       await fetchSheet();
     } catch (error) {
-      setIsAddSheet(false);
       console.error("Lỗi:", error);
       toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+    } finally {
       setLoading(false);
+      setIsAddSheet(false);
     }
   };
 
@@ -348,7 +347,9 @@ const Sheet = () => {
             <Button
               type="primary"
               onClick={() => handleAddConfirm(true)}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
+              className={`${
+                isAddSheet && "pointer-events-none"
+              } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"`}
               loading={isAddSheet}
             >
               {currentSheet ? "Cập nhật" : "Thêm mới"}

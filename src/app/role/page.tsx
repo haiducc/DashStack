@@ -163,7 +163,7 @@ const Role = () => {
     try {
       await form.validateFields();
       setIsAddRole(isAddRole);
-      setIsAddModalOpen(false);
+
       const formData = form.getFieldsValue();
       const roleData = {
         id: currentRole ? currentRole.id : formData.id,
@@ -183,18 +183,15 @@ const Role = () => {
 
       // Kiểm tra phản hồi từ máy chủ
       if (response && response.success === false) {
-        setIsAddRole(false);
         throw new Error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
       }
-
       setIsAddModalOpen(false);
+
       form.resetFields();
       setCurrentRole(null);
       await fetchListRole();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      setIsAddRole(false);
-
       if (error && typeof error === "object" && "message" in error) {
         toast.error(error.message);
       } else {
@@ -501,7 +498,9 @@ const Role = () => {
             <Button
               type="primary"
               onClick={() => handleAddConfirm(true)}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
+              className={`${
+                isAddRole && "pointer-events-none"
+              } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10`}
               loading={isAddRole}
             >
               {currentRole ? "Cập nhật" : "Thêm mới"}

@@ -93,7 +93,6 @@ const PhoneNumber: React.FC = () => {
       await form.validateFields();
       setIsAddPhoneNumber(isAddPhoneNumber);
       const formData = form.getFieldsValue();
-      setIsAddModalOpen(false);
       setLoading(true);
       const response = await addPhoneNumber({
         number: formData.number,
@@ -103,28 +102,26 @@ const PhoneNumber: React.FC = () => {
       });
       if (response && response.success === false) {
         toast.error(response.message || "Thêm mới số điện thoại lỗi.");
-        setIsAddPhoneNumber(false);
         return;
       }
       form.resetFields();
-      // setIsAddModalOpen(false);
       setCurrentPhoneNumber(null);
       setCurrentTelegram(null);
       toast.success(
         currentTelegram ? "Cập nhật thành công!" : "Thêm mới thành công!"
       );
+      setIsAddModalOpen(false);
       await fetchListPhone();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error?.response?.data?.message) {
-        setIsAddPhoneNumber(false);
         toast.error(`Lỗi: ${error.response.data.message}`);
       } else {
-        setIsAddPhoneNumber(false);
         toast.error("Thêm mới số điện thoại lỗi.");
       }
     } finally {
       setLoading(false);
+      setIsAddPhoneNumber(false);
     }
   };
 
@@ -367,7 +364,9 @@ const PhoneNumber: React.FC = () => {
             <Button
               type="primary"
               onClick={() => handleAddConfirm(true)}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
+              className={`${
+                isAddPhoneNumber && "pointer-events-none"
+              } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10`}
               loading={isAddPhoneNumber}
             >
               {currentPhoneNumber ? "Cập nhật" : "Thêm mới"}

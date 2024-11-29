@@ -203,14 +203,11 @@ const Transaction = () => {
   };
 
   const handleAddConfirm = async (isAddTransaction: boolean) => {
-    // const formData = form.getFieldsValue();
     const formData = await form.validateFields();
     setLoading(true);
-    // console.log(formData, "formData");
     try {
       await form.validateFields();
       setIsAddTransaction(isAddTransaction);
-      setIsAddModalOpen(false);
       if (currentTransaction) {
         const response = await addTransaction({
           id: currentTransaction.id,
@@ -236,7 +233,6 @@ const Transaction = () => {
         if (response && response.success === false) {
           toast.error(response.message || "Cập nhật giao dịch lỗi.");
           setLoading(false);
-          setIsAddTransaction(false);
           return;
         }
         console.log("Dữ liệu đã được cập nhật:", response);
@@ -263,11 +259,10 @@ const Transaction = () => {
         if (response && response.success === false) {
           toast.error(response.message || "Thêm mới giao dịch lỗi.");
           setLoading(false);
-          setIsAddTransaction(false);
           return;
         }
-        console.log("Dữ liệu đã được thêm mới:", response);
         toast.success("Thêm mới giao dịch thành công!");
+        setIsAddModalOpen(false);
       }
 
       setIsAddModalOpen(false);
@@ -276,7 +271,6 @@ const Transaction = () => {
       fetchTransaction();
       setSelectBankId(0);
     } catch (error) {
-      setIsAddTransaction(false);
       if (error instanceof AxiosError && error.response) {
         if (error.response.status === 400) {
           const message =
@@ -291,6 +285,7 @@ const Transaction = () => {
       }
     } finally {
       setLoading(false);
+      setIsAddTransaction(false);
     }
   };
 
@@ -990,7 +985,9 @@ const Transaction = () => {
             <Button
               type="primary"
               onClick={() => handleAddConfirm(false)}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
+              className={`${
+                isAddTransaction && "pointer-events-none"
+              } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10`}
               loading={isAddTransaction}
             >
               {currentTransaction ? "Cập nhật" : "Thêm mới"}

@@ -62,6 +62,7 @@ const TelegramIntegration = () => {
   const [globalTerm, setGlobalTerm] = useState("");
   const [pageIndex] = useState(1);
   const [pageSize] = useState(50);
+  const [isCreateTelegramInter, setIsCreateTelegramInter] = useState(false);
 
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -210,14 +211,14 @@ const TelegramIntegration = () => {
     }
   };
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = async (isCreateTelegramInter: boolean) => {
     if (loading) return;
 
     try {
       await form.validateFields();
       setIsAddModalOpen(false);
       setLoading(true);
-
+      setIsCreateTelegramInter(isCreateTelegramInter);
       const formData = form.getFieldsValue();
       let response;
 
@@ -238,7 +239,6 @@ const TelegramIntegration = () => {
         });
         console.log("Dữ liệu đã được cập nhật:", response);
       } else {
-        // Thêm mới bản ghi
         response = await addTelegramIntergration({
           bankAccountId: bankAccountIdSelect,
           id: formData.id,
@@ -256,14 +256,15 @@ const TelegramIntegration = () => {
         console.log("Dữ liệu đã được thêm mới:", response);
       }
 
-      setIsAddModalOpen(false); // Đóng popup sau khi thành công
+      setIsAddModalOpen(false);
       form.resetFields();
       setCurrentTelegram(null);
       fetchListTelegramIntegration();
     } catch (error) {
       console.error("Lỗi:", error);
     } finally {
-      setLoading(false); // Đặt lại `loading` về `false` khi hoàn tất
+      setLoading(false);
+      setIsCreateTelegramInter(false);
     }
   };
 
@@ -671,16 +672,6 @@ const TelegramIntegration = () => {
         ) : (
           <Table dataSource={dataTelegramIntegration} columns={columns} />
         )}
-        {/* {loading ? (
-          <Spin spinning={loading} fullscreen />
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={dataTelegramIntegration}
-            rowKey="id"
-            // pagination={false}
-          />
-        )} */}
       </div>
       <BaseModal
         open={isAddModalOpen}
@@ -830,10 +821,12 @@ const TelegramIntegration = () => {
             <div className="w-4" />
             <Button
               type="primary"
-              onClick={handleAddConfirm}
-              loading={loading}
+              onClick={() => handleAddConfirm(true)}
+              loading={isCreateTelegramInter}
               disabled={loading}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
+              className={`${
+                isCreateTelegramInter && "pointer-events-none"
+              } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10`}
             >
               {currentTelegram ? "Cập nhật" : "Thêm mới"}
             </Button>

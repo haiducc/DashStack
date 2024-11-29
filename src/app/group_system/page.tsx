@@ -95,7 +95,7 @@ const GroupSystemPage = () => {
       await form.validateFields();
       setIsAddGroupSystem(isAddGroupSystem);
       const formData = form.getFieldsValue();
-      setIsAddModalOpen(false);
+
       setLoading(true);
       const response = await addGroupSystem({
         id: formData.id,
@@ -105,12 +105,12 @@ const GroupSystemPage = () => {
       if (response && response.success === false) {
         toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
         setLoading(false);
-        setIsAddGroupSystem(false);
         return;
       }
       setIsAddModalOpen(false);
       form.resetFields();
       setCurrentSystem(null);
+      setIsAddModalOpen(false);
       toast.success(
         currentSystem ? "Cập nhật thành công!" : "Thêm mới thành công!"
       );
@@ -118,7 +118,6 @@ const GroupSystemPage = () => {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      setIsAddGroupSystem(false);
       console.error("Lỗi:", error);
       if (typeof error === "object" && error !== null && "response" in error) {
         const responseError = error as {
@@ -134,6 +133,8 @@ const GroupSystemPage = () => {
       } else {
         toast.error("Có lỗi xảy ra, vui lòng thử lại!");
       }
+    } finally {
+      setIsAddGroupSystem(false);
     }
   };
 
@@ -347,7 +348,9 @@ const GroupSystemPage = () => {
             <Button
               type="primary"
               onClick={() => handleAddConfirm(true)}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
+              className={`${
+                isAddGroupSystem && "pointer-events-none"
+              } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10`}
               loading={isAddGroupSystem}
             >
               {currentSystem ? "Cập nhật" : "Thêm mới"}

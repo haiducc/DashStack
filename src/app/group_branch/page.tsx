@@ -40,7 +40,7 @@ const GroupBranchPage = () => {
   }, []);
 
   const [form] = Form.useForm();
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentBranch, setCurrentBranch] = useState<DataBranchModal | null>(
     null
@@ -100,7 +100,6 @@ const GroupBranchPage = () => {
   const handleAddConfirm = async (isAddGroupBranch: boolean) => {
     try {
       await form.validateFields();
-      setAddModalOpen(false);
       setIsAddGroupBranch(isAddGroupBranch);
       const formData = form.getFieldsValue();
       setLoading(true);
@@ -114,10 +113,9 @@ const GroupBranchPage = () => {
       if (response && response.success === false) {
         toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
         setLoading(false);
-        setIsAddGroupBranch(false);
         return;
       }
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       form.resetFields();
       setCurrentBranch(null);
       toast.success(
@@ -127,7 +125,6 @@ const GroupBranchPage = () => {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      setIsAddGroupBranch(false);
       console.error("Lỗi:", error);
       if (typeof error === "object" && error !== null && "response" in error) {
         const responseError = error as {
@@ -143,6 +140,8 @@ const GroupBranchPage = () => {
       } else {
         toast.error("Có lỗi xảy ra, vui lòng thử lại!");
       }
+    } finally {
+      setIsAddGroupBranch(false);
     }
   };
 
@@ -155,13 +154,13 @@ const GroupBranchPage = () => {
       groupSystemId: x.groupSystemId,
       groupSystemName: x.groupSystemName,
     });
-    setAddModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
   const handleDeleteTele = async (x: DataBranchModal) => {
     setLoading(true);
     try {
-      setAddModalOpen(false);
+      setIsAddModalOpen(false);
       await deleteGroupBranch(x.id);
       toast.success("Xóa nhóm chi nhánh thành công!");
       await fetchGroupSystem();
@@ -315,7 +314,7 @@ const GroupBranchPage = () => {
             onClick={() => {
               setCurrentBranch(null);
               form.resetFields();
-              setAddModalOpen(true);
+              setIsAddModalOpen(true);
             }}
           >
             Thêm mới
@@ -352,7 +351,7 @@ const GroupBranchPage = () => {
       <BaseModal
         open={isAddModalOpen}
         onCancel={() => {
-          setAddModalOpen(false);
+          setIsAddModalOpen(false);
           form.resetFields();
         }}
         title={currentBranch ? "Chỉnh sửa chi nhánh" : "Thêm mới chi nhánh"}
@@ -393,7 +392,7 @@ const GroupBranchPage = () => {
           </Form.Item>
           <div className="flex justify-end">
             <Button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => setIsAddModalOpen(false)}
               className="w-[189px] !h-10"
             >
               Đóng
@@ -402,7 +401,9 @@ const GroupBranchPage = () => {
             <Button
               type="primary"
               onClick={() => handleAddConfirm(true)}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
+              className={`${
+                isAddGroupBranch && "pointer-events-none"
+              } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10`}
               loading={isAddGroupBranch}
             >
               {currentBranch ? "Cập nhật" : "Thêm mới"}

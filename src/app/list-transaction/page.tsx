@@ -38,12 +38,6 @@ const ListTransactionPage = () => {
 
   const columns = [
     { title: "id", dataIndex: "id", key: "id", hidden: true },
-    { title: "Tài khoản", dataIndex: "bank", key: "bank" },
-    {
-      title: "Số tài khoản",
-      dataIndex: "bankAccountId",
-      key: "bankAccountId",
-    },
     {
       title: "Người rút",
       dataIndex: "addedBy",
@@ -59,16 +53,6 @@ const ListTransactionPage = () => {
       title: "Giao dịch",
       dataIndex: "transType",
       key: "transType",
-    },
-    {
-      title: "Loại tiền",
-      dataIndex: "type",
-      key: "type",
-    },
-    {
-      title: "Tổng tiền",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
     },
     {
       title: "Bộ phận quản lý",

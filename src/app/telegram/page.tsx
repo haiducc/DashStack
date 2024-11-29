@@ -94,7 +94,6 @@ const Telegram = () => {
     try {
       await form.validateFields();
       setIsAddTelegram(isAddTelegram);
-      setIsAddModalOpen(false);
       const formData = form.getFieldsValue();
       setLoading(true);
       const response = await addTelegram({
@@ -106,7 +105,6 @@ const Telegram = () => {
       if (response && response.success === false) {
         toast.error(response.message || "Có lỗi xảy ra, vui lòng thử lại!");
         setLoading(false);
-        setIsAddTelegram(false);
         return;
       }
       setIsAddModalOpen(false);
@@ -115,11 +113,11 @@ const Telegram = () => {
       toast.success(
         currentTelegram ? "Cập nhật thành công!" : "Thêm mới thành công!"
       );
+      setIsAddModalOpen(false);
       await fetchTelegram();
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      setIsAddTelegram(false);
       if (typeof error === "object" && error !== null && "response" in error) {
         const responseError = error as {
           response: { data?: { message?: string } };
@@ -134,6 +132,8 @@ const Telegram = () => {
       } else {
         toast.error("Có lỗi xảy ra, vui lòng thử lại!");
       }
+    } finally {
+      setIsAddTelegram(false);
     }
   };
 
@@ -370,7 +370,9 @@ const Telegram = () => {
             <Button
               type="primary"
               onClick={() => handleAddConfirm(true)}
-              className="bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10"
+              className={`{${
+                isAddTelegram && "pointer-events-none"
+              } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10`}
               loading={isAddTelegram}
             >
               {currentTelegram ? "Cập nhật" : "Thêm mới"}

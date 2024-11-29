@@ -383,8 +383,6 @@ const Account = () => {
     try {
       await form.validateFields();
       setIsAddAccount(isAddAccount);
-      setIsAddModalOpen(false);
-      // const formData = await form.getFieldsValue();
       setLoading(true);
       const res = await addBankAccounts({
         id: formData.id,
@@ -408,7 +406,6 @@ const Account = () => {
       });
       if (!res || !res.success) {
         toast.error(res?.message || "Có lỗi xảy ra, vui lòng thử lại.");
-        setIsAddAccount(false);
       } else {
         setIsAddModalOpen(false);
         form.resetFields();
@@ -419,7 +416,6 @@ const Account = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const axiosError = error as AxiosError;
-      setIsAddAccount(false);
       if (axiosError.response) {
         const responseData = axiosError.response.data as {
           success: boolean;
@@ -449,6 +445,7 @@ const Account = () => {
       }
     } finally {
       setLoading(false);
+      setIsAddAccount(false);
     }
   };
 
@@ -671,7 +668,7 @@ const Account = () => {
       const fetchBankAccountAPI = await getAccountGroup(
         pageIndex,
         pageSize,
-        globalTerm,
+        globalTerm
         // arr
       );
       if (
@@ -1534,9 +1531,10 @@ const Account = () => {
               type="primary"
               onClick={() => {
                 handleAddConfirm(true);
-                // defaultModalAdd()
               }}
-              className="w-full !h-10 bg-[#4B5CB8] hover:bg-[#3A4A9D]"
+              className={`${
+                isAddAccount && "pointer-events-none"
+              } w-full !h-10 bg-[#4B5CB8] hover:bg-[#3A4A9D]`}
               loading={isAddAccount}
             >
               {currentAccount ? "Cập nhật" : "Thêm mới"}

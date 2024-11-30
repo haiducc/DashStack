@@ -161,7 +161,7 @@ const GroupTeamPage = () => {
       groupSystemId: x.groupSystemId,
       groupSystemName: x.groupSystemName,
       groupBranchId: x.groupBranchId,
-      groupBranchName: x.groupSystemName,
+      groupBranchName: x.groupBranchName,
     });
     setAddModalOpen(true);
   };
@@ -518,7 +518,7 @@ const GroupTeamPage = () => {
           >
             <Select
               placeholder="Chọn chi nhánh"
-              // onFocus={getBranchSystems}
+              // onFocus={() => getBranchSystems()}
               onFocus={() => {
                 const formData = form.getFieldsValue();
                 getBranchSystems(formData.groupSystemId);
@@ -527,6 +527,8 @@ const GroupTeamPage = () => {
               allowClear
               // value={parentId}
               onChange={async (value) => {
+                console.log(value);
+
                 const selectedGroup = await branchSystem.find(
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (item: any) => item.value === value
@@ -538,9 +540,9 @@ const GroupTeamPage = () => {
                 }
               }}
             />
-            <Form.Item hidden label="Chọn chi nhánh" name="groupBranchId">
-              <Select />
-            </Form.Item>
+          </Form.Item>
+          <Form.Item hidden label="Chọn chi nhánh" name="groupBranchId">
+            <Select />
           </Form.Item>
           <Form.Item label="Ghi chú" name="note">
             <Input.TextArea rows={4} placeholder="Nhập ghi chú" />

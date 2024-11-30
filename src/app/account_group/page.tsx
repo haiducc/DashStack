@@ -43,7 +43,7 @@ const PhoneNumber: React.FC = () => {
   const [isCreateAccountGroup, setIsCreateAccountGroup] = useState(false);
 
   const [pageIndex] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(50);
 
   // const keys = localStorage.getItem("key");
   // const values = localStorage.getItem("value");
@@ -85,6 +85,33 @@ const PhoneNumber: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const loadMoreDataAccountGroup = (globalTerm?: string) => {
+    const arr: FilterGroupAccount[] = [];
+    const addedParams = new Set<string>();
+    arr.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys!);
+    if (loading) {
+      return;
+    }
+    setLoading(true);
+    getAccountGroup(pageIndex, pageSize, globalTerm, arr)
+      .then((res) => res.json())
+      .then((body) => {
+        setDataAccountGroup([...dataAccountGroup, ...body.results]);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadMoreDataAccountGroup();
+  }, []);
 
   useEffect(() => {
     fetchAccountGroup();
@@ -239,7 +266,7 @@ const PhoneNumber: React.FC = () => {
       toast.success("Xóa các mục thành công!");
       await fetchAccountGroup();
       setSelectedRowKeys([]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Lỗi khi xóa nhóm tài khoản:", error);
       if (error.isAxiosError && error.response) {

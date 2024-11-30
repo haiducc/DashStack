@@ -397,7 +397,7 @@ const Account = () => {
         transactionSource: formData.transactionSource,
         groupSystemId: Number(saveGroupSystem) || undefined,
         groupBranchId: Number(saveGroupBranch) || undefined,
-        groupTeamId: Number(saveGroupTeam) || undefined,
+        groupTeamId: selectedAccountType == "1" || !saveGroupTeam ? undefined : Number(saveGroupTeam),
         bankId: Number(saveBank),
         groupSystem: formData.groupSystem,
         groupBranch: formData.groupBranch,
@@ -1327,6 +1327,7 @@ const Account = () => {
               rules={[{ required: true, message: "Vui lòng chọn hệ thống!" }]}
             >
               <Select
+                allowClear
                 disabled={defaultGroupSystemId ? true : false}
                 defaultValue={
                   form.getFieldsValue().groupSystemId?.toString().trim()
@@ -1370,6 +1371,7 @@ const Account = () => {
               name="groupBranchName"
             >
               <Select
+                allowClear
                 disabled={defaultGroupBranchId ? true : false}
                 defaultValue={
                   form.getFieldsValue().groupBranchId?.toString().trim()
@@ -1423,6 +1425,7 @@ const Account = () => {
                   name="groupTeamName"
                 >
                   <Select
+                    allowClear
                     disabled={defaultGroupTeamId ? true : false}
                     defaultValue={
                       form.getFieldsValue().groupTeamId?.toString().trim()

@@ -53,8 +53,8 @@ const GroupBranchPage = () => {
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
-  const [groupSystem, setGroupSystem] = useState([]);
-  const [systemId, setSystemId] = useState<number>(0);
+  const [groupSystem, setGroupSystem] = useState<Array<DataBranchModal>>([]);
+  // const [systemId, setSystemId] = useState<number>(0);
   const [isAddGroupBranch, setIsAddGroupBranch] = useState<boolean>(false);
 
   useEffect(() => {
@@ -213,6 +213,7 @@ const GroupBranchPage = () => {
       const res = getSystem?.data?.source?.map((x: any) => ({
         value: x.id,
         label: x.name || "Không xác định",
+        groupSystemId: x.id,
       }));
       setGroupSystem(res);
     } catch (error) {
@@ -433,20 +434,35 @@ const GroupBranchPage = () => {
           </Form.Item>
           <Form.Item
             label="Hệ thống"
-            name="groupSystemId"
+            name="groupSystemName"
             rules={[{ required: true, message: "Vui lòng chọn hệ thống!" }]}
           >
             <Select
               placeholder="Chọn hệ thống"
               onFocus={getGroupSystems}
               options={groupSystem}
-              onChange={(value) => {
-                setSystemId(value);
-                // getBranchSystems();
-              }}
-              value={systemId}
+              // value={systemId}
               allowClear
+              // onChange={(value) => {
+              //   setSystemId(value);
+              //   // getBranchSystems();
+              // }}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={async (value: any) => {
+                const selectedGroup = await groupSystem.find(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (item: any) => item.value === value
+                );
+                if (selectedGroup) {
+                  form.setFieldsValue({
+                    groupSystemId: selectedGroup.groupSystemId,
+                  });
+                }
+              }}
             />
+          </Form.Item>
+          <Form.Item hidden label="Hệ thống" name="groupSystemId">
+            <Select />
           </Form.Item>
           <Form.Item label="Ghi chú" name="note">
             <Input.TextArea rows={4} placeholder="Nhập ghi chú" />

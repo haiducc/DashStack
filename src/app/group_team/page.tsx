@@ -54,10 +54,10 @@ const GroupTeamPage = () => {
   const [keys, setKeys] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [values, setValues] = useState<string | null>(null);
-  const [groupSystem, setGroupSystem] = useState([]);
-  const [systemId, setSystemId] = useState<number>(0);
-  const [branchSystem, setBranchSystem] = useState([]);
-  const [parentId, setParentId] = useState<number>(0);
+  const [groupSystem, setGroupSystem] = useState<Array<DataTeamModal>>([]);
+  // const [systemId, setSystemId] = useState<number>(0);
+  const [branchSystem, setBranchSystem] = useState<Array<DataTeamModal>>([]);
+  // const [parentId, setParentId] = useState<number>(0);
   const [isAddGroupTeam, setIsAddGroupTeam] = useState<boolean>(false);
 
   useEffect(() => {
@@ -226,6 +226,7 @@ const GroupTeamPage = () => {
       const res = getSystem?.data?.source?.map((x: any) => ({
         value: x.id,
         label: x.name || "Không xác định",
+        groupSystemId: x.id,
       }));
       setGroupSystem(res);
     } catch (error) {
@@ -248,6 +249,7 @@ const GroupTeamPage = () => {
       const res = getBranch?.data?.source?.map((x: any) => ({
         value: x.id,
         label: x.name || "Không xác định",
+        groupBranchId: x.id,
       }));
       setBranchSystem(res);
     } catch (error) {
@@ -477,26 +479,41 @@ const GroupTeamPage = () => {
           </Form.Item>
           <Form.Item
             label="Hệ thống"
-            name="groupSystemId"
+            name="groupSystemName"
             rules={[{ required: true, message: "Vui lòng chọn hệ thống!" }]}
           >
             <Select
               placeholder="Chọn hệ thống"
               onFocus={getGroupSystems}
               options={groupSystem}
-              onChange={(value) => {
-                getBranchSystems(value);
-                // console.log(value);
-                setSystemId(value);
-                // getBranchSystems();
+              // onChange={(value) => {
+              //   getBranchSystems(value);
+              //   // console.log(value);
+              //   setSystemId(value);
+              //   // getBranchSystems();
+              // }}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={async (value: any) => {
+                const selectedGroup = await groupSystem.find(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (item: any) => item.value === value
+                );
+                if (selectedGroup) {
+                  form.setFieldsValue({
+                    groupSystemId: selectedGroup.groupSystemId,
+                  });
+                }
               }}
-              value={systemId}
+              // value={systemId}
               allowClear
             />
           </Form.Item>
+          <Form.Item hidden label="Hệ thống" name="groupSystemId">
+            <Select />
+          </Form.Item>
           <Form.Item
             label="Chọn chi nhánh"
-            name="groupBranchId"
+            name="groupBranchName"
             rules={[{ required: true, message: "Vui lòng chọn chi nhánh!" }]}
           >
             <Select
@@ -507,13 +524,23 @@ const GroupTeamPage = () => {
                 getBranchSystems(formData.groupSystemId);
               }}
               options={branchSystem}
-              onChange={(value) => {
-                setParentId(value);
-                // getGroupTeams();
-              }}
-              value={parentId}
               allowClear
+              // value={parentId}
+              onChange={async (value) => {
+                const selectedGroup = await branchSystem.find(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (item: any) => item.value === value
+                );
+                if (selectedGroup) {
+                  form.setFieldsValue({
+                    groupBranchId: selectedGroup.groupBranchId,
+                  });
+                }
+              }}
             />
+            <Form.Item hidden label="Chọn chi nhánh" name="groupBranchId">
+              <Select />
+            </Form.Item>
           </Form.Item>
           <Form.Item label="Ghi chú" name="note">
             <Input.TextArea rows={4} placeholder="Nhập ghi chú" />

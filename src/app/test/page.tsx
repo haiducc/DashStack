@@ -36,7 +36,7 @@ const FilterComponent: React.FC = () => {
       setData((prevData) => [...prevData, ...formattedData]);
 
       if (formattedData.length < pageSize) {
-        setHasMore(false); // Không còn dữ liệu để tải
+        setHasMore(false);
       }
     } catch (error) {
       console.error("Error fetching data:", error);

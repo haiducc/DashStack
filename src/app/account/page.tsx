@@ -397,7 +397,10 @@ const Account = () => {
         transactionSource: formData.transactionSource,
         groupSystemId: Number(saveGroupSystem) || undefined,
         groupBranchId: Number(saveGroupBranch) || undefined,
-        groupTeamId: selectedAccountType == "1" || !saveGroupTeam ? undefined : Number(saveGroupTeam),
+        groupTeamId:
+          selectedAccountType == "1" || !saveGroupTeam
+            ? undefined
+            : Number(saveGroupTeam),
         bankId: Number(saveBank),
         groupSystem: formData.groupSystem,
         groupBranch: formData.groupBranch,
@@ -1341,6 +1344,16 @@ const Account = () => {
                 placeholder="Chọn hệ thống"
                 options={groupSystem}
                 onChange={async (e) => {
+                  if (!e) {
+                    form.setFieldsValue({
+                      groupSystemId: undefined,
+                      groupBranchName: undefined,
+                      groupBranchId: undefined,
+                      groupTeamName: undefined,
+                      groupTeamId: undefined,
+                    });
+                    return;
+                  }
                   const id = Number(e).toString();
                   setSaveGroupSystem(id);
                   // getBranchSystems();
@@ -1352,6 +1365,10 @@ const Account = () => {
                     getBranchSystems(selectedGroup.groupSystemId);
                     form.setFieldsValue({
                       groupSystemId: selectedGroup.groupSystemId,
+                      groupBranchName: undefined,
+                      groupBranchId: undefined,
+                      groupTeamName: undefined,
+                      groupTeamId: undefined,
                     });
                   }
                 }}
@@ -1390,6 +1407,14 @@ const Account = () => {
                 options={branchSystem}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={async (e) => {
+                  if (!e) {
+                    form.setFieldsValue({
+                      groupBranchId: undefined,
+                      groupTeamName: undefined,
+                      groupTeamId: undefined,
+                    });
+                    return;
+                  }
                   const id = Number(e).toString();
                   setGroupBranchId(id);
                   // getGroupTeams();
@@ -1402,6 +1427,8 @@ const Account = () => {
                     getGroupTeams(selectedGroup.groupBranchId);
                     form.setFieldsValue({
                       groupBranchId: selectedGroup.groupBranchId,
+                      groupTeamName: undefined,
+                      groupTeamId: undefined,
                     });
                   }
                 }}
@@ -1590,7 +1617,7 @@ const Account = () => {
             />
           </Form.Item>
           <Form.Item
-            hidden
+            // hidden
             label="Chọn nhóm tài khoản 2"
             name="selectedAccountGroups"
           >

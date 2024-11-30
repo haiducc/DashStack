@@ -494,6 +494,14 @@ const GroupTeamPage = () => {
               // }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={async (value: any) => {
+                if (!value) {
+                  form.setFieldsValue({
+                    groupSystemId: undefined,
+                    groupBranchName: undefined,
+                    groupBranchId: undefined,
+                  });
+                  return;
+                }
                 const selectedGroup = await groupSystem.find(
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (item: any) => item.value === value
@@ -501,6 +509,8 @@ const GroupTeamPage = () => {
                 if (selectedGroup) {
                   form.setFieldsValue({
                     groupSystemId: selectedGroup.groupSystemId,
+                    groupBranchName: undefined,
+                    groupBranchId: undefined,
                   });
                 }
               }}

@@ -579,7 +579,7 @@ const Dashboard = () => {
             <Select
               allowClear
               options={optionCompany}
-              placeholder="Loại công ty"
+              placeholder="Loại tài khoản"
               style={{ width: 245 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {

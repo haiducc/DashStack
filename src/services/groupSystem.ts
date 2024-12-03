@@ -1,4 +1,5 @@
-import { DataSystemModal } from "../app/group_system/page";
+
+import { DataSystemModal } from "../app/(admin)/group_system/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 

@@ -31,7 +31,7 @@ import { getGroupTeam } from "@/src/services/groupTeam";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import DeleteModal from "@/src/component/config/modalDelete";
-// import { RoleContext } from "@/src/component/RoleWapper";
+import { RoleContext } from "@/src/component/RoleWapper";
 
 interface FilterGroupAccount {
   Name: string;
@@ -74,8 +74,8 @@ const Account = () => {
   const [, setIsEditMode] = useState(false);
   const [accountGroup, setAccountGroup] = useState<Array<BankAccounts>>([]);
 
-  const [keys, setKeys] = useState<string | null>(null);
-  const [values, setValues] = useState<string | null>(null);
+  // const [keys, setKeys] = useState<string | null>(null);
+  // const [values, setValues] = useState<string | null>(null);
 
   const [groupSystemName, setGroupSystemName] = useState<string | null>(null);
   const [groupBranchName, setGroupBranchName] = useState<string | null>(null);
@@ -106,14 +106,11 @@ const Account = () => {
   >(null);
   const [isAddAccount, setIsAddAccount] = useState<boolean>(false);
 
-  // const { dataRole } = React.useContext(RoleContext);
-  // const keys = dataRole.key;
-  // const values = `${dataRole.value}`;
+  const { dataRole } = React.useContext(RoleContext);
+  const keys = dataRole.key;
+  const values = `${dataRole.value}`;
 
   useEffect(() => {
-    setKeys(localStorage.getItem("key"));
-    setValues(localStorage.getItem("value"));
-
     setGroupSystemName(localStorage.getItem("groupSystemName"));
     setGroupBranchName(localStorage.getItem("groupBranchName"));
     setGroupTeamName(localStorage.getItem("groupTeamName"));
@@ -171,19 +168,11 @@ const Account = () => {
       });
       addedParams.add("groupTeamId");
     }
-    // if (keys && values && !addedParams.has(keys)) {
-    // console.log(keys, values, !addedParams.has(keys));
-    // arrBankAccount.push({
-    //   Name: keys!,
-    //   Value: values,
-    // });
-    // addedParams.add(keys!);
-    // }
     arrBankAccount.push({
-      Name: localStorage.getItem("key")!,
-      Value: localStorage.getItem("value")!,
+      Name: keys!,
+      Value: values,
     });
-    addedParams.add(keys);
+    addedParams.add(keys!);
 
     setLoading(true);
     try {
@@ -269,8 +258,8 @@ const Account = () => {
     const arrAccountGroup: FilterGroupAccount[] = [];
     const addedParams = new Set<string>();
     arrAccountGroup.push({
-      Name: localStorage.getItem("key")!,
-      Value: localStorage.getItem("value")!,
+      Name: keys!,
+      Value: values,
     });
     addedParams.add(keys!);
     try {
@@ -298,8 +287,20 @@ const Account = () => {
   // const [selectedSystemIds, setSelectedSystemIds] = useState<string[]>([]);
 
   const getGroupSystems = async () => {
+    const arrAccountGroup: FilterGroupAccount[] = [];
+    const addedParams = new Set<string>();
+    arrAccountGroup.push({
+      Name: keys!,
+      Value: values,
+    });
+    addedParams.add(keys!);
     try {
-      const getSystem = await getGroupSystem(pageIndex, pageSize, globalTerm);
+      const getSystem = await getGroupSystem(
+        pageIndex,
+        pageSize,
+        globalTerm,
+        arrAccountGroup
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = getSystem?.data?.source?.map((x: any) => ({
         value: x.id,
@@ -315,17 +316,19 @@ const Account = () => {
   const getBranchSystems = async (groupSystemId?: number) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const arr: any[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const obj: any = {
-      Name: "groupSystemId",
-      Value: groupSystemId || 0,
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const obj2: any = {
-      Name: localStorage.getItem("key")!,
-      Value: localStorage.getItem("value")!,
-    };
-    await arr.push(obj, obj2);
+    const addedParams = new Set<string>();
+    if (groupSystemId && !addedParams.has("groupSystemId")) {
+      arr.push({
+        Name: "groupSystemId",
+        Value: groupSystemId || 0,
+      });
+      addedParams.add("groupSystemId");
+    }
+    arr.push({
+      Name: keys!,
+      Value: values,
+    });
+    addedParams.add(keys!);
     try {
       const getBranch = await getBranchSystem(
         pageIndex,
@@ -348,17 +351,19 @@ const Account = () => {
   const getGroupTeams = async (groupBranchId?: number) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const arr: any[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const obj1: any = {
-      Name: "groupBranchId",
-      Value: groupBranchId || 0,
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const obj2: any = {
-      Name: localStorage.getItem("key")!,
-      Value: localStorage.getItem("value")!,
-    };
-    await arr.push(obj1, obj2);
+    const addedParams = new Set<string>();
+    if (groupBranchId && !addedParams.has("groupBranchId")) {
+      arr.push({
+        Name: "groupBranchId",
+        Value: groupBranchId || 0,
+      });
+      addedParams.add("groupBranchId");
+    }
+    arr.push({
+      Name: keys!,
+      Value: values,
+    });
+    addedParams.add(keys!);
     try {
       const groupTeams = await getGroupTeam(
         pageIndex,

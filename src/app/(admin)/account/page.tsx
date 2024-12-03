@@ -31,7 +31,7 @@ import { getGroupTeam } from "@/src/services/groupTeam";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import DeleteModal from "@/src/component/config/modalDelete";
-import { RoleContext } from "@/src/component/RoleWapper";
+// import { RoleContext } from "@/src/component/RoleWapper";
 
 interface FilterGroupAccount {
   Name: string;
@@ -74,8 +74,8 @@ const Account = () => {
   const [, setIsEditMode] = useState(false);
   const [accountGroup, setAccountGroup] = useState<Array<BankAccounts>>([]);
 
-  // const [keys, setKeys] = useState<string | null>(null);
-  // const [values, setValues] = useState<string | null>(null);
+  const [keys, setKeys] = useState<string | null>(null);
+  const [values, setValues] = useState<string | null>(null);
 
   const [groupSystemName, setGroupSystemName] = useState<string | null>(null);
   const [groupBranchName, setGroupBranchName] = useState<string | null>(null);
@@ -106,13 +106,13 @@ const Account = () => {
   >(null);
   const [isAddAccount, setIsAddAccount] = useState<boolean>(false);
 
-  const { dataRole } = React.useContext(RoleContext);
-  const keys = dataRole.key;
-  const values = `${dataRole.value}`;
+  // const { dataRole } = React.useContext(RoleContext);
+  // const keys = dataRole.key;
+  // const values = `${dataRole.value}`;
 
   useEffect(() => {
-    // setKeys(localStorage.getItem("key"));
-    // setValues(localStorage.getItem("value"));
+    setKeys(localStorage.getItem("key"));
+    setValues(localStorage.getItem("value"));
 
     setGroupSystemName(localStorage.getItem("groupSystemName"));
     setGroupBranchName(localStorage.getItem("groupBranchName"));
@@ -173,12 +173,18 @@ const Account = () => {
     }
     // if (keys && values && !addedParams.has(keys)) {
     // console.log(keys, values, !addedParams.has(keys));
-    arrBankAccount.push({
-      Name: keys!,
-      Value: values,
-    });
-    addedParams.add(keys!);
+    // arrBankAccount.push({
+    //   Name: keys!,
+    //   Value: values,
+    // });
+    // addedParams.add(keys!);
     // }
+    arrBankAccount.push({
+      Name: localStorage.getItem("key")!,
+      Value: localStorage.getItem("value")!,
+    });
+    addedParams.add(keys);
+
     setLoading(true);
     try {
       const response = await fetchBankAccounts(

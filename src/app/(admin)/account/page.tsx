@@ -74,59 +74,32 @@ const Account = () => {
   const [, setIsEditMode] = useState(false);
   const [accountGroup, setAccountGroup] = useState<Array<BankAccounts>>([]);
 
-  // const [keys, setKeys] = useState<string | null>(null);
-  // const [values, setValues] = useState<string | null>(null);
-
-  const [groupSystemName, setGroupSystemName] = useState<string | null>(null);
-  const [groupBranchName, setGroupBranchName] = useState<string | null>(null);
-  const [groupTeamName, setGroupTeamName] = useState<string | null>(null);
-
-  const [groupSystemId, setGroupSystemId] = useState<string | null>(null);
-  const [groupBranchId, setGroupBranchId] = useState<string | null>(null);
-  const [groupTeamId, setGroupTeamId] = useState<string | null>(null);
-
-  const [defaultGroupSystemId, setDefaultGroupSystemId] = useState<
-    string | null
-  >(null);
-  const [defaultGroupBranchId, setDefaultGroupBranchId] = useState<
-    string | null
-  >(null);
-  const [defaultGroupTeamId, setDefaultGroupTeamId] = useState<string | null>(
-    null
-  );
-
-  const [defaultGroupSystemName, setDefaultGroupSystemName] = useState<
-    string | null
-  >(null);
-  const [defaultGroupBranchName, setDefaultGroupBranchName] = useState<
-    string | null
-  >(null);
-  const [defaultGroupTeamName, setDefaultGroupTeamName] = useState<
-    string | null
-  >(null);
   const [isAddAccount, setIsAddAccount] = useState<boolean>(false);
 
   const { dataRole } = React.useContext(RoleContext);
   const keys = dataRole.key;
   const values = `${dataRole.value}`;
+  // console.log("dataRole", dataRole);
+  //
+  const groupSystemId = dataRole.groupSystemId;
+  const groupSystemName = dataRole.groupSystemName;
+  //
+  const groupBranchId = dataRole.groupBranchId;
+  const groupBranchName = dataRole.groupBranchName;
+  //
+  const groupTeamId = dataRole.groupTeamId;
+  const groupTeamName = dataRole.groupTeamName;
+  //................................................//
+  const defaultGroupSystemId = dataRole.groupSystemId;
+  const defaultGroupSystemName = dataRole.groupSystemName;
+  //
+  const defaultGroupBranchId = dataRole.groupBranchId;
+  const defaultGroupBranchName = dataRole.groupBranchName;
+  //
+  const defaultGroupTeamId = dataRole.groupTeamId;
+  const defaultGroupTeamName = dataRole.groupTeamName;
 
   useEffect(() => {
-    setGroupSystemName(localStorage.getItem("groupSystemName"));
-    setGroupBranchName(localStorage.getItem("groupBranchName"));
-    setGroupTeamName(localStorage.getItem("groupTeamName"));
-
-    setDefaultGroupSystemName(localStorage.getItem("groupSystemName"));
-    setDefaultGroupBranchName(localStorage.getItem("groupBranchName"));
-    setDefaultGroupTeamName(localStorage.getItem("groupTeamName"));
-
-    setGroupSystemId(localStorage.getItem("groupSystemId"));
-    setGroupBranchId(localStorage.getItem("groupBranchId"));
-    setGroupTeamId(localStorage.getItem("groupTeamId"));
-
-    setDefaultGroupSystemId(localStorage.getItem("groupSystemId"));
-    setDefaultGroupBranchId(localStorage.getItem("groupBranchId"));
-    setDefaultGroupTeamId(localStorage.getItem("groupTeamId"));
-
     handleDataDefault();
   }, []);
 
@@ -478,17 +451,17 @@ const Account = () => {
     const initGroupSystemId = account.groupSystemId
       ? account.groupSystemId.toString()
       : defaultGroupSystemId;
-    setSaveGroupSystem(initGroupSystemId!);
+    setSaveGroupSystem(initGroupSystemId!.toString());
 
     const initGroupBranchId = account.groupBranchId
       ? account.groupBranchId.toString()
       : defaultGroupBranchId;
-    setSaveGroupBranch(initGroupBranchId!);
+    setSaveGroupBranch(initGroupBranchId!.toString());
 
     const initGroupTeamId = account.groupTeamId
       ? account.groupTeamId.toString()
       : defaultGroupTeamId;
-    setSaveGroupTeam(initGroupTeamId!);
+    setSaveGroupTeam(initGroupTeamId!.toString());
 
     const initBankId = account.bankId?.toString();
     setSaveBank(initBankId!);
@@ -834,7 +807,7 @@ const Account = () => {
     const arr: FilterGroupAccount[] = [];
     const system: FilterGroupAccount = {
       Name: "groupSystemId",
-      Value: groupSystemId!,
+      Value: groupSystemId!.toString(),
     };
     const team: FilterGroupAccount = {
       Name: "groupTeamId",
@@ -1122,7 +1095,7 @@ const Account = () => {
                 <Select
                   disabled={defaultGroupSystemId ? true : false}
                   defaultValue={
-                    groupSystemId?.trim()
+                    groupSystemId
                       ? {
                           value: groupSystemId,
                           label: groupSystemName,
@@ -1164,7 +1137,7 @@ const Account = () => {
                 <Select
                   disabled={defaultGroupBranchId ? true : false}
                   defaultValue={
-                    groupBranchId?.trim()
+                    groupBranchId
                       ? {
                           value: groupBranchId,
                           label: groupBranchName,
@@ -1210,7 +1183,7 @@ const Account = () => {
                 <Select
                   disabled={defaultGroupTeamId ? true : false}
                   defaultValue={
-                    groupTeamId?.trim()
+                    groupTeamId
                       ? {
                           value: groupTeamId,
                           label: groupTeamName,
@@ -1431,7 +1404,7 @@ const Account = () => {
                     return;
                   }
                   const id = Number(e).toString();
-                  setGroupBranchId(id);
+                  Number(groupBranchId);
                   // getGroupTeams();
                   setSaveGroupBranch(id);
                   const selectedGroup = await branchSystem.find(

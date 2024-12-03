@@ -408,7 +408,7 @@ const GroupBranchPage = () => {
           className="flex flex-col gap-1 w-full"
         >
           <Form.Item hidden label="id" name="id">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Tên chi nhánh"
@@ -417,7 +417,7 @@ const GroupBranchPage = () => {
               { required: true, message: "Vui lòng nhập tên chi nhánh!" },
             ]}
           >
-            <Input placeholder="Tên nhóm chi nhánh" />
+            <Input placeholder="Tên nhóm chi nhánh" autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Hệ thống"

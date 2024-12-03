@@ -385,7 +385,7 @@ const PhoneNumber: React.FC = () => {
           className="flex flex-col gap-1 w-full"
         >
           <Form.Item hidden label="id" name="id">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Tên nhóm tài khoản"
@@ -394,7 +394,7 @@ const PhoneNumber: React.FC = () => {
               { required: true, message: "Vui lòng nhập tên nhóm tài khoản!" },
             ]}
           >
-            <Input placeholder="Nhập nhóm tài khoản" />
+            <Input placeholder="Nhập nhóm tài khoản" autoComplete="off" />
           </Form.Item>
           <Form.Item label="Ghi chú" name="notes">
             <Input.TextArea rows={4} placeholder="Nhập ghi chú" />

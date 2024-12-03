@@ -365,14 +365,14 @@ const GroupSystemPage = () => {
           className="flex flex-col gap-1 w-full"
         >
           <Form.Item hidden label="id" name="id">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Tên hệ thống"
             name="name"
             rules={[{ required: true, message: "Vui lòng nhập tên hệ thống!" }]}
           >
-            <Input placeholder="Tên nhóm hệ thống" />
+            <Input placeholder="Tên nhóm hệ thống" autoComplete="off" />
           </Form.Item>
           <Form.Item label="Ghi chú" name="note">
             <Input.TextArea rows={4} placeholder="Nhập ghi chú" />

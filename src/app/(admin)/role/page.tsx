@@ -453,7 +453,7 @@ const Role = () => {
           className="flex flex-col gap-1 w-full"
         >
           <Form.Item hidden label="id" name="id">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
 
           <Form.Item label="Vai trò" name="isAdmin" valuePropName="checked">
@@ -511,7 +511,7 @@ const Role = () => {
             name="fullName"
             rules={[{ required: true, message: "Vui lòng nhập họ và tên!" }]}
           >
-            <Input placeholder="Họ và tên" />
+            <Input placeholder="Họ và tên" autoComplete="off" />
           </Form.Item>
 
           <Form.Item
@@ -519,7 +519,7 @@ const Role = () => {
             name="userName"
             rules={[{ required: true, message: "Vui lòng nhập email!" }]}
           >
-            <Input placeholder="Email đăng nhập" />
+            <Input placeholder="Email đăng nhập" autoComplete="off" />
           </Form.Item>
 
           <Form.Item

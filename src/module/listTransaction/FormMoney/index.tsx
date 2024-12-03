@@ -9,6 +9,8 @@ import {
   formatCurrencyUSD,
   formatCurrencyVN,
   parseLabelToNumber,
+  disabledDateFeature,
+  disabledTimeFeature,
 } from "@/src/utils/buildQueryParams";
 import {
   Button,
@@ -166,7 +168,10 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
       };
       const responsiove = await apiClient.post(
         "/asset-api/add-or-update",
-        params
+        params,
+        {
+          timeout: 30000,
+        }
       );
 
       if (responsiove.data.message && !responsiove.data.success) {
@@ -252,6 +257,8 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
                   className="w-full"
                   showTime
                   required
+                  disabledDate={disabledDateFeature}
+                  disabledTime={disabledTimeFeature}
                   onChange={async (value: Dayjs | null) => {
                     const formattedDate = await value?.format(
                       "YYYY-MM-DDTHH:mm:ss.SSSZ"
@@ -377,13 +384,16 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
             </Form.Item>
 
             <Form.Item
-              label="Người rút tiền"
+              label="Người giao dịch"
               name="addedBy"
               rules={[
-                { required: true, message: "Vui lòng chọn người rút tiền!" },
+                { required: true, message: "Vui lòng chọn người giao dịch!" },
               ]}
             >
-              <Input placeholder="Nhập tên người rút tiền" />
+              <Input
+                placeholder="Nhập tên người giao dịch"
+                autoComplete="off"
+              />
             </Form.Item>
             <Form.Item
               label="Người quản lý"
@@ -392,7 +402,7 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
                 { required: true, message: "Vui lòng chọn người quản lý!" },
               ]}
             >
-              <Input placeholder="Nhập tên người quản lý" />
+              <Input placeholder="Nhập tên người quản lý" autoComplete="off" />
             </Form.Item>
 
             <Form.Item
@@ -402,7 +412,7 @@ export const FormMoney = ({ onCancel, fetchData }: FormMoneyType) => {
                 { required: true, message: "Vui lòng chọn bộ phận quản lý!" },
               ]}
             >
-              <Input placeholder="Bộ phận quản lý" />
+              <Input placeholder="Bộ phận quản lý" autoComplete="off" />
             </Form.Item>
             <Form.Item label="Tổng tiền" name="totalAmount">
               <InputNumber className="input-number-custom-total" readOnly />

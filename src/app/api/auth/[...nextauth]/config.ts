@@ -68,7 +68,7 @@ export const authOptions: NextAuthConfig = {
   callbacks: {
     jwt({ token, user }: { token: JWT; user: User }) {
       if (user) {
-        token.user = user;
+        token.user = user as User;
       }
       return token;
     },

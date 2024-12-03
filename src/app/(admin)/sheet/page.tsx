@@ -355,7 +355,7 @@ const Sheet = () => {
           className="flex flex-col gap-1 w-full"
         >
           <Form.Item hidden label="id" name="id">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Tên nhóm trang tính"
@@ -364,7 +364,7 @@ const Sheet = () => {
               { required: true, message: "Vui lòng nhập tên nhóm trang tính!" },
             ]}
           >
-            <Input placeholder="Tên nhóm trang tính" />
+            <Input placeholder="Tên nhóm trang tính" autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="ID trang tính"
@@ -376,7 +376,7 @@ const Sheet = () => {
               },
             ]}
           >
-            <Input placeholder="Nhập ID trang tính" />
+            <Input placeholder="Nhập ID trang tính" autoComplete="off" />
           </Form.Item>
           <Form.Item label="Ghi chú" name="notes">
             <Input.TextArea rows={4} placeholder="Nhập ghi chú" />

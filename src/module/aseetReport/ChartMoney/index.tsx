@@ -165,10 +165,10 @@ const ChartMoney = ({ active }: { active: number }) => {
   const handleChangeTypeMoney = (e: string | undefined) => {
     setDataFilter((prev) => ({ ...prev, moneyType: e ?? "1" }));
     Promise.all([
-      {
+      getListChart({
         type: e ?? "1",
         typeChart: `${active}`,
-      },
+      }),
       getLisChartProgress({
         type: e ?? "1",
         typeChart: `${active}`,

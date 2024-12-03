@@ -8,7 +8,6 @@ const RootLayout: React.FC<{ children: React.ReactNode }> = async ({
   children,
 }) => {
   const session = await auth();
-  console.log("session3333", session);
   const responsive = await fetch(
     "https://apiweb.bankings.vnrsoftware.vn/account/find-role-by-account",
     {

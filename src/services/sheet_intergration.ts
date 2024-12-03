@@ -9,7 +9,6 @@ export const getListSheetIntergration = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -17,9 +16,6 @@ export const getListSheetIntergration = async (
     });
     const res = await apiClient.get(`/sheet-api/map/find`, {
       params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {
@@ -30,12 +26,7 @@ export const getListSheetIntergration = async (
 
 export const addSheetIntergration = async (sheet: ListSheetIntegration) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(`/sheet-api/map/add-or-update`, sheet, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiClient.post(`/sheet-api/map/add-or-update`, sheet);
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);
@@ -45,17 +36,7 @@ export const addSheetIntergration = async (sheet: ListSheetIntegration) => {
 
 export const deleteSheetIntergration = async (ids: number[]) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(
-      `/sheet-api/map/delete`,
-      ids,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const res = await apiClient.post(`/sheet-api/map/delete`, ids);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);
@@ -69,12 +50,8 @@ export const getTransTypeSheet = async (
   id?: number
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/sheet-api/map/get-trans-type`, {
       params: { bankAccountId, sheetId, id },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {

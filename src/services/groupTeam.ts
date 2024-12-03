@@ -1,4 +1,4 @@
-import { DataTeamModal } from "../app/group_team/page";
+import { DataTeamModal } from "../app/(admin)/group_team/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -9,9 +9,6 @@ export const getGroupTeam = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    console.log(globalTerm, searchTerms, "filter");
-
-    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -19,9 +16,6 @@ export const getGroupTeam = async (
     });
     const res = await apiClient.get(`/group-team-api/find`, {
       params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {
@@ -32,12 +26,7 @@ export const getGroupTeam = async (
 
 export const addGroupTeam = async (team: DataTeamModal) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(`/group-team-api/add-or-update`, team, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiClient.post(`/group-team-api/add-or-update`, team, {});
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);
@@ -47,13 +36,7 @@ export const addGroupTeam = async (team: DataTeamModal) => {
 
 export const deleteGroupTeam = async (ids: number[]) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(`/group-team-api/delete`, ids, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const res = await apiClient.post(`/group-team-api/delete`, ids);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

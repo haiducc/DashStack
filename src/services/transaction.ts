@@ -1,4 +1,4 @@
-import { TransactionModal } from "../app/transaction/page";
+import { TransactionModal } from "../app/(admin)/transaction/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -9,7 +9,6 @@ export const getTransaction = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -17,9 +16,6 @@ export const getTransaction = async (
     });
     const res = await apiClient.get(`/transaction-api/manual/find`, {
       params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {
@@ -30,12 +26,8 @@ export const getTransaction = async (
 
 export const addTransaction = async (trans: TransactionModal) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(`/transaction-api/manual/update`, trans, {
       timeout: 30000,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {
@@ -46,17 +38,7 @@ export const addTransaction = async (trans: TransactionModal) => {
 
 export const deleteTransaction = async (ids: number[]) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(
-      `/transaction-api/manual/delete`,
-      ids,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const res = await apiClient.post(`/transaction-api/manual/delete`, ids);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

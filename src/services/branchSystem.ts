@@ -9,7 +9,6 @@ export const getBranchSystem = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -17,9 +16,6 @@ export const getBranchSystem = async (
     });
     const res = await apiClient.get(`/group-branch-api/find`, {
       params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {
@@ -30,16 +26,7 @@ export const getBranchSystem = async (
 
 export const addGroupBranch = async (branch: DataBranchModal) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(
-      `/group-branch-api/add-or-update`,
-      branch,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res = await apiClient.post(`/group-branch-api/add-or-update`, branch);
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);
@@ -49,17 +36,7 @@ export const addGroupBranch = async (branch: DataBranchModal) => {
 
 export const deleteGroupBranch = async (ids: number[]) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(
-      `/group-branch-api/delete`,
-      ids,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const res = await apiClient.post(`/group-branch-api/delete`, ids);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

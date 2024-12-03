@@ -9,7 +9,6 @@ export const getListPhone = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -17,9 +16,6 @@ export const getListPhone = async (
     });
     const res = await apiClient.get(`/phone-api/find`, {
       params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {
@@ -30,12 +26,7 @@ export const getListPhone = async (
 
 export const addPhoneNumber = async (phoneData: PhoneNumberModal) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(`/phone-api/add-or-update`, phoneData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiClient.post(`/phone-api/add-or-update`, phoneData);
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);
@@ -45,13 +36,7 @@ export const addPhoneNumber = async (phoneData: PhoneNumberModal) => {
 
 export const deletePhone = async (ids: number[]) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(`/phone-api/delete`, ids, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const res = await apiClient.post(`/phone-api/delete`, ids);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

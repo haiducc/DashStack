@@ -39,7 +39,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
     }
 
     setSearchTerms(updatedTerms);
-    
+
     const formattedTerms = updatedTerms.map((term) => ({
       Name: term.Name,
       Value: Array.isArray(term.Value) ? term.Value.join(",") : term.Value,

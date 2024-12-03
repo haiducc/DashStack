@@ -1,4 +1,5 @@
 import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 
 export const buildSearchParams = (
   searchTerms: Array<{ Name: string; Value: string }>,
@@ -128,3 +129,29 @@ export const options = [
     label: "Tháng 12",
   },
 ];
+
+// Disable future dates
+export const disabledDateFeature = (current: Dayjs | null): boolean => {
+  return current ? current.isAfter(dayjs(), "day") : false;
+};
+
+// Disable future hours and minutes
+export const disabledTimeFeature = (current: Dayjs | null) => {
+  if (current && current.isSame(dayjs(), "day")) {
+    return {
+      disabledHours: () =>
+        Array.from({ length: 24 }, (_, i) => i).filter(
+          (hour) => hour > dayjs().hour()
+        ),
+      disabledMinutes: () =>
+        Array.from({ length: 60 }, (_, i) => i).filter(
+          (minute) => minute > dayjs().minute()
+        ),
+      disabledSeconds: () =>
+        Array.from({ length: 60 }, (_, i) => i).filter(
+          (second) => second > dayjs().second()
+        ),
+    };
+  }
+  return {};
+};

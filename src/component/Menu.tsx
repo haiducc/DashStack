@@ -1,11 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Menu as AntMenu } from "antd";
 import Image from "next/image";
 import Logo from "../../public/img/logo.png";
 import "./menu.css";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { RoleContext } from "@/src/component/RoleWapper";
 
 type MenuItem = {
   key: string;
@@ -130,6 +131,8 @@ const items: MenuItem[] = [
 ];
 
 const SideMenu = () => {
+  const { getRoleByAccount } = useContext(RoleContext);
+
   const pathname = usePathname();
   const parentKey = items.find((item) =>
     item.items?.some((subItem) => subItem.path === pathname)
@@ -158,7 +161,9 @@ const SideMenu = () => {
           icon={item.icon}
           className="custom-link-item"
         >
-          <Link href={item.path ?? "/"}>{item.label}</Link>
+          <Link href={item.path ?? "/"} onClick={() => getRoleByAccount()}>
+            {item.label}
+          </Link>
         </AntMenu.Item>
       )
     );

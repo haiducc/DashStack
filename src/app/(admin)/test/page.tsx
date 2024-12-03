@@ -50,8 +50,8 @@ const FilterComponent: React.FC = () => {
     fetchData(pageIndex);
   }, [pageIndex]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleEdit = (key: string) => {
-    console.log(`Chỉnh sửa: ${key}`);
     // Thêm logic chỉnh sửa
   };
 

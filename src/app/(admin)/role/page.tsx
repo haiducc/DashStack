@@ -77,7 +77,6 @@ const Role = () => {
     // setLoading(true);
     try {
       const response = await getRole(pageIndex, pageSize, globalTerm, arrRole);
-      console.log(response, "Role");
       const formattedData =
         response?.data?.source?.map((x: DataRole) => ({
           id: x.id,
@@ -192,7 +191,6 @@ const Role = () => {
 
   // sửa
   const handleEdit = (record: DataRole) => {
-    console.log("data edit", record);
     setCurrentRole(record);
     form.setFieldsValue({
       id: record.id,

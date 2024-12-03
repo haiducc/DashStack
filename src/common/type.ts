@@ -162,4 +162,5 @@ export interface RoleContextType {
     isAdmin: boolean;
     groupBranchName: string | null;
   };
+  getRoleByAccount: () => void;
 }

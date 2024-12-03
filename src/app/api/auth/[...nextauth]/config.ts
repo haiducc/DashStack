@@ -1,4 +1,4 @@
-import { NextAuthOptions, Session } from "next-auth";
+import { NextAuthConfig, Session } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { httpClient } from "@/src/services/base_api";
 import { JWT } from "next-auth/jwt";
@@ -7,7 +7,7 @@ export interface User {
   id?: string;
   access_token?: string;
   username?: string;
-  email?: string;
+  email?: string | null;
 }
 
 declare module "next-auth" {
@@ -30,23 +30,26 @@ declare module "next-auth" {
   }
 }
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthConfig = {
   providers: [
     CredentialsProvider({
       credentials: {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      authorize: async (
-        credentials: Partial<Record<"username" | "password", string>>
-      ) => {
-        if (!credentials || !credentials.username || !credentials.password) {
+      authorize: async (credentials) => {
+        const { username, password } = credentials as {
+          username: string;
+          password: string;
+        };
+
+        if (!username || !password) {
           throw new Error("Missing username or password");
         }
 
         const response = await httpClient.post("/account/login", {
-          username: credentials.username,
-          password: credentials.password,
+          username,
+          password,
         });
 
         if (!response?.data?.data?.token) {
@@ -63,13 +66,13 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   callbacks: {
-    jwt({ token, user }: { token?: string; user: User }) {
+    jwt({ token, user }: { token: JWT; user: User }) {
       if (user) {
-        token.user = user as User;
+        token.user = user;
       }
       return token;
     },
-    session({ session, token }): Session {
+    session({ session, token }: { session: Session; token: JWT }) {
       if (token.user) {
         (session.user as User) = token.user;
       }

@@ -79,8 +79,6 @@ const Dashboard = () => {
   const keys = dataRole.key;
   const values = dataRole.value;
 
-  console.log("888888888888", dataRole);
-
   const [isLoading, setIsLoading] = useState(false);
   const { RangePicker } = DatePicker;
 
@@ -148,7 +146,6 @@ const Dashboard = () => {
     setLoading(true);
     try {
       const response = await getListStatistics(1, 20, undefined, arrFilter);
-      // console.log(response);
 
       const formattedData =
         response?.data?.source?.map((x: DataType) => ({
@@ -179,7 +176,6 @@ const Dashboard = () => {
   const fetchStatisticsById = async (id: number) => {
     try {
       const response = await getTransactionById(id);
-      console.log("Transaction data:", response?.data);
       setDataTransaction(response?.data);
     } catch (error) {
       console.error("Error fetching transaction by id:", error);
@@ -340,7 +336,6 @@ const Dashboard = () => {
             x.bank.code + "-" + x.fullName + "-" + x.accountNumber ||
             "Không xác định",
         }));
-        // console.log(fetchBankAccountAPI, "fetchBankAccountAPI123");
 
         setBankAccountFilter(res);
       } else {
@@ -383,7 +378,6 @@ const Dashboard = () => {
           value: x.id,
           label: x.name || "Không xác định",
         }));
-        // console.log(fetchBankAccountAPI, "fetchBankAccountAPI");
 
         setGroupChatFilter(res);
       } else {
@@ -427,7 +421,6 @@ const Dashboard = () => {
     try {
       const response = await resendSheet(transId, sheetMapId);
       if (response.status === 200 && response.success) {
-        console.log("API response:", response);
         toast.success("Reload thành công!");
       } else {
         toast.success("Reload thành công!");
@@ -493,7 +486,6 @@ const Dashboard = () => {
                   : // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     value.split(",").map((item: any) => item.trim());
                 setBankFilter(value);
-                // console.log(value, "value");
                 if (!parsedValue.length) {
                   handleSelectChange(
                     parsedValue,
@@ -554,7 +546,6 @@ const Dashboard = () => {
               allowClear
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
-                console.log(value, "value");
                 setTransTypeFilter(value);
                 if (!value) {
                   handleSelectChange(
@@ -583,7 +574,6 @@ const Dashboard = () => {
               style={{ width: 245 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
-                // console.log(value, "value");
                 setTransTypeCompanyFilter(value);
                 if (!value) {
                   handleSelectChange(

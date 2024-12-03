@@ -24,8 +24,8 @@ export const useFilter = () => {
     }));
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = await getTransaction(1, 10, undefined, formattedTerms);
-      console.log("Dữ liệu từ API:", data);
     } catch (error) {
       console.error("Lỗi khi gọi API:", error);
     }

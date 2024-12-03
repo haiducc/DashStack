@@ -475,7 +475,6 @@ const GroupTeamPage = () => {
               options={groupSystem}
               // onChange={(value) => {
               //   getBranchSystems(value);
-              //   // console.log(value);
               //   setSystemId(value);
               //   // getBranchSystems();
               // }}
@@ -524,8 +523,6 @@ const GroupTeamPage = () => {
               allowClear
               // value={parentId}
               onChange={async (value) => {
-                console.log(value);
-
                 const selectedGroup = await branchSystem.find(
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (item: any) => item.value === value

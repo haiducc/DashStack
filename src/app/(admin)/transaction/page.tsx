@@ -153,7 +153,6 @@ const Transaction = () => {
           bankId: bank.id,
         })) || [];
       setBanks(formattedBanks);
-      // console.log(formattedBanks, "formattedBanks");
     } catch (error) {
       console.error("Error fetching banks:", error);
     }
@@ -170,7 +169,6 @@ const Transaction = () => {
     await arr.push(obj);
     try {
       const bankData = await fetchBankAccounts(1, 50, undefined, arr);
-      // console.log(bankData, "bankData");
       const formattedBanks =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bankData?.data?.source?.map((bankAccount: any) => ({

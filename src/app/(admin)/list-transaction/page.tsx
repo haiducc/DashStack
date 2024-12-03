@@ -208,14 +208,6 @@ const ListTransactionPage = () => {
     dates: null | (Dayjs | null)[],
     dateStrings: string[]
   ) => {
-    console.log(
-      "formatDate(dateStrings[0])",
-      formatDate(dateStrings[0]),
-      typeof formatDate(dateStrings[0])
-    );
-
-    // if (dateStrings[0] && dateStrings[1]) {
-    console.log("11111", dateStrings);
     setDataFilter((prev) => ({
       ...prev,
       startDate: dateStrings[0] ? formatDate(dateStrings[0]) : "",

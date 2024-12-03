@@ -3,7 +3,7 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  const token = await getToken({ req, secret: "ZRJHNdSIc/5pedEM8YjNoH5SyUFA2bDeeWsBs7r8lTQ=" });
 
   if (!token) {
     const url = req.nextUrl.clone();

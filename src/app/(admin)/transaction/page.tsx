@@ -84,19 +84,11 @@ const Transaction = () => {
 
   const fetchTransaction = async (
     globalTerm?: string,
-    // purpose?: string,
     startDate?: string,
     endDate?: string
   ) => {
     const arrRole: FilterRole[] = [];
     const addedParams = new Set<string>();
-    // if (purpose && !addedParams.has("purpose")) {
-    //   arrRole.push({
-    //     Name: "purpose",
-    //     Value: purpose,
-    //   });
-    //   addedParams.add("purpose");
-    // }
     if (startDate && endDate) {
       arrRole.push({
         Name: "startDate",
@@ -193,80 +185,55 @@ const Transaction = () => {
   const handleAddConfirm = async (isAddTransaction: boolean) => {
     const formData = await form.validateFields();
     setLoading(true);
-    try {
-      await form.validateFields();
-      setIsAddTransaction(isAddTransaction);
-      if (currentTransaction) {
-        const response = await addTransaction({
-          id: currentTransaction.id,
-          bankName: formData.bankName,
-          bankAccountId: formData.bankAccountId,
-          fullName: formData.fullName,
-          transDateString: formData.transDateString,
-          transType: formData.transType,
-          purposeDescription: formData.purposeDescription,
-          reason: formData.reason,
-          balanceBeforeTrans: formData.balanceBeforeTrans,
-          currentBalance: formData.currentBalance,
-          notes: formData.notes,
-          transAmount: formData.transAmount,
-          // transDate: selectedDate,
-          transDate: selectedDate
-            ? dayjs(selectedDate).format("YYYY-MM-DDTHH:mm:ss.SSSZ")
-            : undefined,
-          bankId: selectBankId,
-          feeIncurred: formData.feeIncurred,
-          bankAccount: "",
-        });
-        if (response && response.success === false) {
-          toast.error(response.message || "Cập nhật giao dịch lỗi.");
-          setLoading(false);
-          return;
-        }
-        toast.success("Cập nhật giao dịch thành công!");
-      } else {
-        const response = await addTransaction({
-          id: formData.id,
-          bankName: formData.bankName,
-          bankAccountId: formData.bankAccountId,
-          fullName: formData.fullName,
-          transDateString: formData.transDateString,
-          transType: formData.transType,
-          purposeDescription: formData.purposeDescription,
-          reason: formData.reason,
-          balanceBeforeTrans: formData.balanceBeforeTrans,
-          currentBalance: formData.currentBalance,
-          notes: formData.notes,
-          transAmount: formData.transAmount,
-          transDate: selectedDate,
-          bankId: selectBankId,
-          feeIncurred: formData.feeIncurred,
-          bankAccount: "",
-        });
-        if (response && response.success === false) {
-          toast.error(response.message || "Thêm mới giao dịch lỗi.");
-          setLoading(false);
-          return;
-        }
-        toast.success("Thêm mới giao dịch thành công!");
-        setIsAddModalOpen(false);
-      }
 
-      setIsAddModalOpen(false);
-      form.resetFields();
-      setCurrentTransaction(null);
-      fetchTransaction();
-      setSelectBankId(0);
+    try {
+      setIsAddTransaction(isAddTransaction);
+
+      const requestData = {
+        id: currentTransaction ? currentTransaction.id : formData.id,
+        bankName: formData.bankName,
+        bankAccountId: formData.bankAccountId,
+        fullName: formData.fullName,
+        transDateString: formData.transDateString,
+        transType: formData.transType,
+        purposeDescription: formData.purposeDescription,
+        reason: formData.reason,
+        balanceBeforeTrans: formData.balanceBeforeTrans,
+        currentBalance: formData.currentBalance,
+        notes: formData.notes,
+        transAmount: formData.transAmount,
+        transDate: selectedDate
+          ? dayjs(selectedDate).format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+          : undefined,
+        bankId: selectBankId,
+        feeIncurred: formData.feeIncurred,
+        bankAccount: "",
+      };
+
+      const response = await addTransaction(requestData);
+
+      if (response && response.success === false) {
+        toast.error(response.message || "Lỗi trong quá trình thực hiện.");
+      } else {
+        toast.success(
+          currentTransaction
+            ? "Cập nhật giao dịch thành công!"
+            : "Thêm mới giao dịch thành công!"
+        );
+        setIsAddModalOpen(false); // Chỉ đóng modal khi thành công
+        form.resetFields();
+        setCurrentTransaction(null);
+        fetchTransaction();
+        setSelectBankId(0);
+      }
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
-        if (error.response.status === 400) {
-          const message =
-            error.response.data.message ||
-            "Vui lòng nhập các trường dữ liệu để thêm mới!";
-          toast.error(message);
-        } else {
-          toast.error("Đã xảy ra lỗi, vui lòng thử lại.");
-        }
+        const message =
+          error.response.status === 400
+            ? error.response.data.message ||
+              "Vui lòng nhập các trường dữ liệu để thêm mới!"
+            : "Đã xảy ra lỗi, vui lòng thử lại.";
+        toast.error(message);
       } else {
         toast.error("Đã xảy ra lỗi không xác định.");
       }
@@ -278,12 +245,28 @@ const Transaction = () => {
 
   const handleDelete = async (x: TransactionModal) => {
     setLoading(true);
+
     try {
-      setIsAddModalOpen(false);
-      await deleteTransaction([x.id]);
-      await fetchTransaction();
+      const response = await deleteTransaction([x.id]);
+
+      if (response && response.success === false) {
+        toast.error(response.message || "Xóa giao dịch thất bại.");
+      } else {
+        toast.success("Xóa giao dịch thành công!");
+        await fetchTransaction(); // Hoặc cập nhật state trực tiếp để tránh fetch lại toàn bộ.
+      }
+
+      setIsAddModalOpen(false); // Đặt trong try để chắc chắn chỉ đóng khi thành công.
     } catch (error) {
-      console.error("Lỗi khi xóa tài khoản ngân hàng:", error);
+      if (error instanceof AxiosError && error.response) {
+        const message =
+          error.response.status === 400
+            ? error.response.data.message || "Không thể xóa giao dịch này!"
+            : "Đã xảy ra lỗi, vui lòng thử lại.";
+        toast.error(message);
+      } else {
+        toast.error("Đã xảy ra lỗi không xác định.");
+      }
     } finally {
       setLoading(false);
     }
@@ -589,7 +572,6 @@ const Transaction = () => {
                 handleSearch(e.currentTarget.value);
               }}
             />
-
             <RangePicker
               id={{
                 start: "startInput",
@@ -606,7 +588,6 @@ const Transaction = () => {
                   handleSelectChange(startDate, endDate);
                   fetchTransaction(
                     globalTerm,
-                    // purposeDescription,
                     startDate,
                     endDate
                   );
@@ -743,7 +724,6 @@ const Transaction = () => {
               <Select
                 allowClear
                 placeholder="Chọn tài khoản ngân hàng"
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onFocus={() => {
                   const formData = form.getFieldsValue();
                   genBankAccountData(formData.bankId);
@@ -968,7 +948,7 @@ const Transaction = () => {
             <div className="w-4" />
             <Button
               type="primary"
-              onClick={() => handleAddConfirm(false)}
+              onClick={() => handleAddConfirm(true)}
               className={`${
                 isAddTransaction && "pointer-events-none"
               } bg-[#4B5CB8] border text-white font-medium w-[189px] !h-10`}

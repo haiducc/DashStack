@@ -13,12 +13,12 @@ const RootLayout: React.FC<{ children: React.ReactNode }> = async ({
     {
       method: "GET",
       headers: {
-        Authorization: session?.user.access_token ?? "",
+        Authorization: session?.user?.access_token ?? "",
       },
     }
   );
   const data = responsive ? await responsive.json() : undefined;
-  if (!session?.user.access_token) {
+  if (!session?.user?.access_token) {
     redirect("/login");
   }
 

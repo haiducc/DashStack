@@ -455,14 +455,14 @@ const GroupTeamPage = () => {
           className="flex flex-col gap-1 w-full"
         >
           <Form.Item hidden label="id" name="id">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Tên đội nhóm"
             name="name"
             rules={[{ required: true, message: "Vui lòng nhập tên đội nhóm!" }]}
           >
-            <Input placeholder="Tên nhóm đội nhóm" />
+            <Input placeholder="Tên nhóm đội nhóm" autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Hệ thống"

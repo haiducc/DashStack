@@ -20,7 +20,11 @@ import {
 import { Dayjs } from "dayjs";
 import { useEffect, useState, useTransition } from "react";
 import type { InputNumberProps } from "antd";
-import { formatCurrencyVN } from "@/src/utils/buildQueryParams";
+import {
+  formatCurrencyVN,
+  disabledDateFeature,
+  disabledTimeFeature,
+} from "@/src/utils/buildQueryParams";
 import { toast } from "react-toastify";
 
 export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
@@ -131,7 +135,10 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
       };
       const responsive = await apiClient.post(
         "/asset-api/add-or-update",
-        params
+        params,
+        {
+          timeout: 30000,
+        }
       );
 
       if (responsive.data.success) {
@@ -188,6 +195,8 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
                   className="w-full"
                   showTime
                   required
+                  disabledDate={disabledDateFeature}
+                  disabledTime={disabledTimeFeature}
                   onChange={async (value: Dayjs | null) => {
                     const formattedDate = await value?.format(
                       "YYYY-MM-DDTHH:mm:ss.SSSZ"
@@ -339,7 +348,7 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
               name="addedBy"
               rules={[{ required: true, message: "Vui lòng chọn người mua!" }]}
             >
-              <Input placeholder="Nhập tên người mua" />
+              <Input placeholder="Nhập tên người mua" autoComplete="off" />
             </Form.Item>
 
             <Form.Item
@@ -349,7 +358,7 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
                 { required: true, message: "Vui lòng chọn người quản lý!" },
               ]}
             >
-              <Input placeholder="Nhập tên quản lý" />
+              <Input placeholder="Nhập tên quản lý" autoComplete="off" />
             </Form.Item>
 
             <Form.Item
@@ -359,7 +368,7 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
                 { required: true, message: "Vui lòng chọn bộ phận quản lý!" },
               ]}
             >
-              <Input placeholder="Bộ phận quản lý" />
+              <Input placeholder="Bộ phận quản lý" autoComplete="off" />
             </Form.Item>
 
             <Form.Item label="Ghi chú" name="note">

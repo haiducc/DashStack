@@ -69,7 +69,12 @@ function LoginForm() {
         />
 
         <div className="flex items-center mb-4">
-          <input type="checkbox" id="remember" className="mr-2" />
+          <input
+            type="checkbox"
+            id="remember"
+            className="mr-2"
+            autoComplete="off"
+          />
           <label htmlFor="remember">Lưu đăng nhập</label>
         </div>
 

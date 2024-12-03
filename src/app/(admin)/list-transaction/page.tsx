@@ -36,6 +36,7 @@ const ListTransactionPage = () => {
   const [dataTransaction, setDataTransaction] = useState<DataTransactionType[]>(
     []
   );
+
   const [loading, setLoading] = useState<boolean>(true);
   const [listOption, setListOption] = useState<ListOptionType>({
     typeTransaction: [],
@@ -101,8 +102,8 @@ const ListTransactionPage = () => {
     },
     {
       title: "Giao dịch",
-      dataIndex: "transType",
-      key: "transType",
+      dataIndex: "descriptionTransType",
+      key: "descriptionTransType",
     },
     {
       title: "Bộ phận quản lý",

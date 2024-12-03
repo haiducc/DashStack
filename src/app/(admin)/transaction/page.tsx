@@ -692,7 +692,7 @@ const Transaction = () => {
           onFinish={handleAddConfirm}
         >
           <Form.Item hidden label="id" name="id">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           <div className="flex justify-between">
             <Form.Item
@@ -949,7 +949,7 @@ const Transaction = () => {
                 },
               ]}
             >
-              <Input placeholder="Nhập lý do" />
+              <Input placeholder="Nhập lý do" autoComplete="off" />
             </Form.Item>
           </div>
           <Form.Item label="Ghi chú" name="notes">

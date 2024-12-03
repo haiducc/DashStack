@@ -730,10 +730,10 @@ const TelegramIntegration = () => {
           className="flex flex-col gap-1 w-full"
         >
           <Form.Item hidden label="id" name="id">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           <Form.Item hidden label="bankAccountId" name="bankAccountId">
-            <Input />
+            <Input autoComplete="off" />
           </Form.Item>
           {currentTelegram ? (
             <Form.Item

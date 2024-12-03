@@ -402,7 +402,7 @@ const PhoneNumber: React.FC = () => {
           className="flex flex-col gap-4 w-full"
         >
           <Form.Item hidden label="id" name="id">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Số điện thoại"
@@ -411,14 +411,14 @@ const PhoneNumber: React.FC = () => {
               { required: true, message: "Vui lòng nhập số điện thoại!" },
             ]}
           >
-            <Input placeholder="Nhập số điện thoại" />
+            <Input placeholder="Nhập số điện thoại" autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Nhà mạng"
             name="com"
             rules={[{ required: true, message: "Vui lòng nhập tên nhà mạng!" }]}
           >
-            <Input placeholder="Nhập tên nhà mạng" />
+            <Input placeholder="Nhập tên nhà mạng" autoComplete="off" />
           </Form.Item>
           <Form.Item label="Ghi chú" name="notes">
             <Input.TextArea rows={4} placeholder="Ghi chú" />

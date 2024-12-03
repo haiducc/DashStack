@@ -5,7 +5,11 @@ import {
 } from "@/src/common/type";
 import { getTypeAsset } from "@/src/services/bankAccount";
 import { apiClient } from "@/src/services/base_api";
-import { formatCurrencyVN } from "@/src/utils/buildQueryParams";
+import {
+  formatCurrencyVN,
+  disabledDateFeature,
+  disabledTimeFeature,
+} from "@/src/utils/buildQueryParams";
 import {
   Button,
   Col,
@@ -157,7 +161,10 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
       };
       const responsive = await apiClient.post(
         "/asset-api/add-or-update",
-        params
+        params,
+        {
+          timeout: 30000,
+        }
       );
       if (responsive.data.success) {
         toast.success(
@@ -200,6 +207,8 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
                   className="w-full"
                   showTime
                   required
+                  disabledDate={disabledDateFeature}
+                  disabledTime={disabledTimeFeature}
                   onChange={async (value: Dayjs | null) => {
                     const formattedDate = await value?.format(
                       "YYYY-MM-DDTHH:mm:ss.SSSZ"
@@ -396,7 +405,7 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
               name="addedBy"
               rules={[{ required: true, message: "Vui lòng chọn người vàng!" }]}
             >
-              <Input placeholder="Nhập tên người mua vàng" />
+              <Input placeholder="Nhập tên người mua vàng" autoComplete="off" />
             </Form.Item>
 
             <Form.Item
@@ -406,7 +415,7 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
                 { required: true, message: "Vui lòng chọn người quản lý!" },
               ]}
             >
-              <Input placeholder="Nhập tên quản lý" />
+              <Input placeholder="Nhập tên quản lý" autoComplete="off" />
             </Form.Item>
 
             <Form.Item
@@ -416,7 +425,7 @@ export const FormTransfer = ({ onCancel, fetchData }: FormMoneyType) => {
                 { required: true, message: "Vui lòng chọn bộ phận quản lý!" },
               ]}
             >
-              <Input placeholder="Bộ phận quản lý" />
+              <Input placeholder="Bộ phận quản lý" autoComplete="off" />
             </Form.Item>
             <Form.Item
               label="Tổng tiền"

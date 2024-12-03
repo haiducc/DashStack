@@ -1304,7 +1304,7 @@ const Account = () => {
           className="flex flex-col gap-1 w-full"
         >
           <Form.Item hidden label="id" name="id">
-            <Input />
+            <Input autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Chọn loại tài khoản"
@@ -1531,7 +1531,7 @@ const Account = () => {
                 { required: true, message: "Vui lòng nhập số tài khoản!" },
               ]}
             >
-              <Input placeholder="Nhập số tài khoản" />
+              <Input placeholder="Nhập số tài khoản" autoComplete="off" />
             </Form.Item>
             <Form.Item
               className="w-[45%]"
@@ -1541,7 +1541,7 @@ const Account = () => {
                 { required: true, message: "Vui lòng nhập tên chủ tài khoản!" },
               ]}
             >
-              <Input placeholder="Nhập tên chủ tài khoản" />
+              <Input placeholder="Nhập tên chủ tài khoản" autoComplete="off" />
             </Form.Item>
           </div>
           <div className="flex justify-between">

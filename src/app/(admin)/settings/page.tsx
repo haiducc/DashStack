@@ -146,10 +146,10 @@ const Settings = () => {
           className="flex flex-col gap-1 w-full"
         >
           <Form.Item hidden label="id" name="id">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           <Form.Item label="Tên thuộc tính" name="name">
-            <Input disabled placeholder="Tên thuộc tính" />
+            <Input disabled placeholder="Tên thuộc tính" autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Giá trị"
@@ -161,7 +161,7 @@ const Settings = () => {
               },
             ]}
           >
-            <Input placeholder="Vui lòng nhập giá trị" />
+            <Input placeholder="Vui lòng nhập giá trị" autoComplete="off" />
           </Form.Item>
           <Form.Item label="Ghi chú" name="description">
             <Input.TextArea disabled rows={4} placeholder="Nhập ghi chú" />

@@ -718,10 +718,10 @@ const SheetIntergration = () => {
           className="flex flex-col gap-1 w-full"
         >
           <Form.Item hidden label="id" name="id">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           <Form.Item hidden label="bankAccountId" name="bankAccountId">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           {currentSheet ? (
             <Form.Item
@@ -792,10 +792,10 @@ const SheetIntergration = () => {
             />
           </Form.Item>
           <Form.Item hidden label="sheetId" name="sheetId">
-            <Input />
+            <Input autoComplete="off" />
           </Form.Item>
           <Form.Item hidden label="groupChatId" name="groupChatId">
-            <Input hidden />
+            <Input hidden autoComplete="off" />
           </Form.Item>
           <Form.Item
             label="Chọn loại giao dịch"

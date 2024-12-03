@@ -1,4 +1,4 @@
-import { SettingsModal } from "../app/settings/page";
+import { SettingsModal } from "../app/(admin)/settings/page";
 import { apiClient } from "./base_api";
 
 export const getSettings = async () => {

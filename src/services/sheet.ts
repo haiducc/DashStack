@@ -1,4 +1,4 @@
-import { DataSheetModal } from "../app/sheet/page";
+import { DataSheetModal } from "../app/(admin)/sheet/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 

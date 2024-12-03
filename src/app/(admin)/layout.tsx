@@ -1,7 +1,7 @@
 import LayoutWapper from "@/src/component/LayoutWapper";
 import { RoleWpparProvidrer } from "@/src/component/RoleWapper";
 import React from "react";
-import { auth } from "../api/auth/[...nextauth]/route";
+import { auth } from "../api/auth/[...nextauth]/config";
 import { redirect } from "next/navigation";
 
 const RootLayout: React.FC<{ children: React.ReactNode }> = async ({

@@ -1,6 +1,6 @@
 "use server";
 
-import { signIn } from "../app/api/auth/[...nextauth]/route";
+import { signIn } from "../app/api/auth/[...nextauth]/config";
 
 export async function authenticatorResponse(
   username: string,

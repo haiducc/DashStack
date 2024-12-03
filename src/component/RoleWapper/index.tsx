@@ -12,7 +12,9 @@ export const RoleWpparProvidrer = ({
   children,
   data,
 }: PropsWithChildren<{ data?: DataRoleType }>) => {
-  const [roleData, setRoleData] = useState<DataRoleType | undefined>(data);
+  const [roleData, setRoleData] = useState<DataRoleType>(
+    data ?? ({} as DataRoleType)
+  );
   const getRoleByAccount = async () => {
     const responsive = await apiClient.get("/account/find-role-by-account");
     setRoleData(responsive.data.data);

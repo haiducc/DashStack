@@ -146,6 +146,7 @@ export interface DataRoleType {
   groupBranchName: string | null;
   groupTeamName: string | null;
   isAdmin: boolean;
+  groupTeamNamegroupBranchName: string | null;
 }
 
 export interface RoleContextType {

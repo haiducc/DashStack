@@ -1,4 +1,4 @@
-import { ListSheetIntegration } from "../app/sheet_intergration/page";
+import { ListSheetIntegration } from "../app/(admin)/sheet_intergration/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 

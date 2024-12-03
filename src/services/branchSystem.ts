@@ -1,4 +1,4 @@
-import { DataBranchModal } from "../app/group_branch/page";
+import { DataBranchModal } from "../app/(admin)/group_branch/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 

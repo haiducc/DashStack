@@ -18,7 +18,6 @@ function LoginForm() {
 
   const handleLogin = async () => {
     const res = await authenticatorResponse(username, password);
-    console.log("check data", res);
     if (res.error) {
       toast.error(res.error);
     } else {

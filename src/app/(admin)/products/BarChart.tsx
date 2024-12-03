@@ -12,7 +12,6 @@ import {
 import { getDataGenaral } from "@/src/services/statistics";
 import { useContext, useEffect, useState } from "react";
 import { RoleContext } from "@/src/component/RoleWapper";
-import { useSession } from "next-auth/react";
 
 ChartJS.register(
   CategoryScale,
@@ -29,7 +28,6 @@ interface filterRole {
 }
 
 const BarChart = () => {
-  const { data: session } = useSession();
   const { dataRole } = useContext(RoleContext);
   const keys = dataRole.key;
   const values = `${dataRole.value}`;
@@ -46,14 +44,7 @@ const BarChart = () => {
     });
     addedParams.add(keys!);
     try {
-      const response = await getDataGenaral(
-        1,
-        20,
-        undefined,
-        arrRole,
-        session?.user?.access_token
-      );
-      // console.log(response, "data chart");
+      const response = await getDataGenaral(1, 20, undefined, arrRole);
       if (response.data) {
         const {
           totalAmountOut,

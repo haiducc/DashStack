@@ -30,7 +30,6 @@ const BarChartType = () => {
     const fetchDataGenaral = async () => {
         try {
             const response = await getDataGenaral(1, 20);
-            console.log(response, "data chart type");
             if (response.data) {
                 const {
                     countTransactionOut,

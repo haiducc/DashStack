@@ -102,7 +102,6 @@ const SheetIntergration = () => {
         globalTerm,
         arrSheet
       );
-      // console.log(response, "getListSheetIntergration");
       const formattedData =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         response?.data?.source?.map((item: any) => ({
@@ -178,7 +177,6 @@ const SheetIntergration = () => {
           label: tele.text,
           transType: tele.value,
         }))) || [];
-      console.log(174, res);
 
       setTransType(res);
     } catch (error) {
@@ -194,6 +192,7 @@ const SheetIntergration = () => {
       const formData = form.getFieldsValue();
       setLoading(true);
       if (currentSheet) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const response = await addSheetIntergration({
           id: formData.id, // id
           code: formData.code, // Mã ngân hàng
@@ -206,8 +205,8 @@ const SheetIntergration = () => {
           name: formData.name,
           typeDescription: formData.typeDescription,
         });
-        console.log("Dữ liệu đã được cập nhật:", response);
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const response = await addSheetIntergration({
           id: formData.id, // id
           code: formData.code, // Mã ngân hàng
@@ -220,7 +219,6 @@ const SheetIntergration = () => {
           name: formData.name,
           typeDescription: formData.typeDescription,
         });
-        console.log("Dữ liệu đã được thêm mới:", response);
       }
 
       setIsAddModalOpen(false);
@@ -236,7 +234,6 @@ const SheetIntergration = () => {
   };
 
   const handleEdit = (record: ListSheetIntegration) => {
-    console.log("data edit", record);
     setCurrentSheet(record);
     form.setFieldsValue({
       id: record.id, // id
@@ -607,7 +604,6 @@ const SheetIntergration = () => {
                 allowClear
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
-                  // console.log(value, "value");
                   setTransTypeFilter(value);
                   if (!value) {
                     handleSelectChange(sheetIdFilter, value, bankAccountFilter);
@@ -755,7 +751,6 @@ const SheetIntergration = () => {
                 onFocus={genBankData}
                 options={banks}
                 onChange={async (value) => {
-                  // console.log(value);
                   setBankAccountIdSelect(value);
                   const selectedGroup = await banks.find(
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -815,7 +810,6 @@ const SheetIntergration = () => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onFocus={() => {
                 const formData = form.getFieldsValue();
-                console.log("Form data on focus:", formData);
                 genTransTypes(
                   formData.bankAccountId,
                   formData.sheetId,

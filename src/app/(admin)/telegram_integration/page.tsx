@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useContext, useEffect, useState } from "react";
@@ -105,11 +106,9 @@ const TelegramIntegration = () => {
         globalTerm,
         arrTeleAccount
       );
-      console.log(response, "bankAccount");
       const formattedData =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         response?.data?.source?.map((item: any) => {
-          // console.log(item.bankAccount.id);
           return {
             id: item.id, // id
             bankAccountId: item.bankAccount.id, // id tài khoản ngân hàng
@@ -159,8 +158,6 @@ const TelegramIntegration = () => {
   const genTelegramData = async () => {
     try {
       const dataTelegram = await getListTelegram(1, 50);
-      console.log(dataTelegram);
-
       const formattedTelegram =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dataTelegram?.data?.source?.map((tele: any) => ({
@@ -224,7 +221,6 @@ const TelegramIntegration = () => {
           name: "",
           typeDescription: formData.typeDescription,
         });
-        console.log("Dữ liệu đã được cập nhật:", response);
       } else {
         response = await addTelegramIntergration({
           bankAccountId: bankAccountIdSelect,
@@ -240,7 +236,6 @@ const TelegramIntegration = () => {
           name: "",
           typeDescription: formData.typeDescription,
         });
-        console.log("Dữ liệu đã được thêm mới:", response);
       }
 
       setIsAddModalOpen(false);
@@ -256,7 +251,6 @@ const TelegramIntegration = () => {
   };
 
   const handleEdit = (record: ListTelegramIntegration) => {
-    console.log("data edit", record);
     setCurrentTelegram(record);
     form.setFieldsValue({
       bankAccountId: record.bankAccountId,
@@ -622,7 +616,6 @@ const TelegramIntegration = () => {
                 allowClear
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(value: any) => {
-                  // console.log(value, "value");
                   setTransTypeFilter(value);
                   if (!value) {
                     handleSelectChange(groupChatFilter, value);
@@ -832,7 +825,6 @@ const TelegramIntegration = () => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onFocus={() => {
                 const formData = form.getFieldsValue();
-                console.log("Form data on focus:", formData);
                 genTransTypes(
                   formData.bankAccountId,
                   formData.groupChatId,

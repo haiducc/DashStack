@@ -1,4 +1,4 @@
-import { DataTeamModal } from "../app/group_team/page";
+import { DataTeamModal } from "../app/(admin)/group_team/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -9,8 +9,6 @@ export const getGroupTeam = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    console.log(globalTerm, searchTerms, "filter");
-
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,

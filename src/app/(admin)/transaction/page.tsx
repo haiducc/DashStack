@@ -161,7 +161,6 @@ const Transaction = () => {
           bankId: bank.id,
         })) || [];
       setBanks(formattedBanks);
-      // console.log(formattedBanks, "formattedBanks");
     } catch (error) {
       console.error("Error fetching banks:", error);
     }
@@ -178,7 +177,6 @@ const Transaction = () => {
     await arr.push(obj);
     try {
       const bankData = await fetchBankAccounts(1, 50, undefined, arr);
-      // console.log(bankData, "bankData");
       const formattedBanks =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bankData?.data?.source?.map((bankAccount: any) => ({
@@ -225,7 +223,6 @@ const Transaction = () => {
           setLoading(false);
           return;
         }
-        console.log("Dữ liệu đã được cập nhật:", response);
         toast.success("Cập nhật giao dịch thành công!");
       } else {
         const response = await addTransaction({
@@ -592,25 +589,7 @@ const Transaction = () => {
                 handleSearch(e.currentTarget.value);
               }}
             />
-            {/* <Space direction="horizontal" size="middle">
-              <Select
-                options={options}
-                placeholder="Mục đích"
-                style={{ width: 245, margin: "0 10px", height: 40 }}
-                allowClear
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onChange={(value: any) => {
-                  // console.log(value, "value");
-                  setPurposeDescription(value);
-                  if (!value) {
-                    handleSelectChange(value, startDateFilter);
-                    setCheckFilter(!checkFilter);
-                  } else {
-                    fetchTransaction(globalTerm, value, startDateFilter);
-                  }
-                }}
-              />
-            </Space> */}
+
             <RangePicker
               id={{
                 start: "startInput",
@@ -772,7 +751,6 @@ const Transaction = () => {
                 options={bankAccount}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={async (value: any) => {
-                  // console.log(value);
                   const selectedGroup = await bankAccount.find(
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (item: any) => item.value === value

@@ -38,7 +38,6 @@ const Statistics = () => {
     addedParams.add(keys!);
     try {
       const res = await getDataGenaral(1, 20, undefined, arrRole);
-      // console.log("Response:", res);
       if (
         res &&
         res.data &&

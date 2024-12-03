@@ -17,7 +17,6 @@ export const getAccountGroup = async (
     const res = await apiClient.get(`/group-account-api/find`, {
       params,
     });
-    // console.log("searchTerms :", searchTerms);
 
     return res.data;
   } catch (error) {

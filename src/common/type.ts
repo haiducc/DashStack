@@ -134,3 +134,32 @@ export interface DataTransactionType {
   modifiedBy: string | null;
   modifiedDate: string; // ISO string format
 }
+
+export interface DataRoleType {
+  key: string | null;
+  value: number | null;
+  accountId: number | null;
+  groupSystemId: number | null;
+  groupBranchId: number | null;
+  groupTeamId: number | null;
+  groupSystemName: string | null;
+  groupBranchName: string | null;
+  groupTeamName: string | null;
+  isAdmin: boolean;
+}
+
+export interface RoleContextType {
+  dataRole: {
+    key: string | null;
+    value: number | null;
+    accountId: number | null;
+    groupSystemId: number | null;
+    groupBranchId: number | null;
+    groupTeamId: number | null;
+    groupSystemName: string | null;
+    groupTeamNamegroupBranchName: string | null;
+    groupTeamName: string | null;
+    isAdmin: boolean;
+    groupBranchName: string | null;
+  };
+}

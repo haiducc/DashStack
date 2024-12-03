@@ -1,5 +1,4 @@
-
-import { DataTelegramModal } from "../app/telegram/page";
+import { DataTelegramModal } from "../app/(admin)/telegram/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -10,7 +9,6 @@ export const getListTelegram = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -18,9 +16,6 @@ export const getListTelegram = async (
     });
     const res = await apiClient.get(`/group-chat-api/find`, {
       params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {
@@ -31,12 +26,8 @@ export const getListTelegram = async (
 
 export const addTelegram = async (tele: DataTelegramModal) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(`/group-chat-api/add-or-update`, tele, {
       timeout: 30000,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {
@@ -47,17 +38,7 @@ export const addTelegram = async (tele: DataTelegramModal) => {
 
 export const deleteTelegram = async (ids: number[]) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(
-      `/group-chat-api/delete`,
-      ids,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const res = await apiClient.post(`/group-chat-api/delete`, ids);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);
@@ -71,12 +52,8 @@ export const getTransType = async (
   id?: number
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const res = await apiClient.get(`/group-chat-api/map/get-trans-type`, {
       params: { bankAccountId, groupId, id },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {

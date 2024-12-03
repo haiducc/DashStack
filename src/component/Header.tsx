@@ -3,64 +3,13 @@ import "./header.css";
 import React from "react";
 import { DownOutlined, UserOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown, Menu } from "antd";
-// import Menus from "../../public/img/menu.png";
-// import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { apiClient } from "../services/base_api";
+import { signOut } from "next-auth/react";
 
 const Header = () => {
-  const router = useRouter();
-  // const onSearch = (value: string) => {
-  //   console.log("Search value: ", value);
-  // };
-
-  const handleLogout = async () => {
-    try {
-      const token = localStorage.getItem("accessToken");
-
-      if (!token) {
-        console.warn("No access token found. Redirecting to login page...");
-        router.push("/login");
-        return;
-      }
-
-      const response = await apiClient.post("/account/log-out", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.status >= 200 && response.status < 300) {
-        localStorage.removeItem("accessToken");
-
-        localStorage.removeItem("key");
-        localStorage.removeItem("value");
-
-        localStorage.removeItem("groupSystemId");
-        localStorage.removeItem("groupBranchId");
-        localStorage.removeItem("groupTeamId");
-
-        localStorage.removeItem("groupSystemName");
-        localStorage.removeItem("groupBranchName");
-        localStorage.removeItem("groupTeamName");
-
-        router.push("/login");
-      } else {
-        console.error("Logout failed with status: ", response.status);
-      }
-    } catch (error) {
-      console.error("Error during logout: ", error);
-    }
-  };
-
-  // const handleLogout = () => {
-  //   localStorage.removeItem("token");
-  //   router.push("/pages/login");
-  // };
-
   const menu = (
     <Menu>
-      <Menu.Item key="logout" onClick={handleLogout}>
+      {/* <Menu.Item key="logout" onClick={handleLogout}> */}
+      <Menu.Item key="logout" onClick={() => signOut()}>
         Đăng xuất
       </Menu.Item>
     </Menu>

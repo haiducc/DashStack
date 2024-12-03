@@ -115,14 +115,8 @@ body {
   padding: 0 !important;
 }
 
-.ant-table-wrapper
-  .ant-table-thead
-  > tr
-  > th,
-.ant-table-wrapper
-  .ant-table-thead
-  > tr
-  > td {
+.ant-table-wrapper .ant-table-thead > tr > th,
+.ant-table-wrapper .ant-table-thead > tr > td {
   background-color: #4b5cb8 !important;
   color: #ffffff;
 }
@@ -177,7 +171,8 @@ body {
 }
 .input-number-custom .ant-input-number-handler-wrap,
 .input-number-custom-total .ant-input-number-handler-wrap,
-.input-number-price-custom .ant-input-number-handler-wrap, .input-number-rate-custom .ant-input-number-handler-wrap {
+.input-number-price-custom .ant-input-number-handler-wrap,
+.input-number-rate-custom .ant-input-number-handler-wrap {
   display: none !important;
 }
 
@@ -256,4 +251,8 @@ body {
 
 .custom-chart-transaction canvas {
   height: 600px !important;
+}
+
+.ant-menu-dark.ant-menu-inline .ant-menu-sub.ant-menu-inline {
+  background: #4b5cb8 !important;
 }

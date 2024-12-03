@@ -1,4 +1,3 @@
-
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -9,18 +8,16 @@ export const Login = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
       globalTerm: globalTerm || undefined,
     });
     const res = await apiClient.get("/account/login", {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
       params,
     });
     return res.data;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Lỗi khi gọi API:", error.response?.data || error.message);
     throw error;

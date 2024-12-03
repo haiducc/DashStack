@@ -3,12 +3,7 @@ import { apiClient } from "./base_api";
 
 export const getSettings = async () => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.get(`/site-setting-api/find`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiClient.get(`/site-setting-api/find`);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);
@@ -18,12 +13,7 @@ export const getSettings = async () => {
 
 export const editSettings = async (settings: SettingsModal) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(`/site-setting-api/update`, settings, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiClient.post(`/site-setting-api/update`, settings);
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);

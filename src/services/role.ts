@@ -1,4 +1,4 @@
-import { DataRole } from "../app/role/page";
+import { DataRole } from "../app/(admin)/role/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -9,7 +9,6 @@ export const getRole = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -17,9 +16,6 @@ export const getRole = async (
     });
     const res = await apiClient.get(`/account/find`, {
       params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {
@@ -30,12 +26,7 @@ export const getRole = async (
 
 export const addRole = async (x: DataRole) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(`/account/add-or-update`, x, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiClient.post(`/account/add-or-update`, x);
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);
@@ -45,13 +36,7 @@ export const addRole = async (x: DataRole) => {
 
 export const deleteRole = async (ids: number[]) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(`/account/delete`, ids, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const res = await apiClient.post(`/account/delete`, ids);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

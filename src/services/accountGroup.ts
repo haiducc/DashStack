@@ -9,7 +9,6 @@ export const getAccountGroup = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -17,9 +16,6 @@ export const getAccountGroup = async (
     });
     const res = await apiClient.get(`/group-account-api/find`, {
       params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     // console.log("searchTerms :", searchTerms);
 
@@ -32,15 +28,9 @@ export const getAccountGroup = async (
 
 export const addAccountGroup = async (accountGroup: DataAccountGroup) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const res = await apiClient.post(
       `/group-account-api/add-or-update`,
-      accountGroup,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      accountGroup
     );
     return res.data;
   } catch (error) {
@@ -51,13 +41,7 @@ export const addAccountGroup = async (accountGroup: DataAccountGroup) => {
 
 export const deleteAccountGroup = async (ids: number[]) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(`/group-account-api/delete`, ids, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const res = await apiClient.post(`/group-account-api/delete`, ids);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

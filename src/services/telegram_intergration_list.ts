@@ -1,4 +1,4 @@
-import { ListTelegramIntegration } from "../app/telegram_integration/page";
+import { ListTelegramIntegration } from "../app/(admin)/telegram_integration/page";
 import { buildSearchParams } from "../utils/buildQueryParams";
 import { apiClient } from "./base_api";
 
@@ -9,7 +9,6 @@ export const getListTelegramIntergration = async (
   searchTerms: Array<{ Name: string; Value: string }> = []
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
     const params = buildSearchParams(searchTerms, {
       pageIndex,
       pageSize,
@@ -17,9 +16,6 @@ export const getListTelegramIntergration = async (
     });
     const res = await apiClient.get(`/group-chat-api/map/find`, {
       params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
     return res.data;
   } catch (error) {
@@ -32,16 +28,7 @@ export const addTelegramIntergration = async (
   tele: ListTelegramIntegration
 ) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(
-      `/group-chat-api/map/add-or-update`,
-      tele,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res = await apiClient.post(`/group-chat-api/map/add-or-update`, tele);
     return res.data;
   } catch (error) {
     console.error("Error adding or updating:", error);
@@ -51,13 +38,7 @@ export const addTelegramIntergration = async (
 
 export const deleteTelegramIntergration = async (ids: number[]) => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const res = await apiClient.post(`/group-chat-api/map/delete`, ids, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const res = await apiClient.post(`/group-chat-api/map/delete`, ids);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);

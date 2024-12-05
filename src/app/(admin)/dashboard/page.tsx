@@ -13,7 +13,7 @@ import {
 } from "@/src/services/statistics";
 import BaseModal from "@/src/component/config/BaseModal";
 import "./style.css";
-import { fetchBankAccounts } from "@/src/services/bankAccount";
+import { fetchBankAccounts, getBank } from "@/src/services/bankAccount";
 import { getListTelegram } from "@/src/services/telegram";
 import { SyncOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
@@ -88,6 +88,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchListStatistics = async (
+    bank?: number,
     bankAccount?: string,
     groupChat?: number,
     transType?: string,
@@ -98,7 +99,13 @@ const Dashboard = () => {
   ) => {
     const arrFilter: FilterProducts[] = [];
     const addedParams = new Set<string>();
-
+    if (bank && !addedParams.has("bankId")) {
+      arrFilter.push({
+        Name: "bankId",
+        Value: bank,
+      });
+      addedParams.add("bankAccountId");
+    }
     if (bankAccount && !addedParams.has("bankAccountId")) {
       arrFilter.push({
         Name: "bankAccountId",
@@ -280,9 +287,18 @@ const Dashboard = () => {
   const pageIndex = 1;
   const pageSize = 20;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [bankIdFilterAPI, setBankIdFilterAPI] = useState();
   const [bankFilter, setBankFilter] = useState();
   const [chatFilter, setChatFilter] = useState();
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [bankIdFilter, setBankIdFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [bankDataFilter, setBankDataFilter] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
   const [bankAccountFilter, setBankAccountFilter] = useState<
     Array<{ value: string; label: string }>
   >([]);
@@ -302,9 +318,49 @@ const Dashboard = () => {
     { value: "1", label: "Tài khoản công ty" },
     { value: "2", label: "Tài khoản marketing" },
   ];
-  const fetchBankData = async (bankAccount?: string) => {
+
+  const filterBankAPI = async () => {
     const arr: FilterProducts[] = [];
     const addedParams = new Set<string>();
+    arr.push({
+      Name: keys!,
+      Value: values,
+    });
+    addedParams.add(keys!);
+    try {
+      const fetchBankDataAPI = await getBank(pageIndex, pageSize, arr);
+
+      if (
+        fetchBankDataAPI &&
+        fetchBankDataAPI.data &&
+        fetchBankDataAPI.data.source
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res = fetchBankDataAPI.data.source.map((x: any) => ({
+          value: x.id,
+          label: x.code || "Không xác định",
+        }));
+        console.log("fetchBankDataAPI", fetchBankDataAPI);
+
+        setBankDataFilter(res);
+      } else {
+        setBankDataFilter([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  };
+
+  const filterBankAccount = async (bankId?: number, bankAccount?: string) => {
+    const arr: FilterProducts[] = [];
+    const addedParams = new Set<string>();
+    if (bankAccount && !addedParams.has("bankAccountId")) {
+      arr.push({
+        Name: "bankId",
+        Value: bankId,
+      });
+      addedParams.add("bankAccountId");
+    }
     if (bankAccount && !addedParams.has("bankAccount")) {
       arr.push({
         Name: "bankAccount",
@@ -332,9 +388,10 @@ const Dashboard = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res = fetchBankAccountAPI.data.source.map((x: any) => ({
           value: x.id,
-          label:
-            x.bank.code + "-" + x.fullName + "-" + x.accountNumber ||
-            "Không xác định",
+          // label:
+          //   x.bank.code + "-" + x.fullName + "-" + x.accountNumber ||
+          //   "Không xác định",
+          label: x.fullName + "-" + x.accountNumber || "Không xác định",
         }));
 
         setBankAccountFilter(res);
@@ -389,6 +446,7 @@ const Dashboard = () => {
   };
 
   const [filterParams, setFilterParams] = useState<{
+    bankId?: number;
     bankAccountId?: string;
     groupChatId?: number;
     transType?: string;
@@ -397,6 +455,7 @@ const Dashboard = () => {
   }>({});
 
   const handleSelectChange = (
+    bank?: number,
     bankAccount?: string,
     groupChat?: number,
     transType?: string,
@@ -406,6 +465,7 @@ const Dashboard = () => {
   ) => {
     setFilterParams((prevParams) => ({
       ...prevParams,
+      bankId: bank,
       bankAccountId: bankAccount,
       groupChatId: groupChat,
       transType: transType,
@@ -436,7 +496,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetchBankData();
+      await filterBankAPI();
+      await filterBankAccount();
       await fetchListTelegram();
     };
 
@@ -474,10 +535,45 @@ const Dashboard = () => {
         <div className="flex mx-[35px] mt-7">
           <Space direction="horizontal" size="middle">
             <Select
+              // mode="multiple"
+              options={bankDataFilter}
+              placeholder="Ngân hàng"
+              style={{ width: 245 }}
+              allowClear
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={(value: any) => {
+                const parsedValue = Array.isArray(value)
+                  ? value
+                  : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    value.split(",").map((item: any) => item.trim());
+                setBankIdFilter(value);
+                if (!value) {
+                  handleSelectChange(
+                    parsedValue,
+                    bankFilter,
+                    chatFilter,
+                    transTypeFilter,
+                    transTypeCompanyFilter,
+                    startDateFilter
+                  );
+                  setCheckFilter(!checkFilter);
+                } else {
+                  fetchListStatistics(
+                    parsedValue,
+                    bankFilter,
+                    chatFilter,
+                    transTypeFilter,
+                    transTypeCompanyFilter,
+                    startDateFilter
+                  );
+                }
+              }}
+            />
+            <Select
               mode="multiple"
               options={bankAccountFilter}
               placeholder="Tài khoản ngân hàng"
-              style={{ width: 400 }}
+              style={{ width: 245 }}
               allowClear
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(value: any) => {
@@ -488,6 +584,7 @@ const Dashboard = () => {
                 setBankFilter(value);
                 if (!parsedValue.length) {
                   handleSelectChange(
+                    bankIdFilterAPI,
                     parsedValue,
                     chatFilter,
                     transTypeFilter,
@@ -497,6 +594,7 @@ const Dashboard = () => {
                   setCheckFilter(!checkFilter);
                 } else {
                   fetchListStatistics(
+                    bankIdFilterAPI,
                     parsedValue,
                     chatFilter,
                     transTypeFilter,

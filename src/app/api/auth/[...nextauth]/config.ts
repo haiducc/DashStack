@@ -75,8 +75,11 @@ export const authOptions: NextAuthConfig = {
           username,
           password,
         });
+        // console.log("response auth", response);
 
         const token = response?.data?.data?.token;
+        // console.log(1);
+        // console.log(token);
 
         if (!token) {
           throw new Error("Invalid credentials.");
